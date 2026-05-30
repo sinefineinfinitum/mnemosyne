@@ -1,11 +1,11 @@
 {
-    "name": "phpstan/ponimator",
-    "description": "Ponimator - generate docs for php project",
+    "name": "sinefineinfinitum/ponymator",
+    "description": "Ponymator - generate docs for php project",
     "license": ["MIT"],
     "keywords": ["docs", "analysis"],
     "bin": [
-        "ponimator",
-        "ponimator.phar"
+        "ponymator",
+        "ponymator.phar"
     ],
     "require": {
         "php": "^8.0",
@@ -13,7 +13,13 @@
     },
     "autoload": {
         "psr-4": {
-            "SineFine\\Ponimator\\": "src/"
+            "SineFine\\Ponymator\\": "src/",
+            "SineFine\\Ponymator\\Tests\\": "tests/"
         }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5.0",
+        "phpstan/phpstan": "^2.2",
+        "squizlabs/php_codesniffer": "^4.0"
     }
 }

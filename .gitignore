@@ -4,3 +4,7 @@ vendor
 .opencode
 .specify
 specs
+docs
+*.log
+.phpunit.result.cache
+.phpunit.cache
