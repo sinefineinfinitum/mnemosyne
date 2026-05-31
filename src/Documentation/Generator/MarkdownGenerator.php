@@ -48,6 +48,8 @@ final class MarkdownGenerator
             mkdir($targetDir, 0755, true);
         }
 
+        $this->documenter->buildCrossReferences($sourceFiles);
+
         foreach ($sourceFiles as $relativePath) {
             $sourcePath = $this->pathResolver->sourcePath($relativePath);
             $docPath = $this->pathResolver->docPath($relativePath);

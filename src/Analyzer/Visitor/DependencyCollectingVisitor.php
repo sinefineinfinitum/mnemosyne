@@ -3,6 +3,12 @@
 namespace SineFine\Ponymator\Analyzer\Visitor;
 
 use PhpParser\Node;
+use PhpParser\Node\FunctionLike;
+use PhpParser\Node\IntersectionType;
+use PhpParser\Node\Name;
+use PhpParser\Node\NullableType;
+use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\UnionType;
 use PhpParser\NodeVisitorAbstract;
 
 final class DependencyCollectingVisitor extends NodeVisitorAbstract
@@ -23,32 +29,14 @@ final class DependencyCollectingVisitor extends NodeVisitorAbstract
     ];
 
     /**
-     * @var string[] 
+     * @var string[]
      */
     private array $deps = [];
 
     public function enterNode(Node $node)
     {
-        if ($node instanceof Node\Stmt\Use_) {
-            foreach ($node->uses as $use) {
-                $this->addDep($use->name->toCodeString());
-            }
-        }
-
-        if ($node instanceof Node\Stmt\GroupUse) {
-            $prefix = $node->prefix->toCodeString();
-
-            foreach ($node->uses as $use) {
-                $this->addDep($prefix . '\\' . $use->name->toCodeString());
-            }
-        }
-
-        if ($node instanceof Node\Param && $node->type instanceof Node\Name) {
-            $fqn = $node->type->toCodeString();
-
-            if (!in_array(strtolower($fqn), self::BUILTIN_TYPES, true)) {
-                $this->addDep($fqn);
-            }
+        if ($node instanceof Node\Param && $node->type !== null) {
+            $this->processTypeNode($node->type);
         }
 
         if ($node instanceof Node\Stmt\Class_ && $node->extends !== null) {
@@ -61,7 +49,45 @@ final class DependencyCollectingVisitor extends NodeVisitorAbstract
             }
         }
 
+        if ($node instanceof FunctionLike) {
+            $returnType = $node->getReturnType();
+            if ($returnType !== null) {
+                $this->processTypeNode($returnType);
+            }
+        }
+
+        if ($node instanceof Property && $node->type !== null) {
+            $this->processTypeNode($node->type);
+        }
+
         return null;
+    }
+
+    private function processTypeNode(Node $typeNode): void
+    {
+        if ($typeNode instanceof Name) {
+            $fqn = $typeNode->toCodeString();
+
+            if (!in_array(strtolower($fqn), self::BUILTIN_TYPES, true)) {
+                $this->addDep($fqn);
+            }
+
+            return;
+        }
+
+        if ($typeNode instanceof UnionType || $typeNode instanceof IntersectionType) {
+            foreach ($typeNode->types as $innerType) {
+                $this->processTypeNode($innerType);
+            }
+
+            return;
+        }
+
+        if ($typeNode instanceof NullableType) {
+            $this->processTypeNode($typeNode->type);
+
+            return;
+        }
     }
 
     /**

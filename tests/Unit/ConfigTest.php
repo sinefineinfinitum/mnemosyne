@@ -5,7 +5,7 @@ namespace SineFine\Ponymator\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use SineFine\Ponymator\Config;
 
-class ConfigTest extends TestCase
+final class ConfigTest extends TestCase
 {
     private string $tempDir;
 

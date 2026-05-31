@@ -5,6 +5,11 @@ namespace SineFine\Ponymator\Analyzer;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeTraverser;
+use SineFine\Ponymator\Analyzer\Extractor\AstHelper;
+use SineFine\Ponymator\Analyzer\Extractor\ClassExtractor;
+use SineFine\Ponymator\Analyzer\Extractor\EnumExtractor;
+use SineFine\Ponymator\Analyzer\Extractor\InterfaceExtractor;
+use SineFine\Ponymator\Analyzer\Extractor\TraitExtractor;
 use SineFine\Ponymator\Analyzer\Visitor\EntityExtractingVisitor;
 
 class EntityExtractor
@@ -16,8 +21,16 @@ class EntityExtractor
     public function extractEntities(array $ast): array
     {
         $namespace = $this->findNamespace($ast) ?? '';
+        $astHelper = new AstHelper();
 
-        $visitor = new EntityExtractingVisitor($namespace);
+        $extractors = [
+            new ClassExtractor($namespace, $astHelper),
+            new InterfaceExtractor($namespace, $astHelper),
+            new TraitExtractor($namespace, $astHelper),
+            new EnumExtractor($namespace, $astHelper),
+        ];
+
+        $visitor = new EntityExtractingVisitor($extractors);
 
         $traverser = new NodeTraverser();
         $traverser->addVisitor($visitor);

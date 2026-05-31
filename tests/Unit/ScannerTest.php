@@ -5,7 +5,7 @@ namespace SineFine\Ponymator\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use SineFine\Ponymator\Filesystem\Scanner;
 
-class ScannerTest extends TestCase
+final class ScannerTest extends TestCase
 {
     private string $tempDir;
 

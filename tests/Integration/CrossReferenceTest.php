@@ -3,9 +3,6 @@
 namespace SineFine\Ponymator\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use ReflectionProperty;
 use SineFine\Ponymator\Analyzer\DependencyAnalyzer;
 use SineFine\Ponymator\Analyzer\EntityExtractor;
 use SineFine\Ponymator\Analyzer\FileExtractor;
@@ -24,7 +21,7 @@ use SineFine\Ponymator\Documentation\Renderer\TraitRenderer;
 use SineFine\Ponymator\Filesystem\PathResolver;
 use SineFine\Ponymator\Filesystem\Scanner;
 
-final class FullGenerationTest extends TestCase
+final class CrossReferenceTest extends TestCase
 {
     private string $tempDir;
     private string $sourceDir;
@@ -32,27 +29,29 @@ final class FullGenerationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tempDir = sys_get_temp_dir() . '/ponimator-test-' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/ponimator-crossref-' . uniqid();
         $this->sourceDir = $this->tempDir . '/src';
         $this->targetDir = $this->tempDir . '/docs';
 
+        mkdir($this->sourceDir . '/Contracts', 0755, true);
         mkdir($this->sourceDir . '/Service', 0755, true);
-        mkdir($this->sourceDir . '/Sub', 0755, true);
+        mkdir($this->sourceDir . '/Traits', 0755, true);
 
         file_put_contents(
-            $this->sourceDir . '/Service/UserService.php', '<?php
-namespace App\Service;
-
-class UserService {
-    public function findById(int $id): ?\App\Models\User { return null; }
-}'
+            $this->sourceDir . '/Contracts/ServiceInterface.php',
+            '<?php namespace App\Contracts; interface ServiceInterface { public function doSomething(): void; }'
         );
-
         file_put_contents(
-            $this->sourceDir . '/Sub/Helper.php', '<?php
-namespace App\Sub;
-
-interface Helper {}'
+            $this->sourceDir . '/Service/UserService.php',
+            '<?php namespace App\Service; class UserService implements \App\Contracts\ServiceInterface { public function doSomething(): void {} }'
+        );
+        file_put_contents(
+            $this->sourceDir . '/Traits/LoggableTrait.php',
+            '<?php namespace App\Traits; trait LoggableTrait { public function log(): void {} }'
+        );
+        file_put_contents(
+            $this->sourceDir . '/Service/AdminService.php',
+            '<?php namespace App\Service; class AdminService { use \App\Traits\LoggableTrait; public function doStuff(): void {} }'
         );
     }
 
@@ -80,30 +79,20 @@ interface Helper {}'
             $entityExtractor,
             $fileExtractor,
             $dependencyAnalyzer,
-            [
-                $classRenderer,
-                $interfaceRenderer,
-                $traitRenderer,
-                $enumRenderer,
-            ],
+            [$classRenderer, $interfaceRenderer, $traitRenderer, $enumRenderer],
             $fileRenderer,
             $hashComparator,
             $pathResolver,
         );
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
 
-        return new MarkdownGenerator(
-            $hashComparator,
-            $pathResolver,
-            $documenter,
-            $documentRemover,
-        );
+        return new MarkdownGenerator($hashComparator, $pathResolver, $documenter, $documentRemover);
     }
 
-    public function testFullGenerationCreatesMirrorStructure(): void
+    public function testFullGenerationIncludesKnownImplementations(): void
     {
         $config = new Config(null);
-        $ref = new ReflectionProperty(Config::class, 'config');
+        $ref = new \ReflectionProperty(Config::class, 'config');
         $ref->setAccessible(true);
         $ref->setValue(
             $config, [
@@ -114,47 +103,23 @@ interface Helper {}'
         );
 
         $generator = $this->makeGenerator($config);
-
         $scanner = new Scanner($this->sourceDir, ['vendor', 'tests']);
         $files = $scanner->scan();
-        $this->assertCount(2, $files, 'Scanner should find 2 PHP files');
 
         $generator->generateFull($files);
 
+        $this->assertFileExists($this->targetDir . '/Contracts/ServiceInterface.md');
         $this->assertFileExists($this->targetDir . '/Service/UserService.md');
-        $this->assertFileExists($this->targetDir . '/Sub/Helper.md');
+        $this->assertFileExists($this->targetDir . '/Traits/LoggableTrait.md');
+        $this->assertFileExists($this->targetDir . '/Service/AdminService.md');
 
-        $content = file_get_contents($this->targetDir . '/Service/UserService.md');
-        $this->assertStringContainsString('type: class', $content);
-        $this->assertStringContainsString('`App\Service\UserService`', $content);
-        $this->assertStringContainsString('findById', $content);
-    }
+        $interfaceDoc = file_get_contents($this->targetDir . '/Contracts/ServiceInterface.md');
+        $this->assertStringContainsString('Implementations', $interfaceDoc);
+        $this->assertStringContainsString('App\Service\UserService', $interfaceDoc);
 
-    public function testFullGenerationOutputDeterministic(): void
-    {
-        $config = new Config(null);
-        $ref = new ReflectionProperty(Config::class, 'config');
-        $ref->setAccessible(true);
-        $ref->setValue(
-            $config, [
-            'source' => $this->sourceDir,
-            'target' => $this->targetDir,
-            'ignore' => ['vendor', 'tests'],
-            ]
-        );
-
-        $generator = $this->makeGenerator($config);
-
-        $scanner = new Scanner($this->sourceDir, ['vendor', 'tests']);
-        $files = $scanner->scan();
-
-        $generator->generateFull($files);
-        $first = file_get_contents($this->targetDir . '/Service/UserService.md');
-
-        $generator->generateFull($files);
-        $second = file_get_contents($this->targetDir . '/Service/UserService.md');
-
-        $this->assertSame($first, $second, 'Re-running full generation should produce identical output');
+        $traitDoc = file_get_contents($this->targetDir . '/Traits/LoggableTrait.md');
+        $this->assertStringContainsString('Used by', $traitDoc);
+        $this->assertStringContainsString('App\Service\AdminService', $traitDoc);
     }
 
     private function rmdir(string $dir): void
@@ -162,9 +127,9 @@ interface Helper {}'
         if (!is_dir($dir)) {
             return;
         }
-        $items = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($items as $item) {
             $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());

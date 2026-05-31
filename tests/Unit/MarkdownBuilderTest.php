@@ -1,0 +1,455 @@
+<?php declare(strict_types=1);
+
+namespace SineFine\Ponymator\Tests\Unit;
+
+use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
+
+final class MarkdownBuilderTest extends TestCase
+{
+    private MarkdownBuilder $builder;
+
+    protected function setUp(): void
+    {
+        $this->builder = new MarkdownBuilder();
+    }
+
+    public function testFrontmatter(): void
+    {
+        $result = $this->builder->frontmatter(['title' => 'Test', 'type' => 'class']);
+        $this->assertSame("---\ntitle: Test\ntype: class\n---\n", $result);
+    }
+
+    public function testFrontmatterEmpty(): void
+    {
+        $result = $this->builder->frontmatter([]);
+        $this->assertSame("---\n---\n", $result);
+    }
+
+    public function testFrontmatterDeterministic(): void
+    {
+        $pairs = ['b' => 'y', 'a' => 'x'];
+        $first = $this->builder->frontmatter($pairs);
+        $second = $this->builder->frontmatter($pairs);
+        $this->assertSame($first, $second);
+    }
+
+    public function testHeaderLevel1(): void
+    {
+        $this->assertSame("# Title\n", $this->builder->header(1, 'Title'));
+    }
+
+    public function testHeaderLevel2(): void
+    {
+        $this->assertSame("## Title\n", $this->builder->header(2, 'Title'));
+    }
+
+    public function testHeaderLevel6(): void
+    {
+        $this->assertSame("###### Title\n", $this->builder->header(6, 'Title'));
+    }
+
+    /**
+     * @dataProvider provideTableData 
+     */
+    public function testTable(array $headers, array $rows, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->table($headers, $rows));
+    }
+
+    public static function provideTableData(): iterable
+    {
+        yield 'basic' => [
+            ['A', 'B'],
+            [['1', '2'], ['3', '4']],
+            "|A|B|\n|---|---|\n|1|2|\n|3|4|\n",
+        ];
+
+        yield 'single row' => [
+            ['H'],
+            [['v']],
+            "|H|\n|---|\n|v|\n",
+        ];
+
+        yield 'pipe in cell' => [
+            ['Name'],
+            [['a|b']],
+            "|Name|\n|---|\n|a\\|b|\n",
+        ];
+
+        yield 'backslash in cell' => [
+            ['Path'],
+            [['a\\b']],
+            "|Path|\n|---|\n|a\\\\b|\n",
+        ];
+
+        yield 'pipe and backslash' => [
+            ['Val'],
+            [['a\\|b']],
+            "|Val|\n|---|\n|a\\\\\\|b|\n",
+        ];
+
+        yield 'multiple pipes' => [
+            ['V'],
+            [['x|y|z']],
+            "|V|\n|---|\n|x\\|y\\|z|\n",
+        ];
+
+        yield 'em dash' => [
+            ['A'],
+            [['—']],
+            "|A|\n|---|\n|—|\n",
+        ];
+    }
+
+    public function testTableEmptyHeaders(): void
+    {
+        $result = $this->builder->table([], [['a']]);
+        $this->assertSame("||\n||\n|a|\n", $result);
+    }
+
+    public function testTableDeterministic(): void
+    {
+        $h = ['A', 'B'];
+        $r = [['1', '2']];
+        $first = $this->builder->table($h, $r);
+        $second = $this->builder->table($h, $r);
+        $this->assertSame($first, $second);
+    }
+
+    /**
+     * @dataProvider provideCodeBlockData 
+     */
+    public function testCodeBlock(string $code, string $lang, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->codeBlock($code, $lang));
+    }
+
+    public static function provideCodeBlockData(): iterable
+    {
+        yield 'no lang' => ['echo "hi";', '', "```\necho \"hi\";\n```\n"];
+        yield 'with lang' => ['$x = 1;', 'php', "```php\n\$x = 1;\n```\n"];
+        yield 'empty code' => ['', '', "```\n\n```\n"];
+        yield 'backticks in code' => ['x`y', '', "```\nx`y\n```\n"];
+    }
+
+    public function testListItemDefault(): void
+    {
+        $this->assertSame("- foo\n", $this->builder->listItem('foo'));
+    }
+
+    public function testListItemCustomPrefix(): void
+    {
+        $this->assertSame("* foo\n", $this->builder->listItem('foo', '*'));
+    }
+
+    public function testListItemWithSpecialChars(): void
+    {
+        $this->assertSame("- `a|b`\n", $this->builder->listItem('`a|b`'));
+    }
+
+    /**
+     * @dataProvider provideKvListData 
+     */
+    public function testKvList(array $pairs, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->kvList($pairs));
+    }
+
+    public static function provideKvListData(): iterable
+    {
+        yield 'basic' => [['key' => 'value'], "- **key:** value\n"];
+        yield 'multiple' => [['a' => '1', 'b' => '2'], "- **a:** 1\n- **b:** 2\n"];
+        yield 'empty' => [[], ''];
+    }
+
+    public function testSectionWithContent(): void
+    {
+        $result = $this->builder->section('Title', 2, "content\n");
+        $this->assertSame("## Title\n\ncontent\n\n", $result);
+    }
+
+    public function testSectionEmptyContent(): void
+    {
+        $this->assertSame('', $this->builder->section('Title', 2, ''));
+    }
+
+    /**
+     * @dataProvider providePropertiesTableData 
+     */
+    public function testPropertiesTable(array $properties, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->propertiesTable($properties));
+    }
+
+    public static function providePropertiesTableData(): iterable
+    {
+        yield 'basic' => [
+            [['name' => 'foo', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
+            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|`\$foo`|public|string|—|\n",
+        ];
+
+        yield 'with default' => [
+            [['name' => 'count', 'visibility' => 'private', 'type' => 'int', 'defaultValue' => '0', 'isStatic' => false, 'isReadonly' => false]],
+            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|`\$count`|private|int|`0`|\n",
+        ];
+
+        yield 'static' => [
+            [['name' => 'cache', 'visibility' => 'protected', 'type' => 'array', 'defaultValue' => null, 'isStatic' => true, 'isReadonly' => false]],
+            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|static `\$cache`|protected|array|—|\n",
+        ];
+
+        yield 'readonly' => [
+            [['name' => 'id', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => true]],
+            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|readonly `\$id`|public|string|—|\n",
+        ];
+
+        yield 'without type' => [
+            [['name' => 'mixed', 'visibility' => 'public', 'type' => null, 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
+            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|`\$mixed`|public|—|—|\n",
+        ];
+
+        yield 'default with pipe' => [
+            [['name' => 'p', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => "a|b", 'isStatic' => false, 'isReadonly' => false]],
+            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|`\$p`|public|string|`a\\|b`|\n",
+        ];
+
+        yield 'default with backtick' => [
+            [['name' => 'q', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => "a`b", 'isStatic' => false, 'isReadonly' => false]],
+            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|`\$q`|public|string|``a`b``|\n",
+        ];
+
+        yield 'empty' => [[], "|Property|Visibility|Type|Default|\n|---|---|---|---|\n"];
+    }
+
+    public function testPropertiesTableDeterministic(): void
+    {
+        $p = [['name' => 'x', 'visibility' => 'public', 'type' => 'int', 'defaultValue' => '1', 'isStatic' => false, 'isReadonly' => false]];
+        $first = $this->builder->propertiesTable($p);
+        $second = $this->builder->propertiesTable($p);
+        $this->assertSame($first, $second);
+    }
+
+    /**
+     * @dataProvider provideMethodSignatureData 
+     */
+    public function testMethodSignature(array $method, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->methodSignature($method));
+    }
+
+    public static function provideMethodSignatureData(): iterable
+    {
+        yield 'no params no return' => [
+            ['name' => 'foo', 'visibility' => 'public', 'parameters' => []],
+            'public function foo()',
+        ];
+
+        yield 'with params' => [
+            ['name' => 'bar', 'visibility' => 'public', 'parameters' => [['name' => 'x', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]]],
+            'public function bar(int $x)',
+        ];
+
+        yield 'with return type' => [
+            ['name' => 'baz', 'visibility' => 'public', 'parameters' => [], 'returnType' => 'string'],
+            'public function baz(): string',
+        ];
+
+        yield 'no visibility' => [
+            ['name' => 'x', 'visibility' => '', 'parameters' => []],
+            'function x()',
+        ];
+
+        yield 'variadic' => [
+            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'args', 'type' => 'string', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => true, 'isPassedByReference' => false]]],
+            'public function f(string ...$args)',
+        ];
+
+        yield 'by reference' => [
+            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'ref', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => true]]],
+            'public function f(int &$ref)',
+        ];
+
+        yield 'with default' => [
+            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'flag', 'type' => 'bool', 'typeNullable' => false, 'defaultValue' => 'true', 'isVariadic' => false, 'isPassedByReference' => false]]],
+            'public function f(bool $flag = true)',
+        ];
+    }
+
+    /**
+     * @dataProvider provideParameterStringData 
+     */
+    public function testParameterString(array $param, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->parameterString($param));
+    }
+
+    public static function provideParameterStringData(): iterable
+    {
+        yield 'simple' => [['name' => 'x', 'type' => null, 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], '$x'];
+        yield 'typed' => [['name' => 'x', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], 'int $x'];
+        yield 'nullable' => [['name' => 'x', 'type' => '?string', 'typeNullable' => true, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], '?string $x'];
+        yield 'variadic' => [['name' => 'items', 'type' => 'array', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => true, 'isPassedByReference' => false], 'array ...$items'];
+        yield 'by ref' => [['name' => 'out', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => true], 'int &$out'];
+        yield 'default value' => [['name' => 'age', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => '0', 'isVariadic' => false, 'isPassedByReference' => false], 'int $age = 0'];
+        yield 'all options' => [['name' => 'x', 'type' => 'string', 'typeNullable' => false, 'defaultValue' => "'hi'", 'isVariadic' => false, 'isPassedByReference' => false], "string \$x = 'hi'"];
+    }
+
+    /**
+     * @dataProvider provideConstantsTableData 
+     */
+    public function testConstantsTable(array $constants, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->constantsTable($constants));
+    }
+
+    public static function provideConstantsTableData(): iterable
+    {
+        yield 'basic' => [
+            [['name' => 'MAX', 'visibility' => 'public', 'type' => 'int', 'value' => '100']],
+            "|Constant|Visibility|Type|Value|\n|---|---|---|---|\n|`MAX`|public|int|`100`|\n",
+        ];
+
+        yield 'no type' => [
+            [['name' => 'NAME', 'visibility' => 'public', 'type' => null, 'value' => '"test"']],
+            "|Constant|Visibility|Type|Value|\n|---|---|---|---|\n|`NAME`|public|—|`\"test\"`|\n",
+        ];
+
+        yield 'value with backtick' => [
+            [['name' => 'S', 'visibility' => 'public', 'type' => 'string', 'value' => "a`b"]],
+            "|Constant|Visibility|Type|Value|\n|---|---|---|---|\n|`S`|public|string|``a`b``|\n",
+        ];
+
+        yield 'empty' => [[], "|Constant|Visibility|Type|Value|\n|---|---|---|---|\n"];
+    }
+
+    public function testMethodsList(): void
+    {
+        $methods = [
+            ['name' => 'foo', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [], 'returnType' => null],
+            ['name' => 'bar', 'visibility' => 'protected', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [['name' => 'x', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => null],
+        ];
+        $expected = "- `public function foo()`\n- `protected function bar(int \$x)`\n";
+        $this->assertSame($expected, $this->builder->methodsList($methods));
+    }
+
+    public function testMethodsListEmpty(): void
+    {
+        $this->assertSame('', $this->builder->methodsList([]));
+    }
+
+    public function testMethodsListDeterministic(): void
+    {
+        $m = [['name' => 'f', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [], 'returnType' => null]];
+        $first = $this->builder->methodsList($m);
+        $second = $this->builder->methodsList($m);
+        $this->assertSame($first, $second);
+    }
+
+    public function testDependenciesList(): void
+    {
+        $deps = ['Psr\Log\LoggerInterface', 'App\Service'];
+        $expected = "- `Psr\Log\LoggerInterface`\n- `App\Service`\n";
+        $this->assertSame($expected, $this->builder->dependenciesList($deps));
+    }
+
+    public function testDependenciesListEmpty(): void
+    {
+        $this->assertSame('', $this->builder->dependenciesList([]));
+    }
+
+    public function testDependenciesListWithBacktick(): void
+    {
+        $deps = ['a`b'];
+        $this->assertSame("- ``a`b``\n", $this->builder->dependenciesList($deps));
+    }
+
+    public function testClassList(): void
+    {
+        $classes = ['App\Foo', 'App\Bar'];
+        $expected = "- `App\Foo`\n- `App\Bar`\n";
+        $this->assertSame($expected, $this->builder->classList($classes));
+    }
+
+    public function testClassListEmpty(): void
+    {
+        $this->assertSame('', $this->builder->classList([]));
+    }
+
+    public function testItemList(): void
+    {
+        $items = ['alpha', 'beta'];
+        $expected = "- `alpha`\n- `beta`\n";
+        $this->assertSame($expected, $this->builder->itemList($items));
+    }
+
+    public function testItemListEmpty(): void
+    {
+        $this->assertSame('', $this->builder->itemList([]));
+    }
+
+    public function testItemListWithBackticks(): void
+    {
+        $items = ['a`b', 'c``d', '``e'];
+        $expected = "- ``a`b``\n- ```c``d```\n- ``` ``e ```\n";
+        $this->assertSame($expected, $this->builder->itemList($items));
+    }
+
+    public function testItemListDeterministic(): void
+    {
+        $items = ['x', 'y'];
+        $first = $this->builder->itemList($items);
+        $second = $this->builder->itemList($items);
+        $this->assertSame($first, $second);
+    }
+
+    /**
+     * @dataProvider provideInlineCodeEdgeCases 
+     */
+    public function testInlineCodeViaItemList(string $value, string $expected): void
+    {
+        $this->assertSame("- $expected\n", $this->builder->itemList([$value]));
+    }
+
+    public static function provideInlineCodeEdgeCases(): iterable
+    {
+        yield 'plain' => ['hello', '`hello`'];
+        yield 'single backtick' => ['a`b', '``a`b``'];
+        yield 'leading backtick' => ['`a', '`` `a ``'];
+        yield 'trailing backtick' => ['a`', '`` a` ``'];
+        yield 'two consecutive' => ['a``b', '```a``b```'];
+        yield 'three consecutive' => ['a```b', '````a```b````'];
+        yield 'only backticks' => ['``', '``` `` ```'];
+        yield 'backtick at both ends' => ['`x`', '`` `x` ``'];
+    }
+
+    public function testOverallDeterminism(): void
+    {
+        $entities = [
+            ['name' => 'foo', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false],
+        ];
+        $constants = [
+            ['name' => 'X', 'visibility' => 'public', 'type' => 'int', 'value' => '1'],
+        ];
+        $methods = [
+            ['name' => 'f', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [], 'returnType' => null],
+        ];
+        $classes = ['A', 'B'];
+        $deps = ['C', 'D'];
+        $items = ['x', 'y'];
+
+        $block = fn(): string =>
+            $this->builder->propertiesTable($entities)
+            . $this->builder->constantsTable($constants)
+            . $this->builder->methodsList($methods)
+            . $this->builder->classList($classes)
+            . $this->builder->dependenciesList($deps)
+            . $this->builder->itemList($items)
+            . $this->builder->frontmatter(['k' => 'v'])
+            . $this->builder->table(['H'], [['v']])
+            . $this->builder->codeBlock('c', 'php')
+            . $this->builder->kvList(['k' => 'v']);
+
+        $this->assertSame($block(), $block(), 'Full output must be deterministic');
+    }
+}

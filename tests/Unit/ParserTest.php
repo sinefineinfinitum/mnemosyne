@@ -5,7 +5,7 @@ namespace SineFine\Ponymator\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use SineFine\Ponymator\Analyzer\Parser;
 
-class ParserTest extends TestCase
+final class ParserTest extends TestCase
 {
     private string $tempDir;
 

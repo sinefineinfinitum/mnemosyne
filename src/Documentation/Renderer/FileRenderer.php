@@ -2,48 +2,61 @@
 
 namespace SineFine\Ponymator\Documentation\Renderer;
 
-final class FileRenderer extends BaseRenderer
+final class FileRenderer
 {
+    public function __construct(
+        private MarkdownBuilder $builder,
+    ) {
+    }
+
     /**
      * @param string                           $relativePath
      * @param array<int, array<string, mixed>> $functions
      * @param string[]                         $globals
+     * @param array<int, array<string, mixed>> $constants
      */
-    public function renderFile(string $relativePath, array $functions, array $globals, string $sourceHash): string
+    public function renderFile(string $relativePath, array $functions, array $globals, array $constants, string $sourceHash): string
     {
+        $content = '';
+        if (!empty($functions)) {
+            $content .= $this->builder->section('Global functions', 3, $this->functionsList($functions));
+        }
+        if (!empty($globals)) {
+            $content .= $this->builder->section('Global variables', 3, $this->globalsList($globals));
+        }
+        if (!empty($constants)) {
+            $content .= $this->builder->section('Global constants', 3, $this->constantsList($constants));
+        }
 
-        $md = $this->buildFrontmatter(
+        $hash = hash('sha256', $content);
+        $md = $this->builder->frontmatter(
             [
-            'psr4' => 'false',
-            'role' => 'file',
+            'type' => 'file',
+            'hash' => $hash,
             'source_hash' => $sourceHash,
             ]
         );
 
         $md .= "\n";
-        $md .= $this->buildHeader(1, '`' . $relativePath . '`');
+        $md .= $this->builder->header(1, '`' . $relativePath . '`');
         $md .= "\n";
 
-        $md .= $this->buildHeader(3, 'Objective part');
-        $md .= $this->buildListItem('**Type:** `file`');
-        $md .= $this->buildListItem('**Modifiers:** `none`');
-        $md .= $this->buildListItem('**Parent:** none');
-        $md .= $this->buildListItem('**Interfaces:** none');
-        $md .= "\n";
-
-        if (!empty($functions)) {
-            $md .= $this->buildHeader(3, 'Functions');
-            $md .= $this->functionsList($functions);
-            $md .= "\n";
-        }
-
-        if (!empty($globals)) {
-            $md .= $this->buildHeader(3, 'Globals');
-            $md .= $this->globalsList($globals);
-            $md .= "\n";
-        }
+        $md .= $content;
 
         return $md;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $constants
+     */
+    private function constantsList(array $constants): string
+    {
+        $rows = [];
+        foreach ($constants as $c) {
+            $value = $c['value'] ?? '—';
+            $rows[] = ['`' . $c['name'] . '`', '`' . $value . '`'];
+        }
+        return $this->builder->table(['Name', 'Value'], $rows);
     }
 
     /**
@@ -53,18 +66,10 @@ final class FileRenderer extends BaseRenderer
     {
         $result = '';
         foreach ($functions as $fn) {
-            $params = [];
-            foreach ($fn['parameters'] ?? [] as $param) {
-                $params[] = self::getParameterString($param);
-            }
+            $sig = $this->builder->methodSignature($fn);
 
-            $sig = 'function ' . $fn['name'] . '(' . implode(', ', $params) . ')';
-            if ($fn['returnType'] ?? null) {
-                $sig .= ': ' . $fn['returnType'];
-            }
-
-            $result .= $this->buildHeader(4, $fn['name']);
-            $result .= $this->buildCodeBlock($sig, 'php');
+            $result .= $this->builder->header(4, $fn['name']);
+            $result .= $this->builder->codeBlock($sig, 'php');
         }
         return $result;
     }
@@ -76,31 +81,8 @@ final class FileRenderer extends BaseRenderer
     {
         $result = '';
         foreach ($globals as $global) {
-            $result .= $this->buildListItem('`$' . $global . '`');
+            $result .= $this->builder->listItem('`$' . $global . '`');
         }
         return $result;
-    }
-
-    /**
-     * @param  mixed $param
-     * @return string
-     */
-    public static function getParameterString(mixed $param): string
-    {
-        $p = '';
-        if ($param['type'] !== null) {
-            $p .= $param['type'] . ' ';
-        }
-        if ($param['isVariadic']) {
-            $p .= '...';
-        }
-        if ($param['isPassedByReference']) {
-            $p .= '&';
-        }
-        $p .= '$' . $param['name'];
-        if ($param['defaultValue'] !== null) {
-            $p .= ' = ' . $param['defaultValue'];
-        }
-        return $p;
     }
 }

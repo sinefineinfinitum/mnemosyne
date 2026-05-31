@@ -8,14 +8,17 @@ use SineFine\Ponymator\Analyzer\EntityExtractor;
 use SineFine\Ponymator\Analyzer\FileExtractor;
 use SineFine\Ponymator\Analyzer\FreshnessChecker;
 use SineFine\Ponymator\Analyzer\Parser;
-use SineFine\Ponymator\Analyzer\PSR4Detector;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Config;
 use SineFine\Ponymator\Documentation\Generator\FileDocumenter;
 use SineFine\Ponymator\Documentation\Generator\MarkdownGenerator;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
+use SineFine\Ponymator\Documentation\Renderer\ClassRenderer;
+use SineFine\Ponymator\Documentation\Renderer\EnumRenderer;
 use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\PSR4Renderer;
+use SineFine\Ponymator\Documentation\Renderer\InterfaceRenderer;
+use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
+use SineFine\Ponymator\Documentation\Renderer\TraitRenderer;
 use SineFine\Ponymator\Filesystem\PathResolver;
 
 final class CheckModeTest extends TestCase
@@ -103,9 +106,12 @@ final class CheckModeTest extends TestCase
         $entityExtractor = new EntityExtractor();
         $fileExtractor = new FileExtractor();
         $dependencyAnalyzer = new DependencyAnalyzer();
-        $psr4Detector = new PSR4Detector('App');
-        $psr4Renderer = new PSR4Renderer();
-        $fileRenderer = new FileRenderer();
+        $builder = new MarkdownBuilder();
+        $classRenderer = new ClassRenderer($builder);
+        $interfaceRenderer = new InterfaceRenderer($builder);
+        $traitRenderer = new TraitRenderer($builder);
+        $enumRenderer = new EnumRenderer($builder);
+        $fileRenderer = new FileRenderer($builder);
         $hashComparator = new HashComparator();
         $pathResolver = new PathResolver($config);
         $documenter = new FileDocumenter(
@@ -113,10 +119,15 @@ final class CheckModeTest extends TestCase
             $entityExtractor,
             $fileExtractor,
             $dependencyAnalyzer,
-            $psr4Detector,
-            $psr4Renderer,
+            [
+                $classRenderer,
+                $interfaceRenderer,
+                $traitRenderer,
+                $enumRenderer,
+            ],
             $fileRenderer,
             $hashComparator,
+            $pathResolver,
         );
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
 

@@ -4,6 +4,11 @@ namespace SineFine\Ponymator\Comparator;
 
 final class HashComparator
 {
+    public function computeContentHash(string $content): string
+    {
+        return hash('sha256', $content);
+    }
+
     public function computeHash(string $filePath): string
     {
         $hash = hash_file('sha256', $filePath);

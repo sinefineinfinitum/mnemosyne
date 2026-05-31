@@ -76,7 +76,14 @@ src/
 
 ## Configuration
 
-See [docs/Config.md](docs/Config.md) for configuration options (default: `.ponimator.json`).
+Configuration file: `.ponimator.json`. Example:
+```json
+{
+    "source": "app",
+    "target": "api-docs",
+    "ignore": ["vendor", "node_modules"]
+}
+```
 
 ## License
 
