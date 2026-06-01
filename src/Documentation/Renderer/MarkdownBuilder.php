@@ -218,6 +218,33 @@ final class MarkdownBuilder
         return $this->section('Used By', 3, $list);
     }
 
+    public function vendorIndexEmpty(): string
+    {
+        return "# Vendor Packages\n\nNo external packages are referenced by this project.\n";
+    }
+
+    /**
+     * @param array<int, array{package: string, version: string, description: string, classes: string[]}> $packages
+     */
+    public function vendorIndex(string $title, array $packages): string
+    {
+        $result = '# ' . $title . "\n\n";
+        if (empty($packages)) {
+            return $result . "No external packages are referenced by this project.\n";
+        }
+        $headers = ['Package', 'Version', 'Description', 'Referenced Classes'];
+        $rows = [];
+        foreach ($packages as $pkg) {
+            $rows[] = [
+                $pkg['package'],
+                $pkg['version'],
+                $pkg['description'],
+                implode(', ', $pkg['classes']),
+            ];
+        }
+        return $result . $this->table($headers, $rows);
+    }
+
     /**
      * Escape pipe and backslash for Markdown table cells and general text.
      */

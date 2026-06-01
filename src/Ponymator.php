@@ -7,13 +7,16 @@ use SineFine\Ponymator\Analyzer\DependencyAnalyzer;
 use SineFine\Ponymator\Analyzer\EntityExtractor;
 use SineFine\Ponymator\Analyzer\FileExtractor;
 use SineFine\Ponymator\Analyzer\Link\CrossReferenceIndexBuilder;
+use SineFine\Ponymator\Analyzer\Metadata\PackageMetadataProvider;
 use SineFine\Ponymator\Analyzer\Parser;
+use SineFine\Ponymator\Analyzer\VendorPackageResolver;
 use SineFine\Ponymator\Cli\ArgumentParser;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
 use SineFine\Ponymator\Documentation\Generator\FileDocumenter;
 use SineFine\Ponymator\Documentation\Generator\GenerationResult;
 use SineFine\Ponymator\Documentation\Generator\MarkdownGenerator;
+use SineFine\Ponymator\Documentation\Generator\VendorIndexGenerator;
 use SineFine\Ponymator\Documentation\Renderer\ClassRenderer;
 use SineFine\Ponymator\Documentation\Renderer\EnumRenderer;
 use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
@@ -49,6 +52,11 @@ class Ponymator
         $hashComparator = new HashComparator();
         $pathResolver = new PathResolver($config);
 
+        $vendorPackageResolver = new VendorPackageResolver(
+            (new PackageMetadataProvider())->getInstalledPackageNames(),
+            new PackageMetadataProvider(),
+        );
+
         $documenter = new FileDocumenter(
             $parser,
             $entityExtractor,
@@ -62,9 +70,12 @@ class Ponymator
             ],
             $fileRenderer,
             $pathResolver,
+            $vendorPackageResolver,
         );
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
         $crossReferenceIndexBuilder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+
+        $vendorIndexGenerator = new VendorIndexGenerator($builder, $vendorPackageResolver);
 
         $generator = new MarkdownGenerator(
             $hashComparator,
@@ -72,6 +83,7 @@ class Ponymator
             $documenter,
             $documentRemover,
             $crossReferenceIndexBuilder,
+            $vendorIndexGenerator,
         );
 
         try {

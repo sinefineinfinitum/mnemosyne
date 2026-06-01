@@ -78,6 +78,44 @@ final class CrossReferenceIndexTest extends TestCase
         $this->assertSame([], $index->getUsedBy('Nonexistent\Class'));
     }
 
+    public function testGetExternalFqnsReturnsNonProjectFqns(): void
+    {
+        $index = new CrossReferenceIndex();
+        $index->addReference('Psr\Log\LoggerInterface', 'App\Service');
+        $index->addReference('App\Contracts\ServiceInterface', 'App\Service');
+        $index->freeze(['App\Service', 'App\Contracts\ServiceInterface']);
+
+        $external = $index->getExternalFqns();
+        $this->assertSame(['Psr\Log\LoggerInterface'], $external);
+    }
+
+    public function testGetExternalFqnsReturnsEmptyWhenAllProject(): void
+    {
+        $index = new CrossReferenceIndex();
+        $index->addReference('App\Foo', 'App\Bar');
+        $index->freeze(['App\Foo', 'App\Bar']);
+
+        $this->assertSame([], $index->getExternalFqns());
+    }
+
+    public function testGetExternalFqnsReturnsEmptyWhenNotFrozen(): void
+    {
+        $index = new CrossReferenceIndex();
+        $this->assertSame([], $index->getExternalFqns());
+    }
+
+    public function testGetExternalFqnsRemovesDuplicatesAndSorts(): void
+    {
+        $index = new CrossReferenceIndex();
+        $index->addReference('Zed\Ext', 'App\A');
+        $index->addReference('Alpha\Ext', 'App\B');
+        $index->addReference('Alpha\Ext', 'App\C');
+        $index->freeze(['App\A', 'App\B', 'App\C']);
+
+        $external = $index->getExternalFqns();
+        $this->assertSame(['Alpha\Ext', 'Zed\Ext'], $external);
+    }
+
     public function testDeterministicSorting(): void
     {
         $index = new CrossReferenceIndex();

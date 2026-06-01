@@ -9,6 +9,7 @@ use SineFine\Ponymator\Analyzer\EntityExtractor;
 use SineFine\Ponymator\Analyzer\FileExtractor;
 use SineFine\Ponymator\Analyzer\Link\CrossReferenceContext;
 use SineFine\Ponymator\Analyzer\Parser;
+use SineFine\Ponymator\Analyzer\VendorPackageResolver;
 use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
 use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
 use SineFine\Ponymator\Filesystem\PathResolver;
@@ -34,6 +35,7 @@ final class FileDocumenter
         private array $renderers,
         private FileRenderer $fileRenderer,
         private PathResolver $pathResolver,
+        private ?VendorPackageResolver $vendorPackageResolver = null,
     ) {
     }
 
@@ -60,7 +62,7 @@ final class FileDocumenter
         $currentDocPath = $this->pathResolver->docRelativePath($relativePath);
 
         $linker = $this->context !== null
-            ? new DocLinker($this->context->getFqnToDocPath(), $this->pathResolver)
+            ? new DocLinker($this->context->getFqnToDocPath(), $this->pathResolver, $this->vendorPackageResolver)
             : null;
 
         $dependencies = $linker?->mapToLinks(

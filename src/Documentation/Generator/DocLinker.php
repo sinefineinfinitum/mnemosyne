@@ -2,6 +2,7 @@
 
 namespace SineFine\Ponymator\Documentation\Generator;
 
+use SineFine\Ponymator\Analyzer\VendorPackageResolver;
 use SineFine\Ponymator\Filesystem\PathResolver;
 
 final class DocLinker
@@ -12,6 +13,7 @@ final class DocLinker
     public function __construct(
         private array $fqnToDocPath,
         private PathResolver $pathResolver,
+        private ?VendorPackageResolver $vendorResolver = null,
     ) {
     }
 
@@ -27,11 +29,19 @@ final class DocLinker
             $normalized = ltrim($fqn, '\\');
             $targetDocPath = $this->fqnToDocPath[$normalized] ?? null;
 
-            if ($targetDocPath === null) {
-                $links[] = '`' . $normalized . '`';
-            } else {
+            if ($targetDocPath !== null) {
                 $link = $this->pathResolver->relativeDocLink($currentDocPath, $targetDocPath);
                 $links[] = '[' . $normalized . '](' . $link . ')';
+            } elseif ($this->vendorResolver !== null) {
+                $packageName = $this->vendorResolver->resolve($normalized);
+                if ($packageName !== null) {
+                    $vendorLink = $this->pathResolver->relativeDocLink($currentDocPath, 'vendor.md');
+                    $links[] = '[' . $normalized . '](' . $vendorLink . ')';
+                } else {
+                    $links[] = '`' . $normalized . '`';
+                }
+            } else {
+                $links[] = '`' . $normalized . '`';
             }
         }
 

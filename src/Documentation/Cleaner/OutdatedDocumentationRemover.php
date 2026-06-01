@@ -16,8 +16,9 @@ final class OutdatedDocumentationRemover
 
     /**
      * @param string[] $currentFiles
+     * @param string[] $keepPaths Relative paths of additional files that must not be removed
      */
-    public function remove(array $currentFiles): int
+    public function remove(array $currentFiles, array $keepPaths = []): int
     {
         $targetDir = $this->paths->targetDir();
 
@@ -29,6 +30,8 @@ final class OutdatedDocumentationRemover
         foreach ($currentFiles as $relativePath) {
             $currentDocs[] = $this->paths->docRelativePath($relativePath);
         }
+
+        $currentDocs = array_merge($currentDocs, $keepPaths);
 
         $removed = 0;
 

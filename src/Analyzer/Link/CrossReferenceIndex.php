@@ -50,6 +50,24 @@ final class CrossReferenceIndex
     }
 
     /**
+     * @return list<string> All referenced FQNs that are not project entities
+     */
+    public function getExternalFqns(): array
+    {
+        if (!$this->frozen) {
+            return [];
+        }
+        $externals = [];
+        foreach (array_keys($this->references) as $fqn) {
+            if (!isset($this->projectFqns[$fqn])) {
+                $externals[] = $fqn;
+            }
+        }
+        sort($externals);
+        return $externals;
+    }
+
+    /**
      * @param list<string> $projectFqns List of project entity FQNs for vendor filtering
      */
     public function freeze(array $projectFqns = []): void
