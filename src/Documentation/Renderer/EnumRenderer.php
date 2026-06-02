@@ -2,8 +2,8 @@
 
 namespace SineFine\Ponymator\Documentation\Renderer;
 
-use SineFine\Ponymator\Documentation\Generator\CrossReference;
 use SineFine\Ponymator\Comparator\HashGenerator;
+use SineFine\Ponymator\Documentation\Linker\CrossReference;
 
 final class EnumRenderer implements EntityRendererInterface
 {

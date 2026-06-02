@@ -3,8 +3,8 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\Link\CrossReferenceContext;
-use SineFine\Ponymator\Analyzer\Link\CrossReferenceIndexBuilder;
+use SineFine\Ponymator\Analyzer\Linker\CrossReferenceContext;
+use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\Parser;
 use SineFine\Ponymator\Filesystem\PathResolver;
 

@@ -3,7 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\Link\CrossReferenceIndex;
+use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndex;
 
 final class CrossReferenceIndexTest extends TestCase
 {

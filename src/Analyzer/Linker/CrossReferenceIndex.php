@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer\Link;
+namespace SineFine\Ponymator\Analyzer\Linker;
 
 use RuntimeException;
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Generator;
+namespace SineFine\Ponymator\Documentation\Linker;
 
 use SineFine\Ponymator\Filesystem\PathResolver;
 
@@ -23,6 +23,15 @@ final class DocLinker
             return null;
         }
         return $this->pathResolver->relativeDocLink($currentDocPath, $targetDocPath);
+    }
+
+    /**
+     * @param  string $currentDocPath
+     * @return callable(string): ?string
+     */
+    public function getResolver(string $currentDocPath): callable
+    {
+        return fn(string $fqn): ?string => $this->resolveTypeLink($fqn, $currentDocPath);
     }
 
     /**

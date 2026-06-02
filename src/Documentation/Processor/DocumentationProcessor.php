@@ -1,22 +1,22 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Generator;
+namespace SineFine\Ponymator\Documentation\Processor;
 
-use SineFine\Ponymator\Analyzer\Link\CrossReferenceIndexBuilder;
+use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Comparator\HashGenerator;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
 use SineFine\Ponymator\Filesystem\PathResolver;
 use Throwable;
 
-final class MarkdownGenerator
+final class DocumentationProcessor
 {
     public function __construct(
-        private HashComparator $hashComparator,
-        private PathResolver $pathResolver,
-        private FileDocumenter $documenter,
+        private HashComparator               $hashComparator,
+        private PathResolver                 $pathResolver,
+        private PageGenerator                $documenter,
         private OutdatedDocumentationRemover $outdatedRemover,
-        private CrossReferenceIndexBuilder $indexBuilder,
+        private CrossReferenceIndexBuilder   $indexBuilder,
     ) {
     }
 

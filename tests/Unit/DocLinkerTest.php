@@ -3,7 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Generator\DocLinker;
+use SineFine\Ponymator\Documentation\Linker\DocLinker;
 use SineFine\Ponymator\Filesystem\PathResolver;
 
 final class DocLinkerTest extends TestCase

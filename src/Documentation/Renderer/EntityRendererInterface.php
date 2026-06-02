@@ -2,7 +2,7 @@
 
 namespace SineFine\Ponymator\Documentation\Renderer;
 
-use SineFine\Ponymator\Documentation\Generator\CrossReference;
+use SineFine\Ponymator\Documentation\Linker\CrossReference;
 
 interface EntityRendererInterface
 {

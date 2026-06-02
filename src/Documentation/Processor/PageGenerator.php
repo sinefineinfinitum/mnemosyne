@@ -1,18 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Generator;
+namespace SineFine\Ponymator\Documentation\Processor;
 
 use PhpParser\Node;
 use SineFine\Ponymator\Analyzer\CombinedAnalysisResult;
 use SineFine\Ponymator\Analyzer\CombinedAnalyzer;
 use SineFine\Ponymator\Analyzer\FileExtractor;
-use SineFine\Ponymator\Analyzer\Link\CrossReferenceContext;
+use SineFine\Ponymator\Analyzer\Linker\CrossReferenceContext;
 use SineFine\Ponymator\Analyzer\Parser;
+use SineFine\Ponymator\Documentation\Linker\CrossReference;
+use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
 use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
 use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
-use SineFine\Ponymator\Filesystem\PathResolver;
 
-final class FileDocumenter
+final class PageGenerator
 {
     private ?CrossReferenceContext $context = null;
 
@@ -22,7 +23,7 @@ final class FileDocumenter
      * @param FileExtractor             $fileExtractor
      * @param EntityRendererInterface[] $renderers
      * @param FileRenderer              $fileRenderer
-     * @param PathResolver              $pathResolver
+     * @param CrossReferenceFactory     $crossReferenceFactory
      */
     public function __construct(
         private Parser $parser,
@@ -30,7 +31,7 @@ final class FileDocumenter
         private FileExtractor $fileExtractor,
         private array $renderers,
         private FileRenderer $fileRenderer,
-        private PathResolver $pathResolver,
+        private CrossReferenceFactory $crossReferenceFactory,
     ) {
     }
 
@@ -48,43 +49,18 @@ final class FileDocumenter
     }
 
     /**
-     * @param CombinedAnalysisResult           $analysis
-     * @param array<int, array<string, mixed>> $entities
-     * @param string                           $relativePath
+     * @param  CombinedAnalysisResult           $analysis
+     * @param  array<int, array<string, mixed>> $entities
+     * @param  string                           $relativePath
+     * @return string
      */
     private function renderEntities(CombinedAnalysisResult $analysis, array $entities, string $relativePath): string
     {
         $content = '';
-        $currentDocPath = $this->pathResolver->docRelativePath($relativePath);
-
-        $linker = $this->context !== null
-            ? new DocLinker($this->context->getFqnToDocPath(), $this->pathResolver)
-            : null;
-
-        $dependencies = $linker?->mapToLinks(
-            $analysis->getDependencies(),
-            $currentDocPath
-        ) ?? [];
-
-        $typeLinkResolver = $linker !== null
-            ? fn(string $fqn): ?string => $linker->resolveTypeLink($fqn, $currentDocPath)
-            : fn(string $fqn): ?string => null;
-
-        $creations = $analysis->getCreations();
+        $refProvider = $this->crossReferenceFactory->create($analysis, $this->context, $relativePath);
 
         foreach ($entities as $entity) {
-            $usedBy = $this->context?->getIndex()->getUsedBy(ltrim($entity['fqn'], '\\')) ?? [];
-            $usedByLinks = $linker?->mapToLinks($usedBy, $currentDocPath) ?? [];
-
-            $entityCreates = $creations[$entity['fqn']] ?? [];
-
-            $crossRef = new CrossReference(
-                $dependencies,
-                $usedByLinks,
-                $typeLinkResolver,
-                $entityCreates
-            );
-
+            $crossRef = $refProvider->getCrossReference($entity['fqn']);
             $content .= $this->renderEntityByType($entity, $crossRef);
         }
 
@@ -110,7 +86,9 @@ final class FileDocumenter
     }
 
     /**
-     * @param array<string, mixed> $entity
+     * @param  array<string, mixed> $entity
+     * @param  CrossReference       $crossRefs
+     * @return string
      */
     private function renderEntityByType(array $entity, CrossReference $crossRefs): string
     {
