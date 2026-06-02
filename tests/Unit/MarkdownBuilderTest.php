@@ -419,6 +419,59 @@ final class MarkdownBuilderTest extends TestCase
         yield 'backtick at both ends' => ['`x`', '`` `x` ``'];
     }
 
+    public function testCreatesSectionEmpty(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $this->assertSame('', $this->builder->createsSection([], $noLink));
+    }
+
+    public function testCreatesSectionRendersBasicFormat(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $creates = [
+            'build' => ['\App\Entity\User'],
+        ];
+        $expected = "- `build`: `\\App\\Entity\\User`\n";
+        $this->assertSame($expected, $this->builder->createsSection($creates, $noLink));
+    }
+
+    public function testCreatesSectionRendersMultipleMethods(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $creates = [
+            'build' => ['\App\Entity\User'],
+            'setup' => ['\App\Config\Config'],
+        ];
+        $result = $this->builder->createsSection($creates, $noLink);
+        $this->assertStringContainsString('`build`', $result);
+        $this->assertStringContainsString('`setup`', $result);
+        $this->assertStringContainsString('`\\App\\Entity\\User`', $result);
+        $this->assertStringContainsString('`\\App\\Config\\Config`', $result);
+    }
+
+    public function testCreatesSectionWithLinkableType(): void
+    {
+        $linkResolver = fn(string $fqn): ?string => $fqn === '\App\Entity\User' ? 'user.md' : null;
+        $creates = [
+            'build' => ['\App\Entity\User'],
+        ];
+        $result = $this->builder->createsSection($creates, $linkResolver);
+        $this->assertStringContainsString('[\\App\\Entity\\User](user.md)', $result);
+        $this->assertStringContainsString('`build`', $result);
+    }
+
+    public function testCreatesSectionDeterministic(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $creates = [
+            'foo' => ['\App\A', '\App\B'],
+            'bar' => ['\App\C'],
+        ];
+        $first = $this->builder->createsSection($creates, $noLink);
+        $second = $this->builder->createsSection($creates, $noLink);
+        $this->assertSame($first, $second);
+    }
+
     public function testUsedBySectionWithLinks(): void
     {
         $links = ['[App\Service\UserService](UserService.md)'];

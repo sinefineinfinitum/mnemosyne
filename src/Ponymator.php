@@ -3,17 +3,17 @@
 namespace SineFine\Ponymator;
 
 use InvalidArgumentException;
-use SineFine\Ponymator\Analyzer\DependencyAnalyzer;
-use SineFine\Ponymator\Analyzer\EntityExtractor;
+use SineFine\Ponymator\Analyzer\CombinedAnalyzer;
 use SineFine\Ponymator\Analyzer\FileExtractor;
-use SineFine\Ponymator\Analyzer\Link\CrossReferenceIndexBuilder;
+use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\Parser;
 use SineFine\Ponymator\Cli\ArgumentParser;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
-use SineFine\Ponymator\Documentation\Generator\FileDocumenter;
-use SineFine\Ponymator\Documentation\Generator\GenerationResult;
-use SineFine\Ponymator\Documentation\Generator\MarkdownGenerator;
+use SineFine\Ponymator\Documentation\Processor\DocumentationProcessor;
+use SineFine\Ponymator\Documentation\Processor\GenerationResult;
+use SineFine\Ponymator\Documentation\Processor\PageGenerator;
+use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
 use SineFine\Ponymator\Documentation\Renderer\ClassRenderer;
 use SineFine\Ponymator\Documentation\Renderer\EnumRenderer;
 use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
@@ -37,9 +37,8 @@ class Ponymator
         $config = new Config($args->configPath);
 
         $parser = new Parser();
-        $entityExtractor = new EntityExtractor();
+        $combinedAnalyzer = new CombinedAnalyzer();
         $fileExtractor = new FileExtractor();
-        $dependencyAnalyzer = new DependencyAnalyzer();
         $builder = new MarkdownBuilder();
         $classRenderer = new ClassRenderer($builder);
         $interfaceRenderer = new InterfaceRenderer($builder);
@@ -48,12 +47,12 @@ class Ponymator
         $fileRenderer = new FileRenderer($builder);
         $hashComparator = new HashComparator();
         $pathResolver = new PathResolver($config);
+        $crossReferenceFactory = new CrossReferenceFactory($pathResolver);
 
-        $documenter = new FileDocumenter(
+        $documenter = new PageGenerator(
             $parser,
-            $entityExtractor,
+            $combinedAnalyzer,
             $fileExtractor,
-            $dependencyAnalyzer,
             [
                 $classRenderer,
                 $interfaceRenderer,
@@ -61,12 +60,12 @@ class Ponymator
                 $enumRenderer,
             ],
             $fileRenderer,
-            $pathResolver,
+            $crossReferenceFactory,
         );
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
         $crossReferenceIndexBuilder = new CrossReferenceIndexBuilder($parser, $pathResolver);
 
-        $generator = new MarkdownGenerator(
+        $generator = new DocumentationProcessor(
             $hashComparator,
             $pathResolver,
             $documenter,
@@ -94,10 +93,10 @@ class Ponymator
     }
 
     /**
-     * @param MarkdownGenerator $generator
-     * @param string[]          $sourceFiles
+     * @param DocumentationProcessor $generator
+     * @param string[]               $sourceFiles
      */
-    private function runFull(MarkdownGenerator $generator, array $sourceFiles): void
+    private function runFull(DocumentationProcessor $generator, array $sourceFiles): void
     {
         echo "Full generation: " . count($sourceFiles) . " files\n";
         $result = $generator->generateFull($sourceFiles);
@@ -110,10 +109,10 @@ class Ponymator
     }
 
     /**
-     * @param MarkdownGenerator $generator
-     * @param string[]          $sourceFiles
+     * @param DocumentationProcessor $generator
+     * @param string[]               $sourceFiles
      */
-    private function runDiff(MarkdownGenerator $generator, array $sourceFiles): void
+    private function runDiff(DocumentationProcessor $generator, array $sourceFiles): void
     {
         $result = $generator->generateDiff($sourceFiles);
         $this->reportSummary($result);

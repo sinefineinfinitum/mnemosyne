@@ -1,5 +1,11 @@
 # Ponymator
 
+[![Packagist Version](https://img.shields.io/packagist/v/sinefineinfinitum/ponymator)](https://packagist.org/packages/sinefineinfinitum/ponymator)
+[![PHP Version](https://img.shields.io/badge/PHP-8.0+-purple)](https://packagist.org/packages/sinefineinfinitum/ponymator)
+[![License](https://img.shields.io/packagist/l/sinefineinfinitum/ponymator)](https://packagist.org/packages/sinefineinfinitum/ponymator)
+[![CI](https://img.shields.io/github/actions/workflow/status/sinefineinfinitum/ponymator/ci.yml?branch=main)](https://github.com/sinefineinfinitum/ponymator/actions)
+[![PHPStan level](https://img.shields.io/badge/PHPStan-8-brightgreen)](https://github.com/phpstan/phpstan)
+
 A CLI-first PHP documentation generator that produces deterministic Markdown documentation for a project's public API.
 
 ## Principles
@@ -75,6 +81,11 @@ hash: 3d8f1b2c9a0e
 
 - [App\Abstract\BaseService](..\Abstract\BaseService.md)
 - [App\Model\User](..\Model\User.md)
+
+## Creates
+
+- `create`: [`App\Models\User`](..\Models\User.md)
+- `findById`: [`App\Models\User`](..\Models\User.md)
 ````
 
 ## Requirements
@@ -95,16 +106,20 @@ vendor/bin/phpcs
 
 ```
 src/
-├── Analyzer/           # PHP parsing, entity extraction, freshness checks
-├── Cli/                # Argument parsing
-├── Comparator/         # Hash-based file comparison
-├── Documentation/      # Generation, rendering, cleaning
-│   ├── Cleaner/
-│   ├── Generator/
-│   └── Renderer/
-├── Filesystem/         # Path resolution, file scanning
-├── Config.php
-└── Ponymator.php       # Main runner
+├── Analyzer/               # AST parsing, entity & dependency extraction
+│   ├── Extractor/          #  — class, interface, trait, enum extractors
+│   ├── Linker/             #  — cross-reference index builder
+│   ├── Visitor/            #  — AST visitors (entities, deps, creations)
+├── Cli/                    # Argument parsing
+├── Comparator/             # Hash-based file comparison
+├── Documentation/          # Generation, cross-linking, rendering, cleanup
+│   ├── Cleaner/            #  — outdated doc removal
+│   ├── Linker/             #  — cross-reference resolution
+│   ├── Processor/          #  — page generation orchestration
+│   └── Renderer/           #  — per-entity Markdown renderers
+├── Filesystem/             # Path resolution, file scanning
+├── Config.php              # Configuration loading & validation
+└── Ponymator.php           # Main orchestrator
 ```
 
 ## Configuration

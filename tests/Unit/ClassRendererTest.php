@@ -3,7 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Generator\CrossReference;
+use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\ClassRenderer;
 use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
 
@@ -129,6 +129,38 @@ final class ClassRendererTest extends TestCase
         $entity = $this->makeEntity(['interfaces' => []]);
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringNotContainsString('implements', $result);
+    }
+
+    public function testRenderEntityCreatesSectionWithData(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [
+            'build' => ['\App\Entity\User'],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('### Creates', $result);
+        $this->assertStringContainsString('`build`', $result);
+        $this->assertStringContainsString('`\\App\\Entity\\User`', $result);
+    }
+
+    public function testRenderEntityNoCreatesSectionWhenEmpty(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
+        $this->assertStringNotContainsString('### Creates', $result);
+    }
+
+    public function testRenderEntityCreatesSectionDeterministic(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [
+            'foo' => ['\App\A'],
+            'bar' => ['\App\B'],
+            ]
+        );
+        $first = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $second = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertSame($first, $second);
     }
 
     private function makeEntity(array $overrides = []): array

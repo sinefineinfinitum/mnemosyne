@@ -1,18 +1,20 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Generator;
+namespace SineFine\Ponymator\Documentation\Linker;
 
 final class CrossReference
 {
     /**
-     * @param array<string, string>     $dependencies
-     * @param array<string, string>     $usedByLinks
-     * @param callable(string): ?string $typeLinkResolver
+     * @param array<string, string>       $dependencies
+     * @param array<string, string>       $usedByLinks
+     * @param callable(string): ?string   $typeLinkResolver
+     * @param array<string, list<string>> $creates
      */
     public function __construct(
         private array $dependencies = [],
         private array $usedByLinks = [],
-        private $typeLinkResolver = null
+        private $typeLinkResolver = null,
+        private array $creates = []
     ) {
         if ($this->typeLinkResolver === null) {
             $this->typeLinkResolver = fn(string $fqn): ?string => null;
@@ -28,27 +30,11 @@ final class CrossReference
     }
 
     /**
-     * @param array<string, string> $dependencies
-     */
-    public function setDependencies(array $dependencies): void
-    {
-        $this->dependencies = $dependencies;
-    }
-
-    /**
      * @return array<string, string>
      */
     public function getUsedByLinks(): array
     {
         return $this->usedByLinks;
-    }
-
-    /**
-     * @param array<string, string> $usedByLinks
-     */
-    public function setUsedByLinks(array $usedByLinks): void
-    {
-        $this->usedByLinks = $usedByLinks;
     }
 
     /**
@@ -65,5 +51,13 @@ final class CrossReference
     public function setTypeLinkResolver(callable $typeLinkResolver): void
     {
         $this->typeLinkResolver = $typeLinkResolver;
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public function getCreates(): array
+    {
+        return $this->creates;
     }
 }

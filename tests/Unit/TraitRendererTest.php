@@ -3,9 +3,9 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Generator\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\TraitRenderer;
+use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
+use SineFine\Ponymator\Documentation\Renderer\TraitRenderer;
 
 final class TraitRendererTest extends TestCase
 {
@@ -98,6 +98,37 @@ final class TraitRendererTest extends TestCase
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
         $this->assertStringNotContainsString('### Head', $result);
+    }
+
+    public function testRenderEntityCreatesSectionWithData(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [
+            'init' => ['\App\Cache\RedisCache'],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('### Creates', $result);
+        $this->assertStringContainsString('`init`', $result);
+        $this->assertStringContainsString('`\\App\\Cache\\RedisCache`', $result);
+    }
+
+    public function testRenderEntityNoCreatesSectionWhenEmpty(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
+        $this->assertStringNotContainsString('### Creates', $result);
+    }
+
+    public function testRenderEntityCreatesSectionDeterministic(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [
+            'foo' => ['\App\A'],
+            ]
+        );
+        $first = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $second = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertSame($first, $second);
     }
 
     public function testRenderEntityHashIsDeterministic(): void

@@ -26,6 +26,7 @@ Documentation-related behavior must be derived from parsed PHP source code, incl
 - Implemented interfaces
 - Modifiers
 - Dependencies/imports
+- Object instantiations (Creates)
 
 If PHP source code cannot be parsed reliably, fail clearly with actionable diagnostics instead of generating incomplete or misleading documentation.
 
@@ -45,7 +46,7 @@ Keep ordering deterministic for:
 - Dependencies
 - Imports
 - Modifiers
-- Generated sections
+- Generated sections (including Creates)
 
 Treat formatting changes in generated Markdown as product behavior changes. Avoid unnecessary output churn.
 

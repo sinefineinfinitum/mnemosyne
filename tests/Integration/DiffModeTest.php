@@ -3,15 +3,15 @@
 namespace SineFine\Ponymator\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\DependencyAnalyzer;
-use SineFine\Ponymator\Analyzer\EntityExtractor;
+use SineFine\Ponymator\Analyzer\CombinedAnalyzer;
 use SineFine\Ponymator\Analyzer\FileExtractor;
-use SineFine\Ponymator\Analyzer\Link\CrossReferenceIndexBuilder;
+use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\Parser;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
-use SineFine\Ponymator\Documentation\Generator\FileDocumenter;
-use SineFine\Ponymator\Documentation\Generator\MarkdownGenerator;
+use SineFine\Ponymator\Documentation\Processor\DocumentationProcessor;
+use SineFine\Ponymator\Documentation\Processor\PageGenerator;
+use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
 use SineFine\Ponymator\Documentation\Renderer\ClassRenderer;
 use SineFine\Ponymator\Documentation\Renderer\EnumRenderer;
 use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
@@ -116,12 +116,11 @@ final class DiffModeTest extends TestCase
         return $config;
     }
 
-    private function makeGenerator(object $config): MarkdownGenerator
+    private function makeGenerator(object $config): DocumentationProcessor
     {
         $parser = new Parser();
-        $entityExtractor = new EntityExtractor();
+        $combinedAnalyzer = new CombinedAnalyzer();
         $fileExtractor = new FileExtractor();
-        $dependencyAnalyzer = new DependencyAnalyzer();
         $builder = new MarkdownBuilder();
         $classRenderer = new ClassRenderer($builder);
         $interfaceRenderer = new InterfaceRenderer($builder);
@@ -130,12 +129,12 @@ final class DiffModeTest extends TestCase
         $fileRenderer = new FileRenderer($builder);
         $hashComparator = new HashComparator();
         $pathResolver = new PathResolver($config);
+        $crossReferenceFactory = new CrossReferenceFactory($pathResolver);
         $indexBuilder = new CrossReferenceIndexBuilder($parser, $pathResolver);
-        $documenter = new FileDocumenter(
+        $documenter = new PageGenerator(
             $parser,
-            $entityExtractor,
+            $combinedAnalyzer,
             $fileExtractor,
-            $dependencyAnalyzer,
             [
                 $classRenderer,
                 $interfaceRenderer,
@@ -143,11 +142,11 @@ final class DiffModeTest extends TestCase
                 $enumRenderer,
             ],
             $fileRenderer,
-            $pathResolver,
+            $crossReferenceFactory,
         );
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
 
-        return new MarkdownGenerator(
+        return new DocumentationProcessor(
             $hashComparator,
             $pathResolver,
             $documenter,

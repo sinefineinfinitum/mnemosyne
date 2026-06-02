@@ -367,6 +367,33 @@ final class MarkdownBuilder
     }
 
     /**
+     * Render the Creates section content.
+     *
+     * @param array<string, list<string>> $creates
+     * @param callable(string): ?string   $linkResolver
+     */
+    public function createsSection(array $creates, callable $linkResolver): string
+    {
+        if (empty($creates)) {
+            return '';
+        }
+
+        $lines = '';
+        foreach ($creates as $method => $fqcns) {
+            foreach ($fqcns as $fqcn) {
+                $link = $linkResolver($fqcn);
+                if ($link !== null) {
+                    $lines .= $this->listItem($this->inlineCode($method) . ': [' . $fqcn . '](' . $link . ')');
+                } else {
+                    $lines .= $this->listItem($this->inlineCode($method) . ': ' . $this->inlineCode($fqcn));
+                }
+            }
+        }
+
+        return $lines;
+    }
+
+    /**
      * @param string[] $links Already-rendered Markdown link lines
      */
     public function usedBySection(array $links): string

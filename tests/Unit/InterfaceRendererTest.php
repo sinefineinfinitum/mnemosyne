@@ -3,7 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Generator\CrossReference;
+use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\InterfaceRenderer;
 use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
 
