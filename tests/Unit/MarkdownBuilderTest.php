@@ -325,37 +325,39 @@ final class MarkdownBuilderTest extends TestCase
 
     public function testMethodsList(): void
     {
+        $noLink = fn(string $fqn): ?string => null;
         $methods = [
             ['name' => 'foo', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [], 'returnType' => null],
             ['name' => 'bar', 'visibility' => 'protected', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [['name' => 'x', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => null],
         ];
-        $expected = "- `public function foo()`\n- `protected function bar(int \$x)`\n";
-        $this->assertSame($expected, $this->builder->methodsList($methods));
+        $expected = "- `public function foo(``)`\n- `protected function bar(``int`` \$x``)`\n";
+        $this->assertSame($expected, $this->builder->methodsList($methods, $noLink));
     }
 
     public function testMethodsListEmpty(): void
     {
-        $this->assertSame('', $this->builder->methodsList([]));
+        $noLink = fn(string $fqn): ?string => null;
+        $this->assertSame('', $this->builder->methodsList([], $noLink));
     }
 
     public function testMethodsListDeterministic(): void
     {
+        $noLink = fn(string $fqn): ?string => null;
         $m = [['name' => 'f', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [], 'returnType' => null]];
-        $first = $this->builder->methodsList($m);
-        $second = $this->builder->methodsList($m);
+        $first = $this->builder->methodsList($m, $noLink);
+        $second = $this->builder->methodsList($m, $noLink);
         $this->assertSame($first, $second);
     }
 
-    public function testDependenciesList(): void
+    public function testMethodsListWithLinkableType(): void
     {
-        $deps = ['`Psr\Log\LoggerInterface`', '`App\Service`'];
-        $expected = "- `Psr\Log\LoggerInterface`\n- `App\Service`\n";
-        $this->assertSame($expected, $this->builder->dependenciesList($deps));
-    }
-
-    public function testDependenciesListEmpty(): void
-    {
-        $this->assertSame('', $this->builder->dependenciesList([]));
+        $linkResolver = fn(string $fqn): ?string => $fqn === 'App\Entity\User' ? 'user.md' : null;
+        $methods = [
+            ['name' => 'getUser', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [['name' => 'id', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => 'App\Entity\User'],
+        ];
+        $result = $this->builder->methodsList($methods, $linkResolver);
+        $this->assertStringContainsString('[App\Entity\User](user.md)', $result);
+        $this->assertStringContainsString('`int`', $result);
     }
 
     public function testClassList(): void
@@ -463,8 +465,117 @@ final class MarkdownBuilderTest extends TestCase
         $this->assertTrue($expectedPosB < $expectedPosA, 'List preserves input order');
     }
 
+    /**
+     * @dataProvider provideRenderTypeData
+     */
+    public function testRenderType(string $type, callable $linkResolver, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->renderType($type, $linkResolver));
+    }
+
+    public static function provideRenderTypeData(): iterable
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $linkSome = fn(string $fqn): ?string => $fqn === 'App\Entity\User' ? 'user.md' : null;
+
+        yield 'primitive' => ['string', $noLink, '`string`'];
+        yield 'nullable primitive' => ['?int', $noLink, '`?int`'];
+        yield 'project entity' => ['App\Entity\User', $linkSome, '[App\Entity\User](user.md)'];
+        yield 'nullable project entity' => ['?App\Entity\User', $linkSome, '?[App\Entity\User](user.md)'];
+        yield 'non-project entity' => ['SomeVendor\Class', $noLink, '`SomeVendor\Class`'];
+        yield 'union all primitives' => ['string|int', $noLink, '`string`|`int`'];
+        yield 'union mixed' => ['App\Entity\User|string', $linkSome, '[App\Entity\User](user.md)|`string`'];
+        yield 'intersection' => ['Countable&Stringable', $noLink, '`Countable`&`Stringable`'];
+        yield 'empty string' => ['', $noLink, ''];
+    }
+
+    /**
+     * @dataProvider providePropertiesListData
+     */
+    public function testPropertiesList(array $properties, callable $linkResolver, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->propertiesList($properties, $linkResolver));
+    }
+
+    public static function providePropertiesListData(): iterable
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $linkSome = fn(string $fqn): ?string => $fqn === 'App\Entity\UuidInterface' ? 'uuid-interface.md' : null;
+
+        yield 'basic' => [
+            [['name' => 'foo', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
+            $noLink,
+            "- `public` `string` `\$foo`\n",
+        ];
+
+        yield 'with default' => [
+            [['name' => 'count', 'visibility' => 'private', 'type' => 'int', 'defaultValue' => '0', 'isStatic' => false, 'isReadonly' => false]],
+            $noLink,
+            "- `private` `int` `\$count = 0`\n",
+        ];
+
+        yield 'static' => [
+            [['name' => 'cache', 'visibility' => 'protected', 'type' => 'array', 'defaultValue' => null, 'isStatic' => true, 'isReadonly' => false]],
+            $noLink,
+            "- `protected` static `array` `\$cache`\n",
+        ];
+
+        yield 'readonly' => [
+            [['name' => 'id', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => true]],
+            $noLink,
+            "- `public` readonly `string` `\$id`\n",
+        ];
+
+        yield 'project entity type' => [
+            [['name' => 'uuid', 'visibility' => 'public', 'type' => 'App\Entity\UuidInterface', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
+            $linkSome,
+            "- `public` [App\Entity\UuidInterface](uuid-interface.md) `\$uuid`\n",
+        ];
+
+        yield 'without type' => [
+            [['name' => 'mixed', 'visibility' => 'public', 'type' => null, 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
+            $noLink,
+            "- `public` `\$mixed`\n",
+        ];
+
+        yield 'empty' => [[], $noLink, ''];
+    }
+
+    public function testPropertiesListDeterministic(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $p = [['name' => 'x', 'visibility' => 'public', 'type' => 'int', 'defaultValue' => '1', 'isStatic' => false, 'isReadonly' => false]];
+        $first = $this->builder->propertiesList($p, $noLink);
+        $second = $this->builder->propertiesList($p, $noLink);
+        $this->assertSame($first, $second);
+    }
+
+    /**
+     * @dataProvider provideDeclarationLineData
+     */
+    public function testDeclarationLine(string $typeLabel, ?string $parentFqn, ?string $parentLink, array $interfaceFqns, array $interfaceLinks, ?string $backingType, string $expected): void
+    {
+        $this->assertSame($expected, $this->builder->declarationLine($typeLabel, $parentFqn, $parentLink, $interfaceFqns, $interfaceLinks, $backingType));
+    }
+
+    public static function provideDeclarationLineData(): iterable
+    {
+        yield 'plain class' => ['class', null, null, [], [], null, "`class`\n"];
+
+        yield 'with parent' => ['final class', 'App\Abstracts\Base', null, [], [], null, "`final class` extends `App\\Abstracts\\Base`\n"];
+
+        yield 'with interfaces' => ['class', null, null, ['App\Contracts\A'], ['a.md'], null, "`class` implements [App\\Contracts\\A](a.md)\n"];
+
+        yield 'full' => ['final class', 'App\Abstracts\Base', 'base.md', ['App\Contracts\A'], ['a.md'], null, "`final class` extends [App\\Abstracts\\Base](base.md) implements [App\\Contracts\\A](a.md)\n"];
+
+        yield 'backed enum' => ['backed enum', null, null, [], [], 'int', "`backed enum` of `int`\n"];
+
+        yield 'no inheritance for interface' => ['interface', null, null, [], [], null, "`interface`\n"];
+    }
+
     public function testOverallDeterminism(): void
     {
+        $noLink = fn(string $fqn): ?string => null;
         $entities = [
             ['name' => 'foo', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false],
         ];
@@ -475,15 +586,13 @@ final class MarkdownBuilderTest extends TestCase
             ['name' => 'f', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [], 'returnType' => null],
         ];
         $classes = ['A', 'B'];
-        $deps = ['C', 'D'];
         $items = ['x', 'y'];
 
         $block = fn(): string =>
             $this->builder->propertiesTable($entities)
             . $this->builder->constantsTable($constants)
-            . $this->builder->methodsList($methods)
+            . $this->builder->methodsList($methods, $noLink)
             . $this->builder->classList($classes)
-            . $this->builder->dependenciesList($deps)
             . $this->builder->itemList($items)
             . $this->builder->frontmatter(['k' => 'v'])
             . $this->builder->table(['H'], [['v']])

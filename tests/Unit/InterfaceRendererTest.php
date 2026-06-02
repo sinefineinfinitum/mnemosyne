@@ -30,13 +30,17 @@ final class InterfaceRendererTest extends TestCase
     public function testRenderEntityExtendedInterfaces(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
-        $this->assertStringContainsString('`App\Contracts\BaseInterface`', $result);
+        $this->assertStringContainsString('extends `App\Contracts\BaseInterface`', $result);
     }
 
     public function testRenderEntityMethodSignatures(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
-        $this->assertStringContainsString('public function findById(int $id): ?User', $result);
+        $this->assertStringContainsString('`public function findById(', $result);
+        $this->assertStringContainsString('`int`', $result);
+        $this->assertStringContainsString('` $id`', $result);
+        $this->assertStringContainsString('`): `', $result);
+        $this->assertStringContainsString('`?User`', $result);
     }
 
     public function testRenderEntityConstants(): void
@@ -70,18 +74,18 @@ final class InterfaceRendererTest extends TestCase
         $this->assertStringNotContainsString('OtherService', $result);
     }
 
-    public function testRenderEntityIncludesDependencies(): void
+    public function testRenderEntityNoDependenciesSection(): void
     {
         $crossRefs = ['dependencies' => ['`App\Models\User`']];
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
-        $this->assertStringContainsString('`App\Models\User`', $result);
+        $this->assertStringNotContainsString('### Dependencies', $result);
     }
 
     public function testRenderEntityNoExtendedInterfaces(): void
     {
         $entity = $this->makeEntity(['interfaces' => []]);
         $result = $this->renderer->renderEntity($entity, []);
-        $this->assertStringNotContainsString('Extended interfaces', $result);
+        $this->assertStringNotContainsString('implements ', $result);
     }
 
     public function testRenderEntityNoConstants(): void
@@ -97,10 +101,10 @@ final class InterfaceRendererTest extends TestCase
         $this->assertStringNotContainsString('Known implementations', $result);
     }
 
-    public function testRenderEntityNoDependencies(): void
+    public function testRenderEntityNoHeadSection(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
-        $this->assertStringNotContainsString('External Dependencies', $result);
+        $this->assertStringNotContainsString('### Head', $result);
     }
 
     public function testRenderEntityHashIsDeterministic(): void

@@ -30,8 +30,13 @@ final class TraitRendererTest extends TestCase
     public function testRenderEntityProtectedMethods(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
-        $this->assertStringContainsString('protected function formatMessage(string $msg): string', $result);
-        $this->assertStringContainsString('public function log(string $message): void', $result);
+        $this->assertStringContainsString('`protected function formatMessage(', $result);
+        $this->assertStringContainsString('`string`', $result);
+        $this->assertStringContainsString('` $msg`', $result);
+        $this->assertStringContainsString('`): `', $result);
+        $this->assertStringContainsString('`public function log(', $result);
+        $this->assertStringContainsString('` $message`', $result);
+        $this->assertStringContainsString('`void`', $result);
     }
 
     public function testRenderEntityConstants(): void
@@ -88,17 +93,17 @@ final class TraitRendererTest extends TestCase
         $this->assertStringNotContainsString('Classes using this trait', $result);
     }
 
-    public function testRenderEntityIncludesDependencies(): void
+    public function testRenderEntityNoDependenciesSection(): void
     {
         $crossRefs = ['dependencies' => ['`Psr\Log\LoggerInterface`']];
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
-        $this->assertStringContainsString('`Psr\Log\LoggerInterface`', $result);
+        $this->assertStringNotContainsString('### Dependencies', $result);
     }
 
-    public function testRenderEntityNoDependencies(): void
+    public function testRenderEntityNoHeadSection(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
-        $this->assertStringNotContainsString('External Dependencies', $result);
+        $this->assertStringNotContainsString('### Head', $result);
     }
 
     public function testRenderEntityHashIsDeterministic(): void

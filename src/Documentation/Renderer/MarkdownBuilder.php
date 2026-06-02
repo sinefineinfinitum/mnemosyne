@@ -50,6 +50,118 @@ final class MarkdownBuilder
     }
 
     /**
+     * @param string[] $interfaceFqns
+     * @param string[] $interfaceLinks
+     */
+    public function declarationLine(string $typeLabel, ?string $parentFqn = null, ?string $parentLink = null, array $interfaceFqns = [], array $interfaceLinks = [], ?string $backingType = null, string $extendsWord = 'extends', string $implementsWord = 'implements'): string
+    {
+        $line = $this->inlineCode($typeLabel);
+
+        if ($backingType !== null) {
+            $line .= ' of ' . $this->inlineCode($backingType);
+        }
+
+        if ($parentFqn !== null) {
+            $line .= ' ' . $extendsWord . ' ';
+            if ($parentLink !== null) {
+                $line .= '[' . $parentFqn . '](' . $parentLink . ')';
+            } else {
+                $line .= $this->inlineCode($parentFqn);
+            }
+        }
+
+        if (!empty($interfaceFqns)) {
+            $line .= ' ' . $implementsWord . ' ';
+            $ifaceParts = [];
+            foreach ($interfaceFqns as $i => $iface) {
+                $link = $interfaceLinks[$i] ?? null;
+                if ($link !== null) {
+                    $ifaceParts[] = '[' . $iface . '](' . $link . ')';
+                } else {
+                    $ifaceParts[] = $this->inlineCode($iface);
+                }
+            }
+            $line .= implode(', ', $ifaceParts);
+        }
+
+        return $line . "\n";
+    }
+
+    public function renderType(string $type, callable $linkResolver): string
+    {
+        if ($type === '') {
+            return '';
+        }
+
+        // Handle nullable prefix: ?Type
+        if (str_starts_with($type, '?')) {
+            $inner = substr($type, 1);
+            $rendered = $this->renderType($inner, $linkResolver);
+            // If inner is a link (starts with '['), prepend ? outside link
+            if ($rendered !== '' && $rendered[0] === '[') {
+                return '?' . $rendered;
+            }
+            // Otherwise put ? inside the code span
+            return $this->inlineCode($type);
+        }
+
+        // Handle union types: TypeA|TypeB
+        $unionParts = explode('|', $type);
+        if (count($unionParts) > 1) {
+            return implode('|', array_map(fn(string $part) => $this->renderType($part, $linkResolver), $unionParts));
+        }
+
+        // Handle intersection types: TypeA&TypeB
+        $intersectionParts = explode('&', $type);
+        if (count($intersectionParts) > 1) {
+            return implode('&', array_map(fn(string $part) => $this->renderType($part, $linkResolver), $intersectionParts));
+        }
+
+        $link = $linkResolver($type);
+        if ($link !== null) {
+            return '[' . $type . '](' . $link . ')';
+        }
+
+        return $this->inlineCode($type);
+    }
+
+    /**
+     * Render properties as a compact bullet list.
+     *
+     * @param array<int, array<string, mixed>> $properties
+     * @param callable(string): ?string        $typeLinkResolver
+     */
+    public function propertiesList(array $properties, callable $typeLinkResolver): string
+    {
+        $result = '';
+        foreach ($properties as $p) {
+            $parts = [];
+
+            $parts[] = $this->inlineCode($p['visibility']);
+
+            if (!empty($p['isStatic'])) {
+                $parts[] = 'static';
+            }
+            if (!empty($p['isReadonly'])) {
+                $parts[] = 'readonly';
+            }
+
+            if ($p['type'] !== null) {
+                $parts[] = $this->renderType($p['type'], $typeLinkResolver);
+            }
+
+            $parts[] = $this->inlineCode('$' . $p['name']);
+
+            if ($p['defaultValue'] !== null) {
+                $parts[count($parts) - 1] = $this->inlineCode('$' . $p['name'] . ' = ' . $p['defaultValue']);
+            }
+
+            $result .= $this->listItem(implode(' ', $parts));
+        }
+        return $result;
+    }
+
+    /**
      * @param array<string, string> $pairs
      */
     public function kvList(array $pairs): string
@@ -156,27 +268,70 @@ final class MarkdownBuilder
 
     /**
      * @param array<int, array<string, mixed>> $methods
+     * @param callable(string): ?string        $typeLinkResolver
      */
-    public function methodsList(array $methods): string
+    public function methodsList(array $methods, callable $typeLinkResolver): string
     {
         $result = '';
         foreach ($methods as $method) {
-            $sig = $this->methodSignature($method);
-            $result .= $this->listItem($this->inlineCode($sig));
+            $result .= $this->listItem($this->renderMethodSignature($method, $typeLinkResolver));
         }
         return $result;
     }
 
     /**
-     * @param string[] $deps
+     * Render a method signature with type references as separate link/code spans.
+     *
+     * @param array<string, mixed>      $method
+     * @param callable(string): ?string $linkResolver
      */
-    public function dependenciesList(array $deps): string
+    private function renderMethodSignature(array $method, callable $linkResolver): string
     {
-        $result = '';
-        foreach ($deps as $dep) {
-            $result .= $this->listItem($dep);
+        $visibility = $method['visibility'] ?? '';
+        $sig = $visibility !== '' ? $visibility . ' function ' : 'function ';
+        $sig .= $method['name'] . '(';
+
+        $rendered = $this->inlineCode($sig);
+        $firstParam = true;
+
+        foreach ($method['parameters'] as $param) {
+            if ($firstParam) {
+                $firstParam = false;
+            } else {
+                $rendered .= $this->inlineCode(', ');
+            }
+
+            if ($param['type'] !== null) {
+                $rendered .= $this->renderType($param['type'], $linkResolver);
+            }
+
+            $paramSig = '';
+            if (!empty($param['isVariadic'])) {
+                $paramSig .= '...';
+            }
+            if (!empty($param['isPassedByReference'])) {
+                $paramSig .= '&';
+            }
+            $paramSig .= '$' . $param['name'];
+            if ($param['defaultValue'] !== null) {
+                $paramSig .= ' = ' . $param['defaultValue'];
+            }
+
+            if ($param['type'] !== null) {
+                $rendered .= $this->inlineCode(' ' . $paramSig);
+            } else {
+                $rendered .= $this->inlineCode($paramSig);
+            }
         }
-        return $result;
+
+        if (isset($method['returnType'])) {
+            $rendered .= $this->inlineCode('): ');
+            $rendered .= $this->renderType($method['returnType'], $linkResolver);
+        } else {
+            $rendered .= $this->inlineCode(')');
+        }
+
+        return $rendered;
     }
 
     /**
@@ -230,7 +385,7 @@ final class MarkdownBuilder
      * Wrap a value in inline code backticks, handling embedded backticks
      * via variable-length delimiters per CommonMark spec.
      */
-    private function inlineCode(string $value): string
+    public function inlineCode(string $value): string
     {
         $maxRun = 0;
         $run = 0;

@@ -68,6 +68,10 @@ final class FileDocumenter
             $currentDocPath
         ) ?? [];
 
+        $typeLinkResolver = $linker !== null
+            ? fn(string $fqn): ?string => $linker->resolveTypeLink($fqn, $currentDocPath)
+            : fn(string $fqn): ?string => null;
+
         foreach ($entities as $entity) {
             $usedBy = $this->context?->getIndex()->getUsedBy(ltrim($entity['fqn'], '\\')) ?? [];
             $usedByLinks = $linker?->mapToLinks($usedBy, $currentDocPath) ?? [];
@@ -76,6 +80,7 @@ final class FileDocumenter
                 $entity, [
                 'dependencies' => $dependencies,
                 'usedByLinks' => $usedByLinks,
+                'typeLinkResolver' => $typeLinkResolver,
                 ]
             );
         }

@@ -30,7 +30,7 @@ final class EnumRendererTest extends TestCase
     public function testRenderEntityBackingType(): void
     {
         $result = $this->renderer->renderEntity($this->makeBackedEnum(), []);
-        $this->assertStringContainsString('**Backing type:** `string`', $result);
+        $this->assertStringContainsString('`backed enum` of `string`', $result);
     }
 
     public function testRenderEntityCases(): void
@@ -58,7 +58,9 @@ final class EnumRendererTest extends TestCase
     public function testRenderEntityMethodSignatures(): void
     {
         $result = $this->renderer->renderEntity($this->makeBackedEnum(), []);
-        $this->assertStringContainsString('public function isActive(): bool', $result);
+        $this->assertStringContainsString('`public function isActive(', $result);
+        $this->assertStringContainsString('`): `', $result);
+        $this->assertStringContainsString('`bool`', $result);
     }
 
     public function testRenderEntityNoConstants(): void
@@ -79,20 +81,21 @@ final class EnumRendererTest extends TestCase
     {
         $entity = $this->makeBackedEnum(['scalarType' => null]);
         $result = $this->renderer->renderEntity($entity, []);
-        $this->assertStringNotContainsString('Backing type', $result);
+        $this->assertStringContainsString('`enum`', $result);
+        $this->assertStringNotContainsString('of', $result);
     }
 
-    public function testRenderEntityIncludesDependencies(): void
+    public function testRenderEntityNoDependenciesSection(): void
     {
         $crossRefs = ['dependencies' => ['`App\Models\StatusType`']];
         $result = $this->renderer->renderEntity($this->makeBackedEnum(), $crossRefs);
-        $this->assertStringContainsString('`App\Models\StatusType`', $result);
+        $this->assertStringNotContainsString('### Dependencies', $result);
     }
 
-    public function testRenderEntityNoDependencies(): void
+    public function testRenderEntityNoHeadSection(): void
     {
         $result = $this->renderer->renderEntity($this->makeBackedEnum(), []);
-        $this->assertStringNotContainsString('External Dependencies', $result);
+        $this->assertStringNotContainsString('### Head', $result);
     }
 
     public function testRenderEntityHashIsDeterministic(): void

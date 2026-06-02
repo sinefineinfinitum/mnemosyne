@@ -40,18 +40,23 @@ final class EnumRenderer implements EntityRendererInterface
      */
     private function buildContent(array $entity, array $crossRefs = []): string
     {
+        $linkResolver = $crossRefs['typeLinkResolver'] ?? fn(string $fqn): ?string => null;
+
         $md = "\n";
         $md .= $this->builder->header(1, '`' . $entity['fqn'] . '`');
         $md .= "\n";
 
-        $md .= $this->builder->header(3, 'Head');
-        $md .= $this->builder->kvList(['Type' => '`enum`',]);
-        $md .= "\n";
+        $typeLabel = $entity['scalarType'] !== null ? 'backed enum' : 'enum';
 
-        if ($entity['scalarType'] !== null) {
-            $md .= $this->builder->kvList(['Backing type' => '`' . $entity['scalarType'] . '`']);
-            $md .= "\n";
-        }
+        $md .= $this->builder->declarationLine(
+            $typeLabel,
+            null,
+            null,
+            [],
+            [],
+            $entity['scalarType'],
+        );
+        $md .= "\n";
 
         if (!empty($entity['cases'])) {
             $md .= $this->builder->section('Cases', 3, $this->casesTable($entity['cases']));
@@ -62,20 +67,15 @@ final class EnumRenderer implements EntityRendererInterface
         }
 
         if (!empty($entity['properties'])) {
-            $md .= $this->builder->section('Properties', 3, $this->builder->propertiesTable($entity['properties']));
+            $md .= $this->builder->section('Properties', 3, $this->builder->propertiesList($entity['properties'], $linkResolver));
         }
 
         if (!empty($entity['methods'])) {
-            $md .= $this->builder->section('Methods', 3, $this->builder->methodsList($entity['methods']));
+            $md .= $this->builder->section('Methods', 3, $this->builder->methodsList($entity['methods'], $linkResolver));
         }
 
         if (!empty($crossRefs['usedByLinks'])) {
             $md .= $this->builder->usedBySection($crossRefs['usedByLinks']);
-        }
-
-        $dependencies = $crossRefs['dependencies'] ?? [];
-        if (!empty($dependencies)) {
-            $md .= $this->builder->section('Dependencies', 3, $this->builder->dependenciesList($dependencies));
         }
 
         return $md;

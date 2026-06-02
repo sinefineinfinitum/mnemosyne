@@ -30,29 +30,34 @@ final class ClassRendererTest extends TestCase
     public function testRenderEntityTypeAndModifiers(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
-        $this->assertStringContainsString('**Type:** `final class`', $result);
+        $this->assertStringContainsString('`final class`', $result);
         $this->assertStringNotContainsString('**Modifiers:**', $result);
     }
 
     public function testRenderEntityParentAndInterfaces(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
-        $this->assertStringContainsString('`App\Abstracts\BaseService`', $result);
-        $this->assertStringContainsString('`App\Contracts\ServiceInterface`', $result);
+        $this->assertStringContainsString('extends `App\Abstracts\BaseService`', $result);
+        $this->assertStringContainsString('implements `App\Contracts\ServiceInterface`', $result);
     }
 
     public function testRenderEntityInlineMethodSignatures(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
-        $this->assertStringContainsString('public function findById(int $id, ?bool $active = true): ?User', $result);
+        $this->assertStringContainsString('`public function findById(', $result);
+        $this->assertStringContainsString('`int`', $result);
+        $this->assertStringContainsString('` $id`', $result);
+        $this->assertStringContainsString('`?bool`', $result);
+        $this->assertStringContainsString('` $active = true`', $result);
+        $this->assertStringContainsString('`): `', $result);
+        $this->assertStringContainsString('`?User`', $result);
     }
 
-    public function testRenderEntityIncludesDependencies(): void
+    public function testRenderEntityNoDependenciesSection(): void
     {
         $crossRefs = ['dependencies' => ['`Psr\Log\LoggerInterface`', '`App\Services\Validator`']];
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
-        $this->assertStringContainsString('`Psr\Log\LoggerInterface`', $result);
-        $this->assertStringContainsString('`App\Services\Validator`', $result);
+        $this->assertStringNotContainsString('### Dependencies', $result);
     }
 
     public function testRenderEntityConstants(): void
@@ -80,7 +85,7 @@ final class ClassRendererTest extends TestCase
     {
         $entity = $this->makeEntity(['modifiers' => []]);
         $result = $this->renderer->renderEntity($entity, []);
-        $this->assertStringContainsString('**Type:** `class`', $result);
+        $this->assertStringContainsString('`class`', $result);
         $this->assertStringNotContainsString('**Modifiers:**', $result);
     }
 
@@ -91,7 +96,13 @@ final class ClassRendererTest extends TestCase
         $this->assertStringNotContainsString('Constants', $result);
     }
 
-    public function testRenderEntityNoDependencies(): void
+    public function testRenderEntityNoHeadSection(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeEntity(), []);
+        $this->assertStringNotContainsString('### Head', $result);
+    }
+
+    public function testRenderEntityNoExternalDependencies(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), []);
         $this->assertStringNotContainsString('External Dependencies', $result);
@@ -109,14 +120,14 @@ final class ClassRendererTest extends TestCase
     {
         $entity = $this->makeEntity(['parentClass' => null]);
         $result = $this->renderer->renderEntity($entity, []);
-        $this->assertStringContainsString('**Parent:** none', $result);
+        $this->assertStringNotContainsString('extends', $result);
     }
 
     public function testRenderEntityWithNoInterfaces(): void
     {
         $entity = $this->makeEntity(['interfaces' => []]);
         $result = $this->renderer->renderEntity($entity, []);
-        $this->assertStringContainsString('**Interfaces:** none', $result);
+        $this->assertStringNotContainsString('implements', $result);
     }
 
     private function makeEntity(array $overrides = []): array

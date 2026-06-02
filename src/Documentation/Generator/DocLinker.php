@@ -15,6 +15,16 @@ final class DocLinker
     ) {
     }
 
+    public function resolveTypeLink(string $fqn, string $currentDocPath): ?string
+    {
+        $normalized = ltrim($fqn, '\\');
+        $targetDocPath = $this->fqnToDocPath[$normalized] ?? null;
+        if ($targetDocPath === null) {
+            return null;
+        }
+        return $this->pathResolver->relativeDocLink($currentDocPath, $targetDocPath);
+    }
+
     /**
      * @param  string[] $fqns
      * @param  string   $currentDocPath
