@@ -50,8 +50,14 @@ final class MarkdownBuilder
     }
 
     /**
-     * @param string[] $interfaceFqns
-     * @param string[] $interfaceLinks
+     * @param string          $typeLabel
+     * @param string|null     $parentFqn
+     * @param string|null     $parentLink
+     * @param string[]        $interfaceFqns
+     * @param (string|null)[] $interfaceLinks
+     * @param string|null     $backingType
+     * @param string          $extendsWord
+     * @param string          $implementsWord
      */
     public function declarationLine(string $typeLabel, ?string $parentFqn = null, ?string $parentLink = null, array $interfaceFqns = [], array $interfaceLinks = [], ?string $backingType = null, string $extendsWord = 'extends', string $implementsWord = 'implements'): string
     {

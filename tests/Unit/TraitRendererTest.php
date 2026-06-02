@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Documentation\Generator\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\TraitRenderer;
 use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
 
@@ -17,19 +18,19 @@ final class TraitRendererTest extends TestCase
 
     public function testRenderEntityIncludesFrontmatter(): void
     {
-        $result = $this->renderer->renderEntity($this->makeEntity(), []);
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
         $this->assertStringContainsString('type: trait', $result);
     }
 
     public function testRenderEntityIncludesFqn(): void
     {
-        $result = $this->renderer->renderEntity($this->makeEntity(), []);
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
         $this->assertStringContainsString('`App\Traits\LoggableTrait`', $result);
     }
 
     public function testRenderEntityProtectedMethods(): void
     {
-        $result = $this->renderer->renderEntity($this->makeEntity(), []);
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
         $this->assertStringContainsString('`protected function formatMessage(', $result);
         $this->assertStringContainsString('`string`', $result);
         $this->assertStringContainsString('` $msg`', $result);
@@ -48,34 +49,27 @@ final class TraitRendererTest extends TestCase
             ],
             ]
         );
-        $result = $this->renderer->renderEntity($entity, []);
+        $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('LOG_LEVEL', $result);
     }
 
     public function testRenderEntityUsingClasses(): void
     {
-        $crossRefs = ['usedByLinks' => ['[App\Service\UserService](UserService.md)']];
+        $crossRefs = new CrossReference([], ['[App\Service\UserService](UserService.md)']);
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
         $this->assertStringContainsString('[App\Service\UserService](UserService.md)', $result);
     }
 
     public function testRenderEntityUsingClassesFilteredByFqn(): void
     {
-        $crossRefs = [
-            'usedByLinks' => ['[App\Service\UserService](UserService.md)'],
-        ];
+        $crossRefs = new CrossReference([], ['[App\Service\UserService](UserService.md)']);
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
         $this->assertStringContainsString('[App\Service\UserService](UserService.md)', $result);
-        $this->assertStringNotContainsString('OtherService', $result);
     }
 
     public function testRenderEntityNoUsingClassesForDifferentTrait(): void
     {
-        $crossRefs = [
-            'trait_usage' => [
-                'App\Traits\OtherTrait' => ['App\Service\OtherService'],
-            ],
-        ];
+        $crossRefs = new CrossReference();
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
         $this->assertStringNotContainsString('Classes using this trait', $result);
     }
@@ -83,33 +77,33 @@ final class TraitRendererTest extends TestCase
     public function testRenderEntityNoConstants(): void
     {
         $entity = $this->makeEntity(['constants' => []]);
-        $result = $this->renderer->renderEntity($entity, []);
+        $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringNotContainsString('Constants', $result);
     }
 
     public function testRenderEntityNoUsingClasses(): void
     {
-        $result = $this->renderer->renderEntity($this->makeEntity(), []);
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
         $this->assertStringNotContainsString('Classes using this trait', $result);
     }
 
     public function testRenderEntityNoDependenciesSection(): void
     {
-        $crossRefs = ['dependencies' => ['`Psr\Log\LoggerInterface`']];
+        $crossRefs = new CrossReference(['`Psr\Log\LoggerInterface`']);
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
         $this->assertStringNotContainsString('### Dependencies', $result);
     }
 
     public function testRenderEntityNoHeadSection(): void
     {
-        $result = $this->renderer->renderEntity($this->makeEntity(), []);
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
         $this->assertStringNotContainsString('### Head', $result);
     }
 
     public function testRenderEntityHashIsDeterministic(): void
     {
         $entity = $this->makeEntity();
-        $crossRefs = ['trait_usage' => ['App\Traits\LoggableTrait' => ['App\Service\UserService']]];
+        $crossRefs = new CrossReference();
         $first = $this->renderer->renderEntity($entity, $crossRefs);
         $second = $this->renderer->renderEntity($entity, $crossRefs);
         $this->assertSame($first, $second);

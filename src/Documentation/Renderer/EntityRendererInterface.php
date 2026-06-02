@@ -2,6 +2,8 @@
 
 namespace SineFine\Ponymator\Documentation\Renderer;
 
+use SineFine\Ponymator\Documentation\Generator\CrossReference;
+
 interface EntityRendererInterface
 {
     /**
@@ -12,8 +14,8 @@ interface EntityRendererInterface
 
     /**
      * @param  array<string, mixed> $entity
-     * @param  array<string, mixed> $crossRefs
+     * @param  CrossReference       $crossRefs
      * @return string
      */
-    public function renderEntity(array $entity, array $crossRefs): string;
+    public function renderEntity(array $entity, CrossReference $crossRefs): string;
 }
