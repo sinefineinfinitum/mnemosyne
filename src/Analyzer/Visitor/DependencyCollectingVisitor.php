@@ -44,8 +44,8 @@ final class DependencyCollectingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof Node\Stmt\Class_) {
-            foreach ($node->implements as $iface) {
-                $this->addDep($iface->toCodeString());
+            foreach ($node->implements as $interface) {
+                $this->addDep($interface->toCodeString());
             }
         }
 

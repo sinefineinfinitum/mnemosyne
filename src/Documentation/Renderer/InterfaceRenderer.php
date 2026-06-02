@@ -47,21 +47,22 @@ final class InterfaceRenderer implements EntityRendererInterface
         $md .= $this->builder->header(1, '`' . $entity['fqn'] . '`');
         $md .= "\n";
 
-        $md .= $this->builder->inlineCode('interface');
-        if (!empty($entity['interfaces'])) {
-            $md .= ' extends ';
-            $parts = [];
-            foreach ($entity['interfaces'] as $iface) {
-                $link = $linkResolver($iface);
-                if ($link !== null) {
-                    $parts[] = '[' . $iface . '](' . $link . ')';
-                } else {
-                    $parts[] = $this->builder->inlineCode($iface);
-                }
-            }
-            $md .= implode(', ', $parts);
+        $interfaceLinks = [];
+        foreach ($entity['interfaces'] as $interface) {
+            $interfaceLinks[] = $linkResolver($interface);
         }
-        $md .= "\n\n";
+
+        $md .= $this->builder->declarationLine(
+            'interface',
+            null,
+            null,
+            $entity['interfaces'],
+            $interfaceLinks,
+            null,
+            'extends',
+            'extends'
+        );
+        $md .= "\n";
 
         if (!empty($entity['constants'])) {
             $md .= $this->builder->section('Constants', 3, $this->builder->constantsTable($entity['constants']));

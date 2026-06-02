@@ -27,8 +27,8 @@ final class InterfaceExtractor implements EntityExtractorInterface
         $name = $node->name !== null ? $node->name->toString() : '';
 
         $interfaces = [];
-        foreach ($node->extends as $iface) {
-            $interfaces[] = ltrim($iface->toCodeString(), '\\');
+        foreach ($node->extends as $interface) {
+            $interfaces[] = ltrim($interface->toCodeString(), '\\');
         }
         sort($interfaces);
 

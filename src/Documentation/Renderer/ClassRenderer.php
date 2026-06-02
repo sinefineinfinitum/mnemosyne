@@ -54,8 +54,8 @@ final class ClassRenderer implements EntityRendererInterface
             : null;
 
         $interfaceLinks = [];
-        foreach ($entity['interfaces'] as $iface) {
-            $interfaceLinks[] = $linkResolver($iface);
+        foreach ($entity['interfaces'] as $interface) {
+            $interfaceLinks[] = $linkResolver($interface);
         }
 
         $md .= $this->builder->declarationLine(

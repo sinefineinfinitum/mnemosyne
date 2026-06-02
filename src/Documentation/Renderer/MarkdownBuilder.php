@@ -78,16 +78,16 @@ final class MarkdownBuilder
 
         if (!empty($interfaceFqns)) {
             $line .= ' ' . $implementsWord . ' ';
-            $ifaceParts = [];
-            foreach ($interfaceFqns as $i => $iface) {
+            $interfaceParts = [];
+            foreach ($interfaceFqns as $i => $interface) {
                 $link = $interfaceLinks[$i] ?? null;
                 if ($link !== null) {
-                    $ifaceParts[] = '[' . $iface . '](' . $link . ')';
+                    $interfaceParts[] = '[' . $interface . '](' . $link . ')';
                 } else {
-                    $ifaceParts[] = $this->inlineCode($iface);
+                    $interfaceParts[] = $this->inlineCode($interface);
                 }
             }
-            $line .= implode(', ', $ifaceParts);
+            $line .= implode(', ', $interfaceParts);
         }
 
         return $line . "\n";
@@ -108,7 +108,8 @@ final class MarkdownBuilder
                 return '?' . $rendered;
             }
             // Otherwise put ? inside the code span
-            return $this->inlineCode($type);
+            $normalized = ltrim($inner, '\\');
+            return $this->inlineCode('?' . $normalized);
         }
 
         // Handle union types: TypeA|TypeB
@@ -123,12 +124,13 @@ final class MarkdownBuilder
             return implode('&', array_map(fn(string $part) => $this->renderType($part, $linkResolver), $intersectionParts));
         }
 
-        $link = $linkResolver($type);
+        $normalized = ltrim($type, '\\');
+        $link = $linkResolver($normalized);
         if ($link !== null) {
-            return '[' . $type . '](' . $link . ')';
+            return '[' . $normalized . '](' . $link . ')';
         }
 
-        return $this->inlineCode($type);
+        return $this->inlineCode($normalized);
     }
 
     /**
