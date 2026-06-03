@@ -135,17 +135,6 @@ class Hidden {
         $this->assertStringNotContainsString('API', $content);
     }
 
-    public function testMalformedConfig(): void
-    {
-        $badDir = $this->tempDir . '/badconfig';
-        mkdir($badDir);
-        file_put_contents($badDir . '/.ponymator.json', 'not valid json {{{');
-
-        $config = new Config($badDir . '/.ponymator.json');
-
-        $this->assertSame('src', $config->getSource());
-    }
-
     public function testNonDocFilesPreserved(): void
     {
         mkdir($this->targetDir, 0755, true);

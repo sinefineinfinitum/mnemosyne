@@ -2,10 +2,13 @@
 
 namespace SineFine\Ponymator\Cli;
 
+use SineFine\Ponymator\Cli\Error\ExitCode;
+
 final class ArgumentParser
 {
     public const FULL = 'full';
     public const DIFF = 'diff';
+
     private function __construct(
         public string $mode,
         public ?string $configPath,
@@ -30,7 +33,8 @@ final class ArgumentParser
                 $arg === '--diff' => $mode = self::DIFF,
                 str_starts_with($arg, '--config=') => $configPath = substr($arg, 9),
                 $arg === '--help' => $helpRequested = true,
-                default => null,
+                str_starts_with($arg, '--') => self::mistakeExit('Unknown flag: ' . $arg),
+                default => self::usageExit('Unexpected argument: ' . $arg),
             };
         }
 
@@ -51,7 +55,24 @@ Options:
 Exit codes:
   0   Success
   1   Generic error (config, parse, runtime)
+  2   Command-line mistake (unknown flag)
+  64  Wrong or missing required arguments
+  66  Source directory or files not found
+  73  Cannot create output file or directory
+  78  Config missing, unreadable, or malformed
 
 HELP;
+    }
+
+    private static function mistakeExit(string $message): void
+    {
+        fwrite(STDERR, "Error: $message\n");
+        exit(ExitCode::COMMAND_LINE_MISTAKE);
+    }
+
+    private static function usageExit(string $message): void
+    {
+        fwrite(STDERR, "Error: $message\n");
+        exit(ExitCode::WRONG_USAGE);
     }
 }

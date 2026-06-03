@@ -3,9 +3,11 @@
 namespace SineFine\Ponymator\Documentation\Processor;
 
 use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
+use SineFine\Ponymator\Analyzer\ParserException;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Comparator\HashGenerator;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
+use SineFine\Ponymator\Filesystem\FileSystemException;
 use SineFine\Ponymator\Filesystem\PathResolver;
 use Throwable;
 
@@ -48,10 +50,12 @@ final class DocumentationProcessor
         $targetDir = $this->pathResolver->targetDir();
 
         if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0755, true);
+            if (!mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
+                throw new FileSystemException("Could not create target directory: $targetDir");
+            }
         }
 
-        $context = $this->indexBuilder->build($sourceFiles);
+        $context = $this->indexBuilder->build($sourceFiles, $result);
         $this->documenter->setContext($context);
 
         foreach ($sourceFiles as $relativePath) {
@@ -61,7 +65,9 @@ final class DocumentationProcessor
             try {
                 $docDir = dirname($docPath);
                 if (!is_dir($docDir)) {
-                    mkdir($docDir, 0755, true);
+                    if (!mkdir($docDir, 0755, true) && !is_dir($docDir)) {
+                        throw new FileSystemException("Could not create output directory: $docDir");
+                    }
                 }
 
                 $content = $this->documenter->document($sourcePath, $relativePath);
@@ -79,10 +85,34 @@ final class DocumentationProcessor
                 $result->incrementGenerated();
                 echo "  $relativePath\n";
 
-            } catch (Throwable $e) {
-                fwrite(STDERR, "Warning: Skipped $relativePath — " . $e->getMessage() . "\n");
+            } catch (FileSystemException $e) {
+                $result->addError(
+                    new ErrorDiagnostic(
+                        severity: ErrorDiagnostic::ERROR,
+                        message: $e->getMessage(),
+                    )
+                );
+                break;
+            } catch (ParserException $e) {
                 $result->incrementSkipped();
-                $result->addError($relativePath);
+                $result->addError(
+                    new ErrorDiagnostic(
+                        severity: ErrorDiagnostic::ERROR,
+                        message: 'Failed to parse ' . $relativePath . ' — ' . $e->getMessage(),
+                        filePath: $relativePath,
+                        exception: $e,
+                    )
+                );
+            } catch (Throwable $e) {
+                $result->incrementSkipped();
+                $result->addError(
+                    new ErrorDiagnostic(
+                        severity: ErrorDiagnostic::WARNING,
+                        message: 'Skipped ' . $relativePath . ' — ' . $e->getMessage(),
+                        filePath: $relativePath,
+                        exception: $e,
+                    )
+                );
             }
         }
 

@@ -4,7 +4,10 @@ namespace SineFine\Ponymator\Analyzer\Linker;
 
 use PhpParser\NodeTraverser;
 use SineFine\Ponymator\Analyzer\Parser;
+use SineFine\Ponymator\Analyzer\ParserException;
 use SineFine\Ponymator\Analyzer\Visitor\CrossReferenceScannerVisitor;
+use SineFine\Ponymator\Documentation\Processor\ErrorDiagnostic;
+use SineFine\Ponymator\Documentation\Processor\GenerationResult;
 use SineFine\Ponymator\Filesystem\PathResolver;
 use Throwable;
 
@@ -19,7 +22,7 @@ final class CrossReferenceIndexBuilder
     /**
      * @param string[] $sourceFiles
      */
-    public function build(array $sourceFiles): CrossReferenceContext
+    public function build(array $sourceFiles, ?GenerationResult $result = null): CrossReferenceContext
     {
         $index = new CrossReferenceIndex();
         $allEntityFqns = [];
@@ -42,8 +45,28 @@ final class CrossReferenceIndexBuilder
                     $allEntityFqns[] = $fqn;
                     $fqnToDocPath[$fqn] = $fileDocPath;
                 }
+            } catch (ParserException $e) {
+                if ($result !== null) {
+                    $result->addError(
+                        new ErrorDiagnostic(
+                            severity: ErrorDiagnostic::ERROR,
+                            message: 'Cross-file scan failed for ' . $relativePath . ' — ' . $e->getMessage(),
+                            filePath: $relativePath,
+                            exception: $e,
+                        )
+                    );
+                }
             } catch (Throwable $e) {
-                fwrite(STDERR, "Warning: Cross-file scan failed for $relativePath — " . $e->getMessage() . "\n");
+                if ($result !== null) {
+                    $result->addError(
+                        new ErrorDiagnostic(
+                            severity: ErrorDiagnostic::WARNING,
+                            message: 'Cross-file scan failed for ' . $relativePath . ' — ' . $e->getMessage(),
+                            filePath: $relativePath,
+                            exception: $e,
+                        )
+                    );
+                }
             }
         }
 

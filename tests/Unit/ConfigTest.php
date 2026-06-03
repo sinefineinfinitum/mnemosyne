@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Cli\Error\ConfigException;
 use SineFine\Ponymator\Config;
 
 final class ConfigTest extends TestCase
@@ -49,20 +50,27 @@ final class ConfigTest extends TestCase
         $this->assertSame(['vendor', 'node_modules'], $config->getIgnore());
     }
 
-    public function testMissingFileWarning(): void
+    public function testMissingConfigDefaults(): void
     {
-        $path = $this->tempDir . '/nonexistent.json';
-        $config = new Config($path);
-        $this->assertSame('src', $config->getSource());
-    }
-
-    public function testMalformedJsonFallsBackToDefaults(): void
-    {
-        $path = $this->tempDir . '/.ponymator.json';
-        file_put_contents($path, '{invalid json}');
-        $config = new Config($path);
+        $config = new Config(null);
         $this->assertSame('src', $config->getSource());
         $this->assertSame('docs', $config->getTarget());
+    }
+
+    public function testMissingConfigThrowsException(): void
+    {
+        $this->expectException(ConfigException::class);
+        $this->expectExceptionMessage('Config file not found');
+        new Config('non_existent.json');
+    }
+
+    public function testMalformedConfigThrowsException(): void
+    {
+        $path = $this->tempDir . '/malformed.json';
+        file_put_contents($path, '{invalid json}');
+        $this->expectException(ConfigException::class);
+        $this->expectExceptionMessage('Malformed config file');
+        new Config($path);
     }
 
     public function testPartialConfigMergesWithDefaults(): void
