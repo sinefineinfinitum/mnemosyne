@@ -6,13 +6,13 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/sinefineinfinitum/ponymator/ci.yml?branch=main)](https://github.com/sinefineinfinitum/ponymator/actions)
 [![PHPStan level](https://img.shields.io/badge/PHPStan-8-brightgreen)](https://github.com/phpstan/phpstan)
 
-A CLI-first PHP documentation generator that produces deterministic Markdown documentation for a project's public API.
+A CLI-first PHP documentation generator that produces deterministic Markdown documentation for a project's API surface.
 
 ## Principles
 
 ### AST-First Correctness
 
-Ponymator uses PHP Abstract Syntax Tree analysis (via [`nikic/php-parser`](https://github.com/nikic/PHP-Parser)) as the single source of truth. Public API extraction — classes, interfaces, traits, enums, public methods, signatures, inheritance, implemented interfaces, modifiers, and dependencies — is derived from parsed PHP source code, never from regex or string matching. If source code cannot be parsed, the tool fails with actionable diagnostics.
+Ponymator uses PHP Abstract Syntax Tree analysis (via [`nikic/php-parser`](https://github.com/nikic/PHP-Parser)) as the single source of truth. API extraction — classes, interfaces, traits, enums, constants, properties, methods, signatures, inheritance, implemented interfaces, modifiers, and dependencies — is derived from parsed PHP source code, never from regex or string matching. If source code cannot be parsed, the tool fails with actionable diagnostics.
 
 ### Deterministic Output
 
@@ -27,8 +27,15 @@ For identical source code and configuration, repeated runs produce byte-identica
 
 Exit codes:
 
-- `0` — success
-- `1` — generic error (config, parse, runtime)
+| Code | Meaning |
+| :--- | :--- |
+| `0` | Success |
+| `1` | Generic error (parsing, runtime) |
+| `2` | Command-line syntax error (unknown flag) |
+| `64` | Wrong usage (invalid arguments) |
+| `66` | Source not found |
+| `73` | Output file/directory error |
+| `78` | Config file missing, unreadable, or malformed |
 
 ### Test-First Quality
 
@@ -60,12 +67,18 @@ hash: 3d8f1b2c9a0e
 
 # `App\Service\UserService`
 
-## Head
+`final class` extends `App\Abstracts\BaseService` implements `App\Contracts\ServiceInterface`
 
-**Type**: class
-**Modifiers**: readonly
-**Parent**: `App\Abstracts\BaseService`
-**Interfaces**: `App\Contracts\ServiceInterface`
+## Constants
+
+| Constant | Visibility | Type | Value |
+| :------- | :--------- | :--- | :---- |
+| `MAX_RETRIES` | public | int | `3` |
+
+## Properties
+
+- `public string $name`
+- `protected ?int $cacheTtl = null`
 
 ## Methods
 
@@ -76,11 +89,6 @@ hash: 3d8f1b2c9a0e
 
 - [App\Contract\ServiceInterface](..\Contract\ServiceInterface.md)
 - `Vendor\Package\SomeClass`
-
-## Dependencies
-
-- [App\Abstract\BaseService](..\Abstract\BaseService.md)
-- [App\Model\User](..\Model\User.md)
 
 ## Creates
 

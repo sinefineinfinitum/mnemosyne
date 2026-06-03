@@ -2,7 +2,7 @@
 
 ## Project Purpose
 
-Ponymator is a CLI-first PHP documentation generator. Its primary responsibility is to analyze PHP source code and generate deterministic Markdown documentation for the public API of a project.
+Ponymator is a CLI-first PHP documentation generator. Its primary responsibility is to analyze PHP source code and generate deterministic Markdown documentation for the API of a project.
 
 The generated documentation must accurately reflect the actual PHP source code and be reliable enough for local development, automation, and CI pipelines.
 
@@ -12,15 +12,17 @@ The generated documentation must accurately reflect the actual PHP source code a
 
 Use PHP Abstract Syntax Tree analysis as the source of truth.
 
-Do not implement public API extraction using regex-based parsing, ad-hoc string scanning, or fragile text matching.
+Do not implement API extraction using regex-based parsing, ad-hoc string scanning, or fragile text matching.
 
 Documentation-related behavior must be derived from parsed PHP source code, including:
 
-- Public classes
+- Classes
 - Interfaces
 - Traits
 - Enums
-- Public methods
+- Constants
+- Properties
+- Methods
 - Method signatures
 - Inheritance
 - Implemented interfaces
@@ -130,7 +132,7 @@ Do not silently ignore failures that can affect generated documentation correctn
 
 Before completing a code change, verify:
 
-- The implementation uses AST-based PHP analysis where public API extraction is involved.
+- The implementation uses AST-based PHP analysis for API extraction.
 - Generated Markdown output remains deterministic.
 - CLI output uses stdout and stderr appropriately.
 - Exit codes match the documented contract.
