@@ -5,19 +5,24 @@ namespace SineFine\Ponymator\Documentation\Processor;
 class GenerationResult
 {
     /**
-     * @param int      $generated
-     * @param int      $skipped
-     * @param int      $unchanged
-     * @param int      $removed
-     * @param string[] $errors
+     * @param int $generated
+     * @param int $skipped
+     * @param int $unchanged
+     * @param int $removed
+     * @param ErrorReport|null $errorReport
+     * @param int|null $executionTimeNs
      */
+    private ErrorReport $errorReport;
+
     public function __construct(
         private int $generated = 0,
         private int $skipped = 0,
         private int $unchanged = 0,
         private int $removed = 0,
-        private array $errors = [],
+        ?ErrorReport $errorReport = null,
+        private ?int $executionTimeNs = null,
     ) {
+        $this->errorReport = $errorReport ?? new ErrorReport();
     }
 
     public function getGenerated(): int
@@ -40,12 +45,16 @@ class GenerationResult
         return $this->removed;
     }
 
-    /**
-     * @return string[]
-     */
-    public function getErrors(): array
+    public function getErrorReport(): ErrorReport
     {
-        return $this->errors;
+        return $this->errorReport;
+    }
+
+    public function getExecutionTimeSec(): ?float
+    {
+        return $this->executionTimeNs !== null
+            ? $this->executionTimeNs / 1_000_000_000
+            : null;
     }
 
     public function incrementGenerated(): void
@@ -68,8 +77,13 @@ class GenerationResult
         $this->removed++;
     }
 
-    public function addError(string $error): void
+    public function addError(ErrorDiagnostic $diagnostic): void
     {
-        $this->errors[] = $error;
+        $this->errorReport->add($diagnostic);
+    }
+
+    public function setExecutionTimeNs(int $nanoseconds): void
+    {
+        $this->executionTimeNs = $nanoseconds;
     }
 }

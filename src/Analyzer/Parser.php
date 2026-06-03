@@ -10,6 +10,8 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use RuntimeException;
 
+use SineFine\Ponymator\Analyzer\ParserException;
+
 class Parser
 {
     private PhpParser $parser;
@@ -25,24 +27,26 @@ class Parser
     public function parseFile(string $filePath): array
     {
         if (!file_exists($filePath)) {
-            throw new RuntimeException("File not found: $filePath");
+            throw new ParserException("File not found: $filePath");
         }
 
         $code = file_get_contents($filePath);
         if ($code === false) {
-            throw new RuntimeException("Could not read file: $filePath");
+            throw new ParserException("Could not read file: $filePath");
         }
 
         try {
             $ast = $this->parser->parse($code);
         } catch (Error $e) {
-            throw new RuntimeException(
-                sprintf("Parse error in %s on line %d: %s", $filePath, $e->getStartLine(), $e->getRawMessage())
+            throw new ParserException(
+                sprintf("Parse error in %s on line %d: %s", $filePath, $e->getStartLine(), $e->getRawMessage()),
+                $e->getCode(),
+                $e
             );
         }
 
         if ($ast === null) {
-            throw new RuntimeException("Could not parse file: $filePath");
+            throw new ParserException("Could not parse file: $filePath");
         }
 
         $traverser = new NodeTraverser();

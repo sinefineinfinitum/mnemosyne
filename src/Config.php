@@ -2,6 +2,8 @@
 
 namespace SineFine\Ponymator;
 
+use SineFine\Ponymator\Cli\Error\ConfigException;
+
 class Config
 {
     private const DEFAULTS = [
@@ -23,21 +25,19 @@ class Config
 
         if (!file_exists($path)) {
             if ($configPath !== null) {
-                fwrite(STDERR, "Warning: Config file not found at $path, using defaults\n");
+                throw new ConfigException("Config file not found at $path");
             }
             return;
         }
 
-        $raw = file_get_contents($path);
+        $raw = @file_get_contents($path);
         if ($raw === false) {
-            fwrite(STDERR, "Error: Could not read config file at $path\n");
-            return;
+            throw new ConfigException("Could not read config file at $path");
         }
 
         $parsed = json_decode($raw, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            fwrite(STDERR, "Error: Malformed config file at $path: " . json_last_error_msg() . "\n");
-            return;
+            throw new ConfigException("Malformed config file at $path: " . json_last_error_msg());
         }
 
         if (isset($parsed['source'])) {

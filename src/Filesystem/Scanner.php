@@ -4,7 +4,6 @@ namespace SineFine\Ponymator\Filesystem;
 
 use FilesystemIterator;
 
-use InvalidArgumentException;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -33,12 +32,12 @@ class Scanner
 
     /**
      * @return string[]
-     * @throws InvalidArgumentException
+     * @throws FileSystemException
      */
     public function scan(): array
     {
         if (!is_dir($this->sourceDir)) {
-            throw new InvalidArgumentException("Source directory does not exist: " . $this->sourceDir);
+            throw new FileSystemException("Source directory does not exist: " . $this->sourceDir);
         }
 
         $files = [];

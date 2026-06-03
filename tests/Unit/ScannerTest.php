@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Filesystem\FileSystemException;
 use SineFine\Ponymator\Filesystem\Scanner;
 
 final class ScannerTest extends TestCase
@@ -59,7 +60,7 @@ final class ScannerTest extends TestCase
     public function testScanNonExistentDirectory(): void
     {
         $scanner = new Scanner($this->tempDir . '/nonexistent');
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(FileSystemException::class);
         $this->expectExceptionMessage('Source directory does not exist: ');
         $scanner->scan();
     }
