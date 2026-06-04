@@ -1,9 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer;
+namespace SineFine\Ponymator\Documentation\Renderer\Markdown;
 
 use SineFine\Ponymator\Comparator\HashGenerator;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
+use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
 
 final class EnumRenderer implements EntityRendererInterface
 {
@@ -49,12 +50,17 @@ final class EnumRenderer implements EntityRendererInterface
 
         $typeLabel = $entity['scalarType'] !== null ? 'backed enum' : 'enum';
 
+        $interfaceLinks = [];
+        foreach ($entity['interfaces'] as $interface) {
+            $interfaceLinks[] = $linkResolver($interface);
+        }
+
         $md .= $this->builder->declarationLine(
             $typeLabel,
             null,
             null,
-            [],
-            [],
+            $entity['interfaces'],
+            $interfaceLinks,
             $entity['scalarType'],
         );
         $md .= "\n";

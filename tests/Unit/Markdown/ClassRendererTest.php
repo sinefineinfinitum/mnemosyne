@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Ponymator\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\ClassRenderer;
-use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
 
 final class ClassRendererTest extends TestCase
 {
@@ -131,6 +131,21 @@ final class ClassRendererTest extends TestCase
         $this->assertStringNotContainsString('implements', $result);
     }
 
+    public function testRenderEntityTraitsSection(): void
+    {
+        $entity = $this->makeEntity(['traits' => ['App\Traits\LoggableTrait']]);
+        $result = $this->renderer->renderEntity($entity, new CrossReference());
+        $this->assertStringContainsString('### Traits', $result);
+        $this->assertStringContainsString('App\Traits\LoggableTrait', $result);
+    }
+
+    public function testRenderEntityNoTraitsSectionWhenEmpty(): void
+    {
+        $entity = $this->makeEntity(['traits' => []]);
+        $result = $this->renderer->renderEntity($entity, new CrossReference());
+        $this->assertStringNotContainsString('### Traits', $result);
+    }
+
     public function testRenderEntityCreatesSectionWithData(): void
     {
         $crossRefs = new CrossReference(
@@ -172,6 +187,7 @@ final class ClassRendererTest extends TestCase
                 'modifiers' => ['final'],
                 'parentClass' => 'App\Abstracts\BaseService',
                 'interfaces' => ['App\Contracts\ServiceInterface'],
+                'traits' => [],
                 'constants' => [],
                 'methods' => [
                     [

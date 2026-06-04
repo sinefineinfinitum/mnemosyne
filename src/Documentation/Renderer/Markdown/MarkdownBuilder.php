@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer;
+namespace SineFine\Ponymator\Documentation\Renderer\Markdown;
 
 final class MarkdownBuilder
 {

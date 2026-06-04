@@ -10,15 +10,15 @@ use SineFine\Ponymator\Analyzer\Parser;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Config;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
+use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
 use SineFine\Ponymator\Documentation\Processor\DocumentationProcessor;
 use SineFine\Ponymator\Documentation\Processor\PageGenerator;
-use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
-use SineFine\Ponymator\Documentation\Renderer\ClassRenderer;
-use SineFine\Ponymator\Documentation\Renderer\EnumRenderer;
-use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\InterfaceRenderer;
-use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
-use SineFine\Ponymator\Documentation\Renderer\TraitRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\InterfaceRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer;
 use SineFine\Ponymator\Filesystem\PathResolver;
 use SineFine\Ponymator\Filesystem\Scanner;
 
@@ -167,6 +167,66 @@ class Hidden {
 
         $this->assertFileDoesNotExist($this->targetDir . '/broken.md');
         $this->assertSame(1, $result->getSkipped());
+    }
+
+    public function testEntityWithGlobalFunction(): void
+    {
+        file_put_contents(
+            $this->sourceDir . '/Service.php', '<?php
+
+class Service {
+    public function process(): void {}
+}
+
+function helper(string $name): string {
+    return "Hello, $name!";
+}'
+        );
+
+        $config = $this->makeConfig();
+        $generator = $this->makeGenerator($config);
+
+        $scanner = new Scanner($this->sourceDir);
+        $files = $scanner->scan();
+        $generator->generateFull($files);
+
+        $this->assertFileExists($this->targetDir . '/Service.md');
+        $content = file_get_contents($this->targetDir . '/Service.md');
+
+        $this->assertStringContainsString('type: class', $content);
+        $this->assertStringContainsString('`Service`', $content);
+        $this->assertStringContainsString('process', $content);
+        $this->assertStringContainsString('Global functions', $content);
+        $this->assertStringContainsString('helper', $content);
+    }
+
+    public function testEntityWithGlobalConstants(): void
+    {
+        file_put_contents(
+            $this->sourceDir . '/Config.php', '<?php
+
+class Config {
+    public function get(string $key): mixed {}
+}
+
+define("APP_NAME", "Ponymator");
+define("APP_VERSION", "1.0");'
+        );
+
+        $config = $this->makeConfig();
+        $generator = $this->makeGenerator($config);
+
+        $scanner = new Scanner($this->sourceDir);
+        $files = $scanner->scan();
+        $generator->generateFull($files);
+
+        $this->assertFileExists($this->targetDir . '/Config.md');
+        $content = file_get_contents($this->targetDir . '/Config.md');
+
+        $this->assertStringContainsString('type: class', $content);
+        $this->assertStringContainsString('Global constants', $content);
+        $this->assertStringContainsString('APP_NAME', $content);
+        $this->assertStringContainsString('APP_VERSION', $content);
     }
 
     private function rmdir(string $dir): void

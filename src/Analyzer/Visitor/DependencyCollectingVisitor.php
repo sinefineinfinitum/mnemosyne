@@ -8,6 +8,7 @@ use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\UnionType;
 use PhpParser\NodeVisitorAbstract;
 
@@ -26,6 +27,8 @@ final class DependencyCollectingVisitor extends NodeVisitorAbstract
         'never',
         'true',
         'false',
+        'self',
+        'parent',
     ];
 
     /**
@@ -43,7 +46,7 @@ final class DependencyCollectingVisitor extends NodeVisitorAbstract
             $this->addDep($node->extends->toCodeString());
         }
 
-        if ($node instanceof Node\Stmt\Class_) {
+        if ($node instanceof Node\Stmt\Class_ || $node instanceof Enum_) {
             foreach ($node->implements as $interface) {
                 $this->addDep($interface->toCodeString());
             }

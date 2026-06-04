@@ -1,11 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer;
+namespace SineFine\Ponymator\Documentation\Renderer\Markdown;
 
 use SineFine\Ponymator\Comparator\HashGenerator;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
+use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
 
-final class ClassRenderer implements EntityRendererInterface
+final class InterfaceRenderer implements EntityRendererInterface
 {
     public function __construct(
         private MarkdownBuilder $builder,
@@ -14,7 +15,7 @@ final class ClassRenderer implements EntityRendererInterface
 
     public function supports(array $entity): bool
     {
-        return $entity['type'] === 'class';
+        return $entity['type'] === 'interface';
     }
 
     /**
@@ -27,7 +28,7 @@ final class ClassRenderer implements EntityRendererInterface
         $hash = HashGenerator::shortHash($content);
         $md = $this->builder->frontmatter(
             [
-            'type' => 'class',
+            'type' => 'interface',
             'hash' => $hash,
             ]
         );
@@ -47,23 +48,20 @@ final class ClassRenderer implements EntityRendererInterface
         $md .= $this->builder->header(1, '`' . $entity['fqn'] . '`');
         $md .= "\n";
 
-        $typeLabel = trim(implode(' ', $entity['modifiers']) . ' class');
-
-        $parentLink = $entity['parentClass'] !== null
-            ? $linkResolver($entity['parentClass'])
-            : null;
-
         $interfaceLinks = [];
         foreach ($entity['interfaces'] as $interface) {
             $interfaceLinks[] = $linkResolver($interface);
         }
 
         $md .= $this->builder->declarationLine(
-            $typeLabel,
-            $entity['parentClass'],
-            $parentLink,
+            'interface',
+            null,
+            null,
             $entity['interfaces'],
             $interfaceLinks,
+            null,
+            'extends',
+            'extends'
         );
         $md .= "\n";
 
@@ -78,8 +76,6 @@ final class ClassRenderer implements EntityRendererInterface
         if (!empty($entity['methods'])) {
             $md .= $this->builder->section('Methods', 3, $this->builder->methodsList($entity['methods'], $linkResolver));
         }
-
-        $md .= $this->builder->section('Creates', 3, $this->builder->createsSection($crossRefs->getCreates(), $linkResolver));
 
         if (!empty($crossRefs->getUsedByLinks())) {
             $md .= $this->builder->usedBySection($crossRefs->getUsedByLinks());

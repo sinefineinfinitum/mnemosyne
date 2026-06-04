@@ -4,6 +4,7 @@ namespace SineFine\Ponymator\Analyzer\Extractor;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use PhpParser\Node\Stmt\TraitUse;
 
 final class ClassExtractor implements EntityExtractorInterface
 {
@@ -31,12 +32,23 @@ final class ClassExtractor implements EntityExtractorInterface
         }
         sort($interfaces);
 
+        $traits = [];
+        foreach ($node->stmts as $stmt) {
+            if ($stmt instanceof TraitUse) {
+                foreach ($stmt->traits as $trait) {
+                    $traits[] = ltrim($trait->toCodeString(), '\\');
+                }
+            }
+        }
+        sort($traits);
+
         return [
             'fqn' => $this->astHelper->resolveFqn($this->namespace, $name),
             'type' => 'class',
             'modifiers' => $this->modifiers($node),
             'parentClass' => $node->extends !== null ? ltrim($node->extends->toCodeString(), '\\') : null,
             'interfaces' => $interfaces,
+            'traits' => $traits,
             'constants' => $this->astHelper->extractConstants($node),
             'properties' => $this->astHelper->extractProperties($node),
             'methods' => $this->astHelper->extractMethods($node),

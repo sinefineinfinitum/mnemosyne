@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer;
+namespace SineFine\Ponymator\Documentation\Renderer\Markdown;
 
 use SineFine\Ponymator\Comparator\HashGenerator;
+use SineFine\Ponymator\Documentation\Renderer\FileRendererInterface;
 
-final class FileRenderer
+final class FileRenderer implements FileRendererInterface
 {
     public function __construct(
         private MarkdownBuilder $builder,

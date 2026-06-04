@@ -58,6 +58,7 @@ final class CombinedAnalyzer
     {
         foreach ($ast as $node) {
             if ($node instanceof Namespace_) {
+                // TODO: handles only the first namespace — entities in subsequent blocks get wrong FQCN
                 return $node->name?->toCodeString();
             }
         }

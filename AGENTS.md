@@ -139,3 +139,8 @@ Before completing a code change, verify:
 - Relevant PHPUnit tests were added or updated.
 - Existing tests still pass.
 - No PHP features newer than PHP 8.0 were introduced.
+
+After completing a code and test, verify:
+
+- Actuality of the documentation.
+> **Convention**: Feature folder names and branch names must match exactly, including the numbering. If a branch or folder with that number exists, take the next one.

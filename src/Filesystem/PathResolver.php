@@ -8,6 +8,7 @@ class PathResolver
 {
     public function __construct(
         private Config $config,
+        private string $docExtension = 'md',
     ) {
     }
 
@@ -23,7 +24,12 @@ class PathResolver
 
     public function docRelativePath(string $sourceRelative): string
     {
-        return preg_replace('/\.php$/i', '.md', $sourceRelative) ?? $sourceRelative;
+        return preg_replace('/\.php$/i', '.' . $this->docExtension, $sourceRelative) ?? $sourceRelative;
+    }
+
+    public function docExtension(): string
+    {
+        return $this->docExtension;
     }
 
     public function relativeTargetPath(string $fullPath): string

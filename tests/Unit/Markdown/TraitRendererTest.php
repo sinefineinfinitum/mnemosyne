@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Ponymator\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
-use SineFine\Ponymator\Documentation\Renderer\TraitRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer;
 
 final class TraitRendererTest extends TestCase
 {
@@ -138,6 +138,36 @@ final class TraitRendererTest extends TestCase
         $first = $this->renderer->renderEntity($entity, $crossRefs);
         $second = $this->renderer->renderEntity($entity, $crossRefs);
         $this->assertSame($first, $second);
+    }
+
+    public function testRenderEntityReadonlyProperty(): void
+    {
+        $entity = $this->makeEntity([
+            'properties' => [
+                ['name' => 'cache', 'visibility' => 'protected', 'type' => 'array', 'defaultValue' => '[]', 'isStatic' => false, 'isReadonly' => true],
+            ],
+        ]);
+        $result = $this->renderer->renderEntity($entity, new CrossReference());
+        $this->assertStringContainsString('readonly', $result);
+    }
+
+    public function testRenderEntitySelfReturnType(): void
+    {
+        $entity = $this->makeEntity([
+            'methods' => [
+                [
+                    'name' => 'withConfig',
+                    'visibility' => 'public',
+                    'isStatic' => false,
+                    'isAbstract' => false,
+                    'parameters' => [],
+                    'returnType' => 'self',
+                    'returnTypeNullable' => false,
+                ],
+            ],
+        ]);
+        $result = $this->renderer->renderEntity($entity, new CrossReference());
+        $this->assertStringContainsString('self', $result);
     }
 
     private function makeEntity(array $overrides = []): array

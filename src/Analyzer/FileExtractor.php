@@ -140,6 +140,7 @@ class FileExtractor
             return $typeNode->toString();
         }
 
+        // TODO: unknown type node — may produce garbage for future PHP syntax
         return $typeNode->getType();
     }
 

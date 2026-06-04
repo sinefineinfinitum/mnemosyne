@@ -9,15 +9,15 @@ use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\Parser;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
+use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
 use SineFine\Ponymator\Documentation\Processor\DocumentationProcessor;
 use SineFine\Ponymator\Documentation\Processor\PageGenerator;
-use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
-use SineFine\Ponymator\Documentation\Renderer\ClassRenderer;
-use SineFine\Ponymator\Documentation\Renderer\EnumRenderer;
-use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\InterfaceRenderer;
-use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
-use SineFine\Ponymator\Documentation\Renderer\TraitRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\InterfaceRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer;
 use SineFine\Ponymator\Filesystem\PathResolver;
 
 final class DiffModeTest extends TestCase

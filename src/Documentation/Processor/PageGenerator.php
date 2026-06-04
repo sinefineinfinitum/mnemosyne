@@ -2,7 +2,6 @@
 
 namespace SineFine\Ponymator\Documentation\Processor;
 
-use PhpParser\Node;
 use SineFine\Ponymator\Analyzer\CombinedAnalysisResult;
 use SineFine\Ponymator\Analyzer\CombinedAnalyzer;
 use SineFine\Ponymator\Analyzer\FileExtractor;
@@ -11,7 +10,7 @@ use SineFine\Ponymator\Analyzer\Parser;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
 use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
-use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
+use SineFine\Ponymator\Documentation\Renderer\FileRendererInterface;
 
 final class PageGenerator
 {
@@ -22,7 +21,7 @@ final class PageGenerator
      * @param CombinedAnalyzer          $combinedAnalyzer
      * @param FileExtractor             $fileExtractor
      * @param EntityRendererInterface[] $renderers
-     * @param FileRenderer              $fileRenderer
+     * @param FileRendererInterface     $fileRenderer
      * @param CrossReferenceFactory     $crossReferenceFactory
      */
     public function __construct(
@@ -30,7 +29,7 @@ final class PageGenerator
         private CombinedAnalyzer $combinedAnalyzer,
         private FileExtractor $fileExtractor,
         private array $renderers,
-        private FileRenderer $fileRenderer,
+        private FileRendererInterface $fileRenderer,
         private CrossReferenceFactory $crossReferenceFactory,
     ) {
     }
@@ -41,11 +40,33 @@ final class PageGenerator
         $analysis = $this->combinedAnalyzer->analyze($ast);
         $entities = $analysis->getEntities();
 
-        if (!empty($entities)) {
-            return $this->renderEntities($analysis, $entities, $relativePath);
+        $functions = $this->fileExtractor->extractFunctions($ast);
+        $globals = $this->fileExtractor->extractGlobals($ast);
+        $constants = $this->fileExtractor->extractConstants($ast);
+
+        $hasFileLevel = $functions !== [] || $globals !== [] || $constants !== [];
+
+        $content = '';
+
+        if ($entities !== []) {
+            $content .= $this->renderEntities($analysis, $entities, $relativePath);
         }
 
-        return $this->renderFileGlobals($ast, $relativePath);
+        if ($hasFileLevel) {
+            $content .= $this->fileRenderer->renderFile(
+                $relativePath,
+                $functions,
+                $globals,
+                $constants,
+            );
+        }
+
+        return $content;
+    }
+
+    public function setContext(CrossReferenceContext $context): void
+    {
+        $this->context = $context;
     }
 
     /**
@@ -65,24 +86,6 @@ final class PageGenerator
         }
 
         return $content;
-    }
-
-    /**
-     * @param array<int, Node> $ast
-     */
-    private function renderFileGlobals(array $ast, string $relativePath): string
-    {
-        return $this->fileRenderer->renderFile(
-            $relativePath,
-            $this->fileExtractor->extractFunctions($ast),
-            $this->fileExtractor->extractGlobals($ast),
-            $this->fileExtractor->extractConstants($ast),
-        );
-    }
-
-    public function setContext(CrossReferenceContext $context): void
-    {
-        $this->context = $context;
     }
 
     /**

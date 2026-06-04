@@ -9,10 +9,14 @@ final class ArgumentParser
     public const FULL = 'full';
     public const DIFF = 'diff';
 
+    public const OUTPUT_MD = 'md';
+    public const OUTPUT_PSV1 = 'psv1';
+
     private function __construct(
         public string $mode,
         public ?string $configPath,
         public bool $helpRequested,
+        public string $output,
     ) {
     }
 
@@ -24,6 +28,7 @@ final class ArgumentParser
         $mode = self::DIFF;
         $configPath = null;
         $helpRequested = false;
+        $output = self::OUTPUT_MD;
 
         array_shift($argv);
 
@@ -32,13 +37,14 @@ final class ArgumentParser
                 $arg === '--full' => $mode = self::FULL,
                 $arg === '--diff' => $mode = self::DIFF,
                 str_starts_with($arg, '--config=') => $configPath = substr($arg, 9),
+                str_starts_with($arg, '--output=') => $output = self::parseOutput(substr($arg, 9)),
                 $arg === '--help' => $helpRequested = true,
                 str_starts_with($arg, '--') => self::mistakeExit('Unknown flag: ' . $arg),
                 default => self::usageExit('Unexpected argument: ' . $arg),
             };
         }
 
-        return new self($mode, $configPath, $helpRequested);
+        return new self($mode, $configPath, $helpRequested, $output);
     }
 
     public static function printHelp(): void
@@ -50,6 +56,8 @@ Options:
   --full              Regenerate all documentation
   --diff              Regenerate only changed files (default)
   --config=<path>     Path to config file (default: .ponymator.json)
+  --output=md         Generate Markdown documentation (default)
+  --output=psv1       Generate Ponymator Syntax v1 documentation
   --help              Display this help message
 
 Exit codes:
@@ -64,6 +72,18 @@ Exit codes:
 HELP;
     }
 
+    private static function parseOutput(string $output): string
+    {
+        if ($output === self::OUTPUT_MD || $output === self::OUTPUT_PSV1) {
+            return $output;
+        }
+
+        self::mistakeExit('Unknown output format: ' . $output);
+    }
+
+    /**
+     * @phpstan-return never
+     */
     private static function mistakeExit(string $message): void
     {
         fwrite(STDERR, "Error: $message\n");

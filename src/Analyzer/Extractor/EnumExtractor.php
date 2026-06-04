@@ -34,7 +34,7 @@ final class EnumExtractor implements EntityExtractorInterface
             'cases' => $this->enumCases($node),
             'modifiers' => [],
             'parentClass' => null,
-            'interfaces' => [],
+            'interfaces' => $this->extractInterfaces($node),
             'constants' => $this->astHelper->extractConstants($node),
             'properties' => $this->astHelper->extractProperties($node),
             'methods' => $this->astHelper->extractMethods($node),
@@ -57,5 +57,18 @@ final class EnumExtractor implements EntityExtractorInterface
         }
         usort($cases, fn($a, $b) => strcmp($a['name'], $b['name']));
         return $cases;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function extractInterfaces(Enum_ $node): array
+    {
+        $interfaces = [];
+        foreach ($node->implements as $interface) {
+            $interfaces[] = ltrim($interface->toCodeString(), '\\');
+        }
+        sort($interfaces);
+        return $interfaces;
     }
 }

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Ponymator\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Renderer\FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\MarkdownBuilder;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer;
+use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
 
 final class FileRendererTest extends TestCase
 {

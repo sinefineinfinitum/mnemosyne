@@ -168,6 +168,15 @@ final class CrossReferenceScannerVisitorTest extends TestCase
         $this->assertSame(['App\Status'], $result['fqns']);
     }
 
+    public function testEnumImplements(): void
+    {
+        $result = $this->scanCode(
+            '<?php namespace App; enum Status: int implements \App\StatusInterface {}'
+        );
+
+        $this->assertSame(['App\StatusInterface', 'App\Status'], $result['pairs'][0]);
+    }
+
     public function testMultipleReferencesInClass(): void
     {
         $result = $this->scanCode(

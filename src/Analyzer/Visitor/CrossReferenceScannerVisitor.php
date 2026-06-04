@@ -10,6 +10,7 @@ use PhpParser\Node\NullableType;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\TraitUse;
@@ -21,6 +22,7 @@ final class CrossReferenceScannerVisitor extends NodeVisitorAbstract
     private const BUILTIN_TYPES = [
         'string', 'int', 'float', 'bool', 'array', 'void',
         'null', 'object', 'mixed', 'never', 'true', 'false',
+        'self', 'parent',
     ];
 
     /**
@@ -56,6 +58,12 @@ final class CrossReferenceScannerVisitor extends NodeVisitorAbstract
             if ($node->extends !== null) {
                 $this->addReference($node->extends, $currentEntity);
             }
+            foreach ($node->implements as $interface) {
+                $this->addReference($interface, $currentEntity);
+            }
+            break;
+
+        case $node instanceof Enum_:
             foreach ($node->implements as $interface) {
                 $this->addReference($interface, $currentEntity);
             }
