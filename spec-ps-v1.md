@@ -28,7 +28,6 @@ Ready for import into graph databases and dependency analyzers.
 | `:`          | type / return type                                                    |
 | `^`          | creates instance                                                      |
 | `+` `-` `#`  | visibility: public, private, protected for OOP                        |
-| `?`          | nullable — MUST be placed immediately after `:`, before the type name |
 | `\|`         | union type                                                            |
 | `&`          | by-ref (parameter level)                                              |
 | `~`          | case (under `@enum`)                                                  |
@@ -36,18 +35,10 @@ Ready for import into graph databases and dependency analyzers.
 
 ### Core rules
 
-1. `?` MUST appear immediately after `:` and before the type name: `:?TypeName`.
-2. Keywords (`final`, `abstract`, `static`, `readonly`) MUST follow the entity or member name on the same line:
-   - Entity header: `@class final Name`
-   - Method: `.+method static`
-   - Property: `$-readonly name`, `$+static readonly name`, `$#static name`
-   Keywords appear in alphabetical order when multiple are present.
-3. Indentation defines nesting: one level of exactly 4 spaces (MUST NOT use tabs) for children of a `.` block.
-   Children include parameters, return type, and creates lines.
-   - Correct: `    $param:int`
-   - Incorrect: `\t$param:int` or `  $param:int`
-4. One line per declaration — no inlining of methods, properties, or constants.
-5. `<` and `>` at the start of a directive line mean `implements` / `extends`. Within a type expression after `:`,
+1. Keywords (`final`, `abstract`, `static`, `readonly`) MUST follow the entity or member name on the same line:
+2. Indentation defines nesting: one level of exactly 4 spaces (MUST NOT use tabs) for children of a `.` block.
+3. One line per declaration — no inlining of methods, properties, or constants.
+4. `<` and `>` at the start of a directive line mean `implements` / `extends`. Within a type expression after `:`,
 the same characters are part of generic type syntax (e.g. `Collection<User>`, `array<string,int>`)
 — context resolves the ambiguity.
 
@@ -106,7 +97,7 @@ $-mixedResult:int|string|null
 
 .+search final
     $query:App\Query\SearchQuery
-    :?App\Search\SearchResult
+    :App\Search\SearchResult|null
     ^App\Search\SearchResult
 
 .+merge static
@@ -118,6 +109,14 @@ $-mixedResult:int|string|null
     $status:int|string
     :void
 
+```
+
+Nullable is expressed via union with `null`:
+
+```
+.+find
+    $id:int
+    :User|null
 ```
 
 #### Enum
@@ -136,7 +135,7 @@ $-mixedResult:int|string|null
 
 .getUser
     $id:int
-    :?App\Entity\User
+    :App\Entity\User|null
 
 !MAX_RETRIES:int=3
 

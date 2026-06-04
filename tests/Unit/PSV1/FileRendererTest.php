@@ -36,7 +36,7 @@ final class FileRendererTest extends TestCase
         $result = $this->renderer->renderFile('src/functions.php', $functions, [], []);
         $this->assertStringContainsString('.getUser', $result);
         $this->assertStringContainsString('    $id:int', $result);
-        $this->assertStringContainsString('    :?App\Entity\User', $result);
+        $this->assertStringContainsString('    :App\Entity\User|null', $result);
     }
 
     public function testRenderFileWithConstants(): void

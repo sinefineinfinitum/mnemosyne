@@ -212,7 +212,7 @@ final class Psv1Builder
     private function type(string $type): string
     {
         if (str_starts_with($type, '?')) {
-            return '?' . substr($type, 1);
+            return substr($type, 1) . '|null';
         }
 
         return $type;

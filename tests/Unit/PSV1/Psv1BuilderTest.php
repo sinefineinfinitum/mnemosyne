@@ -292,7 +292,7 @@ final class Psv1BuilderTest extends TestCase
     public function testReturnTypeNullable(): void
     {
         $result = $this->builder->returnType('?App\Entity\User');
-        $this->assertSame('    :?App\Entity\User' . PHP_EOL, $result);
+        $this->assertSame('    :App\Entity\User|null' . PHP_EOL, $result);
     }
 
     public function testReturnTypeNull(): void

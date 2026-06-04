@@ -106,7 +106,7 @@ final class ClassRendererTest extends TestCase
     public function testRenderEntityMethodReturnType(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
-        $this->assertStringContainsString('    :?App\Search\SearchResult', $result);
+        $this->assertStringContainsString('    :App\Search\SearchResult|null', $result);
     }
 
     public function testRenderEntityMethodCreates(): void

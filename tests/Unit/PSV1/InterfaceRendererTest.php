@@ -68,7 +68,7 @@ final class InterfaceRendererTest extends TestCase
     public function testRenderEntityMethodReturnType(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
-        $this->assertStringContainsString('    :?User', $result);
+        $this->assertStringContainsString('    :User|null', $result);
     }
 
     public function testRenderEntityConstants(): void
