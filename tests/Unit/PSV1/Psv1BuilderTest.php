@@ -278,9 +278,54 @@ final class Psv1BuilderTest extends TestCase
             'type' => 'int|string',
             'defaultValue' => null,
             'isPassedByReference' => false,
+            'isVariadic' => false,
         ];
         $result = $this->builder->parameter($parameter);
         $this->assertSame('    $status:int|string' . PHP_EOL, $result);
+    }
+
+    public function testParameterVariadic(): void
+    {
+        $parameter = [
+            'name' => 'ids',
+            'type' => 'int',
+            'defaultValue' => null,
+            'isPassedByReference' => false,
+            'isVariadic' => true,
+        ];
+        $result = $this->builder->parameter($parameter);
+        $this->assertSame('    ...$ids:int' . PHP_EOL, $result);
+    }
+
+    public function testParameterVariadicByReference(): void
+    {
+        $parameter = [
+            'name' => 'items',
+            'type' => 'array',
+            'defaultValue' => null,
+            'isPassedByReference' => true,
+            'isVariadic' => true,
+        ];
+        $result = $this->builder->parameter($parameter);
+        $this->assertSame('    &...$items:array' . PHP_EOL, $result);
+    }
+
+    public function testConstantValueEscapesQuotes(): void
+    {
+        $result = $this->builder->constant('MESSAGE', 'public', 'string', "it's done");
+        $this->assertSame("!+MESSAGE:string=it's done" . PHP_EOL, $result);
+    }
+
+    public function testConstantValueEscapesNewlines(): void
+    {
+        $result = $this->builder->constant('SQL', 'public', 'string', "SELECT *\nWHERE id=1");
+        $this->assertSame('!+SQL:string=SELECT *\nWHERE id=1' . PHP_EOL, $result);
+    }
+
+    public function testConstantValueEscapesWindowsNewlines(): void
+    {
+        $result = $this->builder->constant('SQL', 'public', 'string', "SELECT *\r\nWHERE id=1");
+        $this->assertSame('!+SQL:string=SELECT *\nWHERE id=1' . PHP_EOL, $result);
     }
 
     public function testReturnType(): void

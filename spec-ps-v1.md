@@ -69,8 +69,8 @@ This section defines how Core maps to PHP.
 
 1. Names MUST use FQCN format (e.g. `App\Service\SearchService`) for all entity types except `@file`,
 which MUST use a file path relative to the project root.
-2. Constant names MUST NOT start with `$`. The `$` prefix is reserved for properties, parameters,
-and global variables.
+2. Constant names MUST NOT start with `$` or contain whitespace. The `$` prefix is reserved
+   for properties, parameters, and global variables.
 3. All primitives MUST be lowercase.
 
 ### PHP primitives

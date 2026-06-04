@@ -45,7 +45,7 @@ final class Psv1Builder
         }
 
         if ($value !== null) {
-            $line .= '=' . $value;
+            $line .= '=' . $this->escapeValue($value);
         }
 
         return $line . PHP_EOL;
@@ -77,7 +77,7 @@ final class Psv1Builder
         }
 
         if ($property['defaultValue'] !== null) {
-            $line .= '=' . $property['defaultValue'];
+            $line .= '=' . $this->escapeValue($property['defaultValue']);
         }
 
         return $line . PHP_EOL;
@@ -123,6 +123,10 @@ final class Psv1Builder
             $line .= '&';
         }
 
+        if (!empty($parameter['isVariadic'])) {
+            $line .= '...';
+        }
+
         $line .= '$' . $parameter['name'];
 
         if ($parameter['type'] !== null) {
@@ -130,7 +134,7 @@ final class Psv1Builder
         }
 
         if ($parameter['defaultValue'] !== null) {
-            $line .= '=' . $parameter['defaultValue'];
+            $line .= '=' . $this->escapeValue($parameter['defaultValue']);
         }
 
         return $line . PHP_EOL;
@@ -184,7 +188,7 @@ final class Psv1Builder
         }
 
         if ($value !== null) {
-            $line .= '=' . $value;
+            $line .= '=' . $this->escapeValue($value);
         }
 
         return $line . PHP_EOL;
@@ -203,7 +207,7 @@ final class Psv1Builder
         $line = '~' . $case['name'];
 
         if ($scalarType !== null && isset($case['value'])) {
-            $line .= '=' . $case['value'];
+            $line .= '=' . $this->escapeValue($case['value']);
         }
 
         return $line . PHP_EOL;
@@ -229,5 +233,10 @@ final class Psv1Builder
         }
 
         return '+';
+    }
+
+    private function escapeValue(string $value): string
+    {
+        return str_replace(["\r\n", "\r", "\n"], '\n', $value);
     }
 }
