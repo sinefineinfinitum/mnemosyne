@@ -220,6 +220,19 @@ final class ClassRendererTest extends TestCase
         $this->assertStringContainsString('    :static', $result);
     }
 
+    public function testRenderEntityPromotedProperties(): void
+    {
+        $entity = $this->makeEntity([
+            'properties' => [
+                ['name' => 'id', 'visibility' => 'private', 'type' => 'int', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => true],
+                ['name' => 'name', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false],
+            ],
+        ]);
+        $result = $this->renderer->renderEntity($entity, new CrossReference());
+        $this->assertStringContainsString('$-readonly id:int', $result);
+        $this->assertStringContainsString('$+name:string', $result);
+    }
+
     public function testRenderEntityDeterministic(): void
     {
         $entity = $this->makeEntity();

@@ -104,6 +104,28 @@ final class AstHelper
                 ];
             }
         }
+
+        foreach ($node->getMethods() as $method) {
+            if (strtolower($method->name->toString()) !== '__construct') {
+                continue;
+            }
+
+            foreach ($method->getParams() as $param) {
+                if (!$param->isPromoted()) {
+                    continue;
+                }
+
+                $properties[] = [
+                    'name' => $param->var->name ?? '',
+                    'visibility' => $this->resolveParamVisibility($param),
+                    'type' => $param->type !== null ? $this->resolveType($param->type) : null,
+                    'defaultValue' => $param->default !== null ? $this->resolveDefault($param->default) : null,
+                    'isStatic' => false,
+                    'isReadonly' => $param->isReadonly(),
+                ];
+            }
+        }
+
         usort($properties, fn($a, $b) => strcmp($a['name'], $b['name']));
         return $properties;
     }
@@ -114,6 +136,17 @@ final class AstHelper
             return 'private';
         }
         if ($node->isProtected()) {
+            return 'protected';
+        }
+        return 'public';
+    }
+
+    private function resolveParamVisibility(Node\Param $param): string
+    {
+        if ($param->isPrivate()) {
+            return 'private';
+        }
+        if ($param->isProtected()) {
             return 'protected';
         }
         return 'public';
@@ -136,6 +169,7 @@ final class AstHelper
         if ($typeNode instanceof Identifier) {
             return $typeNode->toString();
         }
+        // TODO: unknown type node — may produce garbage for future PHP syntax
         return $typeNode->getType();
     }
 
