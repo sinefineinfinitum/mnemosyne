@@ -26,6 +26,8 @@ final class DependencyCollectingVisitor extends NodeVisitorAbstract
         'never',
         'true',
         'false',
+        'self',
+        'parent',
     ];
 
     /**

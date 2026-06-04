@@ -21,6 +21,7 @@ final class CrossReferenceScannerVisitor extends NodeVisitorAbstract
     private const BUILTIN_TYPES = [
         'string', 'int', 'float', 'bool', 'array', 'void',
         'null', 'object', 'mixed', 'never', 'true', 'false',
+        'self', 'parent',
     ];
 
     /**
