@@ -198,3 +198,18 @@ The following would trigger a major version bump:
 Non-breaking additions (minor version) must not change the interpretation of any valid v1.0
 document. Parsers written for v1.0 MUST be able to safely ignore unknown optional elements
 introduced in v1.1, v1.2, etc.
+
+## Known limitations (v1.0)
+
+These are accepted simplifications that may be addressed in future versions:
+
+1. **Non-representable default values** — complex expressions (`1 + 2`, `__FILE__`, ternary, etc.)
+   are rendered as `null`.
+2. **Array defaults** — arrays are rendered as `[]` with no key/value information preserved.
+3. **Float precision** — whole-number floats (e.g. `1.0`) are rendered as `"1"`.
+   The output is deterministic but loses the float distinction.
+4. **Unknown type nodes** — if PHP-Parser produces an unrecognized type AST node,
+   the internal node type name is used as fallback instead of a proper type name.
+5. **Multiple namespaces** — only the first `namespace` declaration in a file is
+   recognized. Entities in subsequent `namespace { }` blocks may receive incorrect
+   FQCNs and are not reliably documented.

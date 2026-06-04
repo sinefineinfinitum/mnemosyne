@@ -201,6 +201,25 @@ final class ClassRendererTest extends TestCase
         $this->assertStringContainsString('    :array', $result);
     }
 
+    public function testRenderEntityStaticReturnType(): void
+    {
+        $entity = $this->makeEntity([
+            'methods' => [
+                [
+                    'name' => 'create',
+                    'visibility' => 'public',
+                    'isAbstract' => false,
+                    'isFinal' => false,
+                    'isStatic' => true,
+                    'parameters' => [],
+                    'returnType' => 'static',
+                ],
+            ],
+        ]);
+        $result = $this->renderer->renderEntity($entity, new CrossReference());
+        $this->assertStringContainsString('    :static', $result);
+    }
+
     public function testRenderEntityDeterministic(): void
     {
         $entity = $this->makeEntity();
