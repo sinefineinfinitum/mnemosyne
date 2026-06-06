@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Analyzer\Visitor;
 
 use PhpParser\Node;
+use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
@@ -16,7 +17,7 @@ class FileExtractingVisitor extends NodeVisitorAbstract
 
     public function enterNode(Node $node): ?int
     {
-        if ($node instanceof Function_) {
+        if ($node instanceof Function_ || $node instanceof ClassLike) {
             return NodeVisitor::DONT_TRAVERSE_CHILDREN;
         }
         if ($node instanceof Node\Expr\Variable
