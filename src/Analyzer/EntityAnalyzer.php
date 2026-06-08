@@ -15,12 +15,12 @@ use SineFine\Ponymator\Analyzer\Visitor\DependencyCollectingVisitor;
 use SineFine\Ponymator\Analyzer\Visitor\EntityExtractingVisitor;
 use SineFine\Ponymator\Analyzer\Visitor\ObjectCreationCollectingVisitor;
 
-final class CombinedAnalyzer
+final class EntityAnalyzer
 {
     /**
      * @param array<int, Node> $ast
      */
-    public function analyze(array $ast): CombinedAnalysisResult
+    public function analyze(array $ast): EntityAnalysisResult
     {
         $namespace = $this->findNamespace($ast) ?? '';
         $astHelper = new AstHelper();
@@ -44,7 +44,7 @@ final class CombinedAnalyzer
         $traverser->addVisitor($creationVisitor);
         $traverser->traverse($ast);
 
-        return new CombinedAnalysisResult(
+        return new EntityAnalysisResult(
             entities: $entityVisitor->entities(),
             dependencies: $dependencyVisitor->dependencies(),
             creations: $creationVisitor->getAllCreates(),

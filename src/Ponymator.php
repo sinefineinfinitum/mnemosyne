@@ -2,10 +2,11 @@
 
 namespace SineFine\Ponymator;
 
-use SineFine\Ponymator\Analyzer\CombinedAnalyzer;
+use SineFine\Ponymator\Analyzer\EntityAnalyzer;
 use SineFine\Ponymator\Analyzer\FileExtractor;
 use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\Parser;
+use SineFine\Ponymator\Analyzer\CallAnalyzer;
 use SineFine\Ponymator\Cli\ArgumentParser;
 use SineFine\Ponymator\Cli\Error\ConfigException;
 use SineFine\Ponymator\Cli\Error\ErrorOutputFormatter;
@@ -54,7 +55,7 @@ class Ponymator
         }
 
         $parser = new Parser();
-        $combinedAnalyzer = new CombinedAnalyzer();
+        $combinedAnalyzer = new EntityAnalyzer();
         $fileExtractor = new FileExtractor();
 
         [$entityRenderers, $fileRenderer] = $this->createRenderers($args->output);
@@ -70,6 +71,7 @@ class Ponymator
             $entityRenderers,
             $fileRenderer,
             $crossReferenceFactory,
+            new CallAnalyzer(),
         );
 
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
