@@ -12,13 +12,20 @@ final class FileRenderer implements FileRendererInterface
     }
 
     /**
-     * @param string                           $relativePath
-     * @param array<int, array<string, mixed>> $functions
-     * @param string[]                         $globals
-     * @param array<int, array<string, mixed>> $constants
+     * @param  string                                                     $relativePath
+     * @param  array<int, array<string, mixed>>                           $functions
+     * @param  string[]                                                   $globals
+     * @param  array<int, array<string, mixed>>                           $constants
+     * @param  array<string, list<\SineFine\Ponymator\Analyzer\CallInfo>> $fileCalls    functionName => list<CallInfo>
+     * @return string
      */
-    public function renderFile(string $relativePath, array $functions, array $globals, array $constants): string
-    {
+    public function renderFile(
+        string $relativePath,
+        array $functions,
+        array $globals,
+        array $constants,
+        array $fileCalls = []
+    ): string {
         $psv1 = $this->builder->header('file', [], $relativePath);
 
         foreach ($functions as $function) {
@@ -29,6 +36,11 @@ final class FileRenderer implements FileRendererInterface
             }
 
             $psv1 .= $this->builder->returnType($function['returnType'] ?? null);
+
+            $functionCalls = $fileCalls[$function['name']] ?? [];
+            foreach ($functionCalls as $call) {
+                $psv1 .= $this->builder->callGraphEntry($call->toArray());
+            }
         }
 
         foreach ($constants as $constant) {

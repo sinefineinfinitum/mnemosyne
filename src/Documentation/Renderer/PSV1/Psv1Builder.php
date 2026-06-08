@@ -5,8 +5,10 @@ namespace SineFine\Ponymator\Documentation\Renderer\PSV1;
 final class Psv1Builder
 {
     /**
-     * @param string   $type
-     * @param string[] $keywords
+     * @param  string   $type
+     * @param  string[] $keywords
+     * @param  string   $fqn
+     * @return string
      */
     public function header(string $type, array $keywords, string $fqn): string
     {
@@ -35,7 +37,7 @@ final class Psv1Builder
     {
         return '%' . $type . PHP_EOL;
     }
-    
+
     public function constant(string $name, string $visibility, ?string $type, ?string $value): string
     {
         $line = '!' . $this->modifier($visibility) . $name;
@@ -107,7 +109,7 @@ final class Psv1Builder
 
         return $line . PHP_EOL;
     }
-    
+
     /**
      * Parameter line indented 4 spaces under its method/function.
      *
@@ -158,6 +160,45 @@ final class Psv1Builder
     public function creates(string $type): string
     {
         return '    ^' . $type . PHP_EOL;
+    }
+
+    /**
+     * Call Graph entry indented 4 spaces under its method. PSV1 v1.1 format:
+     * single-line entries with marker + FQCN + separator + method.
+     *
+     * Format: `MARKER FQCN SEPARATOR TARGET`
+     * - `*` for strong (resolved, single FQCN)
+     * - `?` for weak (multiple candidates, unresolved, or late-static)
+     * - `::` for static calls, `->` for dynamic calls
+     * - No separator for global function calls
+     *
+     * @param array{kind: string, targetName: string, resolvedTargetFqcn: ?string, association: string, candidateTypes: list<string>} $call
+     */
+    public function callGraphEntry(array $call): string
+    {
+        if ($call['kind'] === 'create') {
+            return '';
+        }
+
+        $marker = $call['association'] === '*' ? '*' : '?';
+        $out = '';
+
+        if ($call['resolvedTargetFqcn'] !== null) {
+            $out .= '    ' . $marker . $call['resolvedTargetFqcn'] . PHP_EOL;
+        } else {
+            // For weak calls without resolvedTargetFqcn
+            if (!empty($call['candidateTypes'])) {
+                // Get type from kind
+                $separator = $call['kind'] === 'dynamic' ? '->' : '::';
+                $method = $call['targetName'];
+
+                foreach ($call['candidateTypes'] as $candidate) {
+                    $out .= '    ?' . $candidate . $separator . $method . PHP_EOL;
+                }
+            }
+        }
+
+        return $out;
     }
 
     /**

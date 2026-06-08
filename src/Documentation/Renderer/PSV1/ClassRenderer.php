@@ -84,6 +84,11 @@ final class ClassRenderer implements EntityRendererInterface
             foreach ($methodCreates as $createdType) {
                 $psv1 .= $this->builder->creates($createdType);
             }
+
+            $methodCalls = $crossRefs->getCalls()[$method['name']] ?? [];
+            foreach ($methodCalls as $call) {
+                $psv1 .= $this->builder->callGraphEntry($call->toArray());
+            }
         }
 
         return $psv1;
