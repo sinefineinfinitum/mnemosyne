@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Analyzer\CallInfo;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\PSV1\ClassRenderer;
 use SineFine\Ponymator\Documentation\Renderer\PSV1\Psv1Builder;
@@ -73,12 +74,14 @@ final class ClassRendererTest extends TestCase
 
     public function testRenderEntityTraitsBetweenInterfacesAndMembers(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'traits' => ['App\LoggableTrait'],
             'constants' => [
                 ['name' => 'X', 'visibility' => 'public', 'type' => 'int', 'value' => '1'],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $lines = explode(PHP_EOL, $result);
         $ifacePos = array_search('<App\Contracts\SearchInterface', $lines);
@@ -128,22 +131,26 @@ final class ClassRendererTest extends TestCase
 
     public function testRenderEntityConstants(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'constants' => [
                 ['name' => 'DEFAULT_LIMIT', 'visibility' => 'public', 'type' => 'int', 'value' => '25'],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('!+DEFAULT_LIMIT:int=25', $result);
     }
 
     public function testRenderEntityProperties(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'properties' => [
                 ['name' => 'vectorStore', 'visibility' => 'private', 'type' => 'App\Storage\VectorStore', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => true],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('$-readonly vectorStore:App\Storage\VectorStore', $result);
     }
@@ -178,7 +185,8 @@ final class ClassRendererTest extends TestCase
 
     public function testRenderEntityStaticMethod(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'methods' => [
                 [
                     'name' => 'merge',
@@ -193,7 +201,8 @@ final class ClassRendererTest extends TestCase
                     'returnType' => 'array',
                 ],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('.+merge static', $result);
         $this->assertStringContainsString('    &$source:array', $result);
@@ -203,7 +212,8 @@ final class ClassRendererTest extends TestCase
 
     public function testRenderEntityStaticReturnType(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'methods' => [
                 [
                     'name' => 'create',
@@ -215,19 +225,22 @@ final class ClassRendererTest extends TestCase
                     'returnType' => 'static',
                 ],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('    :static', $result);
     }
 
     public function testRenderEntityPromotedProperties(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'properties' => [
                 ['name' => 'id', 'visibility' => 'private', 'type' => 'int', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => true],
                 ['name' => 'name', 'visibility' => 'public', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('$-readonly id:int', $result);
         $this->assertStringContainsString('$+name:string', $result);
@@ -243,7 +256,8 @@ final class ClassRendererTest extends TestCase
 
     public function testRenderEntityOrderingConstantsMethodsProperties(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'constants' => [
                 ['name' => 'C', 'visibility' => 'public', 'type' => 'int', 'value' => '1'],
             ],
@@ -261,7 +275,8 @@ final class ClassRendererTest extends TestCase
                     'returnType' => 'void',
                 ],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $lines = explode(PHP_EOL, $result);
         $constLine = array_search('!+C:int=1', $lines);
@@ -274,9 +289,76 @@ final class ClassRendererTest extends TestCase
         $this->assertLessThan($methodLine, $propLine);
     }
 
+    public function testRenderEntityCallGraphEntryEmittedForMethod(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'search' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'execute', [], 'App\\Search\\Executor::execute', CallInfo::STRONG),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('    *App\\Search\\Executor::execute', $result);
+    }
+
+    public function testRenderEntityCallGraphWeakAssociation(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'search' => [
+                new CallInfo(CallInfo::KIND_DYNAMIC, 'process', ['App\\A', 'App\\B']),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('    ?App\\A->process', $result);
+        $this->assertStringContainsString('    ?App\\B->process', $result);
+    }
+
+    public function testRenderEntityNoCallGraphWhenEmpty(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
+        $lines = explode(PHP_EOL, $result);
+        foreach ($lines as $line) {
+            $this->assertStringNotContainsString(' (static)', $line);
+            $this->assertStringNotContainsString(' (dynamic)', $line);
+            $this->assertStringNotContainsString(' (global)', $line);
+        }
+    }
+
+    public function testRenderEntityCallGraphUnknownTarget(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'search' => [
+                new CallInfo(CallInfo::KIND_GLOBAL, 'doIt'),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        // Global без resolvedTargetFqcn и candidateTypes не выводится
+        $this->assertStringNotContainsString('doIt', $result);
+    }
+
+    public function testRenderEntityCallGraphIgnoresUnknownMethods(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'nonExistent' => [
+                new CallInfo(CallInfo::KIND_DYNAMIC, 'foo'),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringNotContainsString(' (dynamic)', $result);
+        $this->assertStringNotContainsString('->', $result);
+    }
+
     private function makeEntity(array $overrides = []): array
     {
-        return array_merge([
+        return array_merge(
+            [
             'fqn' => 'App\Service\SearchService',
             'type' => 'class',
             'modifiers' => ['final'],
@@ -299,6 +381,7 @@ final class ClassRendererTest extends TestCase
                 ],
             ],
             'dependencies' => [],
-        ], $overrides);
+            ], $overrides
+        );
     }
 }

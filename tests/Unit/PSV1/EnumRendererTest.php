@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Analyzer\CallInfo;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\PSV1\EnumRenderer;
 use SineFine\Ponymator\Documentation\Renderer\PSV1\Psv1Builder;
@@ -65,22 +66,26 @@ final class EnumRendererTest extends TestCase
 
     public function testRenderEntityConstants(): void
     {
-        $entity = $this->makeBackedEnum([
+        $entity = $this->makeBackedEnum(
+            [
             'constants' => [
                 ['name' => 'DEFAULT', 'visibility' => 'public', 'type' => 'string', 'value' => "'active'"],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString("!+DEFAULT:string='active'", $result);
     }
 
     public function testRenderEntityProperties(): void
     {
-        $entity = $this->makeBackedEnum([
+        $entity = $this->makeBackedEnum(
+            [
             'properties' => [
                 ['name' => 'label', 'visibility' => 'private', 'type' => 'string', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => true],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('$-readonly label:string', $result);
     }
@@ -149,9 +154,43 @@ final class EnumRendererTest extends TestCase
         $this->assertSame($first, $second);
     }
 
+    public function testRenderEntityCallGraphEntryEmittedForMethod(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'isActive' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'verify', [], 'App\\Verifier\\StatusVerifier::verify', CallInfo::STRONG),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeBackedEnum(), $crossRefs);
+        $this->assertStringContainsString('    *App\\Verifier\\StatusVerifier::verify', $result);
+    }
+
+    public function testRenderEntityNoCallGraphWhenEmpty(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeBackedEnum(), new CrossReference());
+        $this->assertStringNotContainsString(' (static)', $result);
+        $this->assertStringNotContainsString(' (dynamic)', $result);
+    }
+
+    public function testRenderEntityCallGraphIgnoresUnknownMethods(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'nonExistent' => [
+                new CallInfo(CallInfo::KIND_DYNAMIC, 'foo'),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeBackedEnum(), $crossRefs);
+        $this->assertStringNotContainsString(' (dynamic)', $result);
+    }
+
     private function makeBackedEnum(array $overrides = []): array
     {
-        return array_merge([
+        return array_merge(
+            [
             'fqn' => 'App\Status',
             'type' => 'enum',
             'scalarType' => 'int',
@@ -178,12 +217,14 @@ final class EnumRendererTest extends TestCase
                 ],
             ],
             'dependencies' => [],
-        ], $overrides);
+            ], $overrides
+        );
     }
 
     private function makePureEnum(array $overrides = []): array
     {
-        return array_merge([
+        return array_merge(
+            [
             'fqn' => 'App\Status',
             'type' => 'enum',
             'scalarType' => null,
@@ -198,6 +239,7 @@ final class EnumRendererTest extends TestCase
             'properties' => [],
             'methods' => [],
             'dependencies' => [],
-        ], $overrides);
+            ], $overrides
+        );
     }
 }

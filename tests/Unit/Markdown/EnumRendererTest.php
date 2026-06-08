@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Analyzer\CallInfo;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
@@ -105,6 +106,42 @@ final class EnumRendererTest extends TestCase
         $first = $this->renderer->renderEntity($entity, new CrossReference());
         $second = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertSame($first, $second);
+    }
+
+    public function testRenderEntityCallGraphSectionWithData(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'isActive' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'check', [], 'App\\Checker\\StatusChecker::check', CallInfo::STRONG),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeBackedEnum(), $crossRefs);
+        $this->assertStringContainsString('**Calls:**', $result);
+        $this->assertStringContainsString('check', $result);
+        $this->assertStringContainsString('App\\Checker\\StatusChecker', $result);
+    }
+
+    public function testRenderEntityNoCallGraphSectionWhenEmpty(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeBackedEnum(), new CrossReference());
+        $this->assertStringNotContainsString('**Calls:**', $result);
+    }
+
+    public function testRenderEntityCallGraphUnresolvedShowsCandidates(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'isActive' => [
+                new CallInfo(CallInfo::KIND_DYNAMIC, 'check', ['App\\X', 'App\\Y']),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeBackedEnum(), $crossRefs);
+        $this->assertStringContainsString('**Calls:**', $result);
+        $this->assertStringContainsString('weak', $result);
+        $this->assertStringContainsString('check', $result);
     }
 
     private function makeBackedEnum(array $overrides = []): array

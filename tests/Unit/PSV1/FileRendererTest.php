@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Analyzer\CallInfo;
 use SineFine\Ponymator\Documentation\Renderer\PSV1\FileRenderer;
 use SineFine\Ponymator\Documentation\Renderer\PSV1\Psv1Builder;
 
@@ -149,5 +150,84 @@ final class FileRendererTest extends TestCase
         ];
         $result = $this->renderer->renderFile('f.php', $functions, [], []);
         $this->assertStringContainsString('    $timeout:int=30', $result);
+    }
+
+    public function testRenderFileWithFileCallsEmitsCallGraph(): void
+    {
+        $functions = [
+            [
+                'name' => 'loadConfig',
+                'isStatic' => false,
+                'parameters' => [],
+                'returnType' => 'array',
+            ],
+        ];
+        $calls = [
+            'loadConfig' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'parseIni', [], 'App\\Config\\Parser::parseIni', CallInfo::STRONG),
+            ],
+        ];
+        $result = $this->renderer->renderFile('config.php', $functions, [], [], $calls);
+
+        $this->assertStringContainsString('    *App\\Config\\Parser::parseIni', $result);
+    }
+
+    public function testRenderFileWithoutFileCallsOmitsCallGraph(): void
+    {
+        $functions = [
+            [
+                'name' => 'helper',
+                'isStatic' => false,
+                'parameters' => [],
+                'returnType' => 'void',
+            ],
+        ];
+        $result = $this->renderer->renderFile('utils.php', $functions, [], [], []);
+        $this->assertStringNotContainsString(' (static)', $result);
+        $this->assertStringNotContainsString(' (dynamic)', $result);
+    }
+
+    public function testRenderFileFileCallsIgnoreUnknownFunctions(): void
+    {
+        $functions = [
+            [
+                'name' => 'real',
+                'isStatic' => false,
+                'parameters' => [],
+                'returnType' => 'void',
+            ],
+        ];
+        $calls = [
+            'unknownFunction' => [
+                new CallInfo(CallInfo::KIND_GLOBAL, 'doStuff'),
+            ],
+        ];
+        $result = $this->renderer->renderFile('x.php', $functions, [], [], $calls);
+        $this->assertStringNotContainsString(' (global)', $result);
+    }
+
+    public function testRenderFileWithFileCallsMultipleCallKinds(): void
+    {
+        $functions = [
+            [
+                'name' => 'process',
+                'isStatic' => false,
+                'parameters' => [],
+                'returnType' => 'void',
+            ],
+        ];
+        $calls = [
+            'process' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'init', [], 'App\\Init::init', CallInfo::STRONG),
+                new CallInfo(CallInfo::KIND_DYNAMIC, 'run', ['App\\Runner\\A', 'App\\Runner\\B']),
+                new CallInfo(CallInfo::KIND_GLOBAL, 'cleanup', [], 'cleanup', CallInfo::STRONG),
+            ],
+        ];
+        $result = $this->renderer->renderFile('proc.php', $functions, [], [], $calls);
+
+        $this->assertStringContainsString('    *App\\Init::init', $result);
+        $this->assertStringContainsString('    ?App\\Runner\\A->run', $result);
+        $this->assertStringContainsString('    ?App\\Runner\\B->run', $result);
+        $this->assertStringContainsString('    *cleanup', $result);
     }
 }

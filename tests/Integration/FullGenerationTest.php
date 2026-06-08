@@ -6,10 +6,11 @@ use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionProperty;
-use SineFine\Ponymator\Analyzer\CombinedAnalyzer;
+use SineFine\Ponymator\Analyzer\EntityAnalyzer;
 use SineFine\Ponymator\Analyzer\FileExtractor;
 use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\Parser;
+use SineFine\Ponymator\Analyzer\CallAnalyzer;
 use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Config;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
@@ -65,7 +66,7 @@ interface Helper {}'
     private function makeGenerator(Config $config): DocumentationProcessor
     {
         $parser = new Parser();
-        $combinedAnalyzer = new CombinedAnalyzer();
+        $combinedAnalyzer = new EntityAnalyzer();
         $fileExtractor = new FileExtractor();
         $builder = new MarkdownBuilder();
         $classRenderer = new ClassRenderer($builder);
@@ -89,6 +90,7 @@ interface Helper {}'
             ],
             $fileRenderer,
             $crossReferenceFactory,
+            new CallAnalyzer(),
         );
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
 
@@ -156,6 +158,85 @@ interface Helper {}'
         $second = file_get_contents($this->targetDir . '/Service/UserService.md');
 
         $this->assertSame($first, $second, 'Re-running full generation should produce identical output');
+    }
+
+    public function testFullGenerationIncludesCallGraphInOutput(): void
+    {
+        file_put_contents(
+            $this->sourceDir . '/Service/UserService.php', '<?php
+namespace App\Service;
+
+class UserService {
+    public function build(): void {
+        \App\Registry::lookup();
+        strlen("a");
+        $obj = new \App\Models\User();
+        $obj->save();
+    }
+}'
+        );
+
+        $config = new Config(null);
+        $ref = new ReflectionProperty(Config::class, 'config');
+        $ref->setAccessible(true);
+        $ref->setValue(
+            $config, [
+            'source' => $this->sourceDir,
+            'target' => $this->targetDir,
+            'ignore' => ['vendor', 'tests'],
+            ]
+        );
+
+        $generator = $this->makeGenerator($config);
+
+        $scanner = new Scanner($this->sourceDir, ['vendor', 'tests']);
+        $files = $scanner->scan();
+        $generator->generateFull($files);
+
+        $content = file_get_contents($this->targetDir . '/Service/UserService.md');
+        $this->assertStringContainsString('**Calls:**', $content);
+    }
+
+    public function testFullGenerationCallGraphDeterministic(): void
+    {
+        file_put_contents(
+            $this->sourceDir . '/Service/UserService.php', '<?php
+namespace App\Service;
+
+class UserService {
+    public function build(): void {
+        \App\Registry::lookup();
+        strlen("a");
+        $obj = new \App\Models\User();
+        $obj->save();
+    }
+}'
+        );
+
+        $config = new Config(null);
+        $ref = new ReflectionProperty(Config::class, 'config');
+        $ref->setAccessible(true);
+        $ref->setValue(
+            $config, [
+            'source' => $this->sourceDir,
+            'target' => $this->targetDir,
+            'ignore' => ['vendor', 'tests'],
+            ]
+        );
+
+        $generator = $this->makeGenerator($config);
+
+        $scanner = new Scanner($this->sourceDir, ['vendor', 'tests']);
+        $files = $scanner->scan();
+
+        $generator->generateFull($files);
+        $first = file_get_contents($this->targetDir . '/Service/UserService.md');
+
+        $generator->generateFull($files);
+        $second = file_get_contents($this->targetDir . '/Service/UserService.md');
+
+        $this->assertSame($first, $second, 'Call graph output must be byte-identical across runs');
+        $this->assertStringContainsString('**Calls:**', $first);
     }
 
     private function rmdir(string $dir): void

@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Analyzer\CallInfo;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\PSV1\Psv1Builder;
 use SineFine\Ponymator\Documentation\Renderer\PSV1\TraitRenderer;
@@ -61,33 +62,39 @@ final class TraitRendererTest extends TestCase
 
     public function testRenderEntityConstants(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'constants' => [
                 ['name' => 'LOG_LEVEL', 'visibility' => 'private', 'type' => 'string', 'value' => "'debug'"],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString("!-LOG_LEVEL:string='debug'", $result);
     }
 
     public function testRenderEntityProperties(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'properties' => [
                 ['name' => 'logger', 'visibility' => 'protected', 'type' => 'Psr\Log\LoggerInterface', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('$#logger:Psr\Log\LoggerInterface', $result);
     }
 
     public function testRenderEntityReadonlyProperty(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'properties' => [
                 ['name' => 'cache', 'visibility' => 'protected', 'type' => 'array', 'defaultValue' => '[]', 'isStatic' => false, 'isReadonly' => true],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('$#readonly cache:array=[]', $result);
     }
@@ -161,7 +168,8 @@ final class TraitRendererTest extends TestCase
 
     public function testRenderEntitySelfReturnType(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'methods' => [
                 [
                     'name' => 'withConfig',
@@ -173,14 +181,16 @@ final class TraitRendererTest extends TestCase
                     'returnType' => 'self',
                 ],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('    :self', $result);
     }
 
     public function testRenderEntityOrderConstantsPropertiesMethods(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'constants' => [
                 ['name' => 'C', 'visibility' => 'public', 'type' => 'int', 'value' => '1'],
             ],
@@ -198,7 +208,8 @@ final class TraitRendererTest extends TestCase
                     'returnType' => 'void',
                 ],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $constPos = strpos($result, '!+C:int=1');
         $propPos = strpos($result, '$+p:string');
@@ -210,9 +221,43 @@ final class TraitRendererTest extends TestCase
         $this->assertLessThan($methodPos, $propPos);
     }
 
+    public function testRenderEntityCallGraphEntryEmittedForMethod(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'log' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'write', [], 'App\\Logger\\Writer::write', CallInfo::STRONG),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('    *App\\Logger\\Writer::write', $result);
+    }
+
+    public function testRenderEntityNoCallGraphWhenEmpty(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
+        $this->assertStringNotContainsString(' (static)', $result);
+        $this->assertStringNotContainsString(' (dynamic)', $result);
+    }
+
+    public function testRenderEntityCallGraphIgnoresUnknownMethods(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'nonExistent' => [
+                new CallInfo(CallInfo::KIND_DYNAMIC, 'foo'),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringNotContainsString(' (dynamic)', $result);
+    }
+
     private function makeEntity(array $overrides = []): array
     {
-        return array_merge([
+        return array_merge(
+            [
             'fqn' => 'App\Traits\LoggableTrait',
             'type' => 'trait',
             'modifiers' => [],
@@ -246,6 +291,7 @@ final class TraitRendererTest extends TestCase
                 ],
             ],
             'dependencies' => [],
-        ], $overrides);
+            ], $overrides
+        );
     }
 }

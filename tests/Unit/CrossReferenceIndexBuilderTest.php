@@ -106,6 +106,116 @@ final class CrossReferenceIndexBuilderTest extends TestCase
         $this->assertSame([], $context->getIndex()->getUsedBy('App\A'));
     }
 
+    public function testBuildIncludesTypeIndexFromPsv1Files(): void
+    {
+        $tempDir = $this->createPsv1Fixture(
+            '@class App\Foo' . PHP_EOL .
+            '.+bar' . PHP_EOL .
+            '.+baz' . PHP_EOL .
+            '$prop:string' . PHP_EOL
+        );
+
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $pathResolver->method('sourcePath')->willReturn('/project/src/A.php');
+        $pathResolver->method('docRelativePath')->willReturn('A.md');
+        $pathResolver->method('targetDir')->willReturn($tempDir);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+        $context = $builder->build([]);
+
+        $this->assertNotEmpty($context->getTypeIndex());
+        $this->assertArrayHasKey('App\Foo', $context->getTypeIndex());
+        $typeInfo = $context->getTypeIndex()['App\Foo'];
+        $this->assertSame(['bar', 'baz'], $typeInfo->methods);
+        $this->assertSame(['prop'], $typeInfo->properties);
+        $this->assertSame('class', $typeInfo->kind);
+
+        $this->removeDir($tempDir);
+    }
+
+    public function testBuildTypeIndexEmptyWhenTargetMissing(): void
+    {
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $pathResolver->method('sourcePath')->willReturn('/project/src/A.php');
+        $pathResolver->method('docRelativePath')->willReturn('A.md');
+        $pathResolver->method('targetDir')->willReturn('/nonexistent/target/' . uniqid());
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+        $context = $builder->build([]);
+
+        $this->assertSame([], $context->getTypeIndex());
+    }
+
+    public function testBuildTypeIndexSkipsFileEntity(): void
+    {
+        $tempDir = $this->createPsv1Fixture(
+            '@file src/functions' . PHP_EOL .
+            '.+helper' . PHP_EOL
+        );
+
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $pathResolver->method('sourcePath')->willReturn('/project/src/A.php');
+        $pathResolver->method('docRelativePath')->willReturn('A.md');
+        $pathResolver->method('targetDir')->willReturn($tempDir);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+        $context = $builder->build([]);
+
+        $this->assertArrayNotHasKey('src/functions', $context->getTypeIndex());
+
+        $this->removeDir($tempDir);
+    }
+
+    public function testBuildTypeIndexHandlesMalformedPsv1(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/ponymator-test-' . uniqid();
+        mkdir($tempDir, 0755, true);
+        file_put_contents($tempDir . '/bad.psv1', '@class');
+
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $pathResolver->method('sourcePath')->willReturn('/project/src/A.php');
+        $pathResolver->method('docRelativePath')->willReturn('A.md');
+        $pathResolver->method('targetDir')->willReturn($tempDir);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+        $context = $builder->build([]);
+
+        $this->assertSame([], $context->getTypeIndex());
+
+        $this->removeDir($tempDir);
+    }
+
+    private function createPsv1Fixture(string $contents): string
+    {
+        $tempDir = sys_get_temp_dir() . '/ponymator-test-' . uniqid();
+        mkdir($tempDir, 0755, true);
+        file_put_contents($tempDir . '/Fixture.psv1', $contents);
+        return $tempDir;
+    }
+
+    private function removeDir(string $path): void
+    {
+        if (!is_dir($path)) {
+            return;
+        }
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+        foreach ($iterator as $file) {
+            $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
+        }
+        rmdir($path);
+    }
+
     /**
      * @return array<int, \PhpParser\Node>
      */

@@ -3,7 +3,7 @@
 namespace SineFine\Ponymator\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\CombinedAnalyzer;
+use SineFine\Ponymator\Analyzer\EntityAnalyzer;
 use SineFine\Ponymator\Analyzer\FileExtractor;
 use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\Parser;
@@ -59,7 +59,7 @@ final class ErrorAggregationTest extends TestCase
     private function makeGenerator(Config $config): DocumentationProcessor
     {
         $parser = new Parser();
-        $combinedAnalyzer = new CombinedAnalyzer();
+        $combinedAnalyzer = new EntityAnalyzer();
         $fileExtractor = new FileExtractor();
         $builder = new MarkdownBuilder();
         $classRenderer = new ClassRenderer($builder);

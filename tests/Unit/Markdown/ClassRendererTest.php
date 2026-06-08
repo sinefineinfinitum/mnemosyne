@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Analyzer\CallInfo;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
@@ -150,13 +151,12 @@ final class ClassRendererTest extends TestCase
     {
         $crossRefs = new CrossReference(
             [], [], null, [
-            'build' => ['\App\Entity\User'],
+            'findById' => ['\App\Entity\User'],
             ]
         );
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
-        $this->assertStringContainsString('### Creates', $result);
-        $this->assertStringContainsString('`build`', $result);
-        $this->assertStringContainsString('`\\App\\Entity\\User`', $result);
+        $this->assertStringContainsString('**Creates:**', $result);
+        $this->assertStringContainsString('App\Entity\User', $result);
     }
 
     public function testRenderEntityNoCreatesSectionWhenEmpty(): void
@@ -171,6 +171,74 @@ final class ClassRendererTest extends TestCase
             [], [], null, [
             'foo' => ['\App\A'],
             'bar' => ['\App\B'],
+            ]
+        );
+        $first = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $second = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertSame($first, $second);
+    }
+
+    public function testRenderEntityCallGraphSectionWithData(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'findById' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'load', [], 'App\\Loader\\UserLoader::load', CallInfo::STRONG),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('**Calls:**', $result);
+        $this->assertStringContainsString('load', $result);
+        $this->assertStringContainsString('App\\Loader\\UserLoader', $result);
+        $this->assertStringContainsString('strong', $result);
+    }
+
+    public function testRenderEntityNoCallGraphSectionWhenEmpty(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
+        $this->assertStringNotContainsString('### Call Graph', $result);
+    }
+
+    public function testRenderEntityCallGraphUnresolvedShowsCandidates(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'findById' => [
+                new CallInfo(CallInfo::KIND_DYNAMIC, 'process', ['App\\Service\\A', 'App\\Service\\B']),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('**Calls:**', $result);
+        $this->assertStringContainsString('weak', $result);
+        $this->assertStringContainsString('process', $result);
+    }
+
+    public function testRenderEntityCallGraphUnknownTarget(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'findById' => [
+                new CallInfo(CallInfo::KIND_GLOBAL, 'someFunc'),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('**Calls:**', $result);
+        $this->assertStringContainsString('weak', $result);
+        $this->assertStringContainsString('someFunc', $result);
+        $this->assertStringNotContainsString('Unknown', $result);
+    }
+
+    public function testRenderEntityCallGraphSectionDeterministic(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'findById' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'a', [], 'App\\A', CallInfo::STRONG),
+                new CallInfo(CallInfo::KIND_DYNAMIC, 'b'),
+            ],
             ]
         );
         $first = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);

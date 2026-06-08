@@ -3,6 +3,7 @@
 namespace SineFine\Ponymator\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
+use SineFine\Ponymator\Analyzer\CallInfo;
 use SineFine\Ponymator\Documentation\Linker\CrossReference;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer;
@@ -104,19 +105,18 @@ final class TraitRendererTest extends TestCase
     {
         $crossRefs = new CrossReference(
             [], [], null, [
-            'init' => ['\App\Cache\RedisCache'],
+            'log' => ['\App\Cache\RedisCache'],
             ]
         );
         $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
-        $this->assertStringContainsString('### Creates', $result);
-        $this->assertStringContainsString('`init`', $result);
-        $this->assertStringContainsString('`\\App\\Cache\\RedisCache`', $result);
+        $this->assertStringContainsString('**Creates:**', $result);
+        $this->assertStringContainsString('App\Cache\RedisCache', $result);
     }
 
     public function testRenderEntityNoCreatesSectionWhenEmpty(): void
     {
         $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
-        $this->assertStringNotContainsString('### Creates', $result);
+        $this->assertStringNotContainsString('**Creates:**', $result);
     }
 
     public function testRenderEntityCreatesSectionDeterministic(): void
@@ -142,18 +142,21 @@ final class TraitRendererTest extends TestCase
 
     public function testRenderEntityReadonlyProperty(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'properties' => [
                 ['name' => 'cache', 'visibility' => 'protected', 'type' => 'array', 'defaultValue' => '[]', 'isStatic' => false, 'isReadonly' => true],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('readonly', $result);
     }
 
     public function testRenderEntitySelfReturnType(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'methods' => [
                 [
                     'name' => 'withConfig',
@@ -165,9 +168,47 @@ final class TraitRendererTest extends TestCase
                     'returnTypeNullable' => false,
                 ],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('self', $result);
+    }
+
+    public function testRenderEntityCallGraphSectionWithData(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'log' => [
+                new CallInfo(CallInfo::KIND_STATIC, 'write', [], 'App\\Logger\\FileWriter::write', CallInfo::STRONG),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('**Calls:**', $result);
+        $this->assertStringContainsString('write', $result);
+        $this->assertStringContainsString('App\\Logger\\FileWriter', $result);
+    }
+
+    public function testRenderEntityNoCallGraphSectionWhenEmpty(): void
+    {
+        $result = $this->renderer->renderEntity($this->makeEntity(), new CrossReference());
+        $this->assertStringNotContainsString('**Calls:**', $result);
+    }
+
+    public function testRenderEntityCallGraphUnknownTarget(): void
+    {
+        $crossRefs = new CrossReference(
+            [], [], null, [], [
+            'log' => [
+                new CallInfo(CallInfo::KIND_GLOBAL, 'externalFunc'),
+            ],
+            ]
+        );
+        $result = $this->renderer->renderEntity($this->makeEntity(), $crossRefs);
+        $this->assertStringContainsString('**Calls:**', $result);
+        $this->assertStringContainsString('weak', $result);
+        $this->assertStringContainsString('externalFunc', $result);
+        $this->assertStringNotContainsString('Unknown', $result);
     }
 
     private function makeEntity(array $overrides = []): array

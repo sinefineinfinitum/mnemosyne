@@ -45,9 +45,11 @@ final class InterfaceRendererTest extends TestCase
 
     public function testRenderEntityMultipleExtendedInterfaces(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'interfaces' => ['App\Contracts\BaseInterface', 'App\Contracts\Loggable'],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('>App\Contracts\BaseInterface', $result);
         $this->assertStringContainsString('>App\Contracts\Loggable', $result);
@@ -73,11 +75,13 @@ final class InterfaceRendererTest extends TestCase
 
     public function testRenderEntityConstants(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'constants' => [
                 ['name' => 'DEFAULT_LIMIT', 'visibility' => 'public', 'type' => 'int', 'value' => '10'],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $this->assertStringContainsString('!+DEFAULT_LIMIT:int=10', $result);
     }
@@ -106,7 +110,8 @@ final class InterfaceRendererTest extends TestCase
 
     public function testRenderEntityOrderConstantsBeforeMethods(): void
     {
-        $entity = $this->makeEntity([
+        $entity = $this->makeEntity(
+            [
             'constants' => [
                 ['name' => 'C', 'visibility' => 'public', 'type' => 'int', 'value' => '1'],
             ],
@@ -121,7 +126,8 @@ final class InterfaceRendererTest extends TestCase
                     'returnType' => 'void',
                 ],
             ],
-        ]);
+            ]
+        );
         $result = $this->renderer->renderEntity($entity, new CrossReference());
         $constPos = strpos($result, '!+C:int=1');
         $methodPos = strpos($result, '.+m');
@@ -132,7 +138,8 @@ final class InterfaceRendererTest extends TestCase
 
     private function makeEntity(array $overrides = []): array
     {
-        return array_merge([
+        return array_merge(
+            [
             'fqn' => 'App\Contracts\ServiceInterface',
             'type' => 'interface',
             'modifiers' => [],
@@ -153,6 +160,7 @@ final class InterfaceRendererTest extends TestCase
                 ],
             ],
             'dependencies' => [],
-        ], $overrides);
+            ], $overrides
+        );
     }
 }

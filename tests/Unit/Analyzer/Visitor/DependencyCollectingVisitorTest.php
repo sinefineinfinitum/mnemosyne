@@ -42,20 +42,28 @@ final class DependencyCollectingVisitorTest extends TestCase
 
     public function testEnumImplementsCollected(): void
     {
-        $this->visitor->enterNode(new Enum_('MyEnum', [
-            'implements' => [new Name('App\\Contracts\\MyInterface')],
-        ]));
+        $this->visitor->enterNode(
+            new Enum_(
+                'MyEnum', [
+                'implements' => [new Name('App\\Contracts\\MyInterface')],
+                ]
+            )
+        );
         $this->assertSame(['App\\Contracts\\MyInterface'], $this->visitor->dependencies());
     }
 
     public function testEnumImplementsWithMultipleInterfaces(): void
     {
-        $this->visitor->enterNode(new Enum_('MyEnum', [
-            'implements' => [
+        $this->visitor->enterNode(
+            new Enum_(
+                'MyEnum', [
+                'implements' => [
                 new Name('App\\Contracts\\A'),
                 new Name('App\\Contracts\\B'),
-            ],
-        ]));
+                ],
+                ]
+            )
+        );
         $deps = $this->visitor->dependencies();
         $this->assertContains('App\\Contracts\\A', $deps);
         $this->assertContains('App\\Contracts\\B', $deps);
