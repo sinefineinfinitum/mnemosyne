@@ -4,17 +4,17 @@ namespace SineFine\Ponymator\Cli\Graph;
 
 use SineFine\Ponymator\Cli\Command;
 use SineFine\Ponymator\Cli\Error\ExitCode;
+use SineFine\Ponymator\Db\PDOFactory;
 use SineFine\Ponymator\Graph\Experimental\Schema;
 
 class ClearCommand
 {
     public function execute(Command $cmd): void
     {
-        $dbPath = $cmd->resolveDbPath();
-
+        $factory = new PDOFactory($cmd);
+        $dbPath = $factory->resolvePath();
         $isNew = !file_exists($dbPath);
-
-        $pdo = Command::openDb($dbPath);
+        $pdo = $factory->connect();
 
         Schema::drop($pdo);
         Schema::create($pdo);

@@ -54,12 +54,12 @@ final class FileFinder
         return $files;
     }
 
-    private function normalizePath(string $path): string
+    public function normalizePath(string $path): string
     {
         return rtrim(str_replace('\\', '/', $path), '/');
     }
 
-    private function getRelativePath(string $fullPath, string $baseDir): string
+    public function getRelativePath(string $fullPath, string $baseDir): string
     {
         $fullPath = $this->normalizePath($fullPath);
         return str_starts_with($fullPath, $baseDir . '/')
@@ -81,7 +81,11 @@ final class FileFinder
         return false;
     }
 
-    private function normalizePatterns(array $patterns): array
+    /**
+     * @param string[] $patterns
+     * @return string[]
+     */
+    public function normalizePatterns(array $patterns): array
     {
         $result = [];
         foreach ($patterns as $pattern) {

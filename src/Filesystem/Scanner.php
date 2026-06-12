@@ -21,9 +21,9 @@ final class Scanner
         string $sourceDir,
         array $ignorePatterns = [],
     ) {
-        $this->sourceDir = $this->normalizePath($sourceDir);
-        $this->ignorePatterns = $this->normalizePatterns($ignorePatterns);
         $this->fileFinder = new FileFinder();
+        $this->sourceDir = $this->fileFinder->normalizePath($sourceDir);
+        $this->ignorePatterns = $this->fileFinder->normalizePatterns($ignorePatterns);
     }
 
     /**
@@ -43,36 +43,6 @@ final class Scanner
 
     private function getRelativePath(string $fullPath): string
     {
-        $path = $this->normalizePath($fullPath);
-
-        return str_starts_with($path, $this->sourceDir . '/')
-            ? substr($path, strlen($this->sourceDir) + 1)
-            : $path;
-    }
-
-    private function normalizePath(string $path): string
-    {
-        return rtrim(str_replace('\\', '/', $path), '/');
-    }
-
-    /**
-     * @param string[] $patterns
-     * @return string[]
-     */
-    private function normalizePatterns(array $patterns): array
-    {
-        $result = [];
-
-        foreach ($patterns as $pattern) {
-            $pattern = trim(ltrim($this->normalizePath($pattern), '/'));
-
-            if ($pattern === '') {
-                continue;
-            }
-
-            $result[] = $pattern;
-        }
-
-        return array_values(array_unique($result));
+        return $this->fileFinder->getRelativePath($fullPath, $this->sourceDir);
     }
 }

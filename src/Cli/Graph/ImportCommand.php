@@ -6,6 +6,7 @@ use SineFine\Ponymator\Cli\Command;
 use SineFine\Ponymator\Cli\Error\ConfigException;
 use SineFine\Ponymator\Cli\Error\ExitCode;
 use SineFine\Ponymator\Config;
+use SineFine\Ponymator\Db\PDOFactory;
 use SineFine\Ponymator\Filesystem\FileFinder;
 use SineFine\Ponymator\Graph\Experimental\GraphCommand;
 use SineFine\Ponymator\Graph\Experimental\GraphQuery;
@@ -17,7 +18,8 @@ class ImportCommand
 {
     public function execute(Command $cmd): void
     {
-        $dbPath = $cmd->resolveDbPath();
+        $factory = new PDOFactory($cmd);
+        $pdo = $factory->connect();
 
         try {
             $config = new Config($cmd->configPath);
@@ -25,8 +27,6 @@ class ImportCommand
             fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
             exit(ExitCode::CONFIG_ERROR);
         }
-
-        $pdo = Command::openDb($dbPath);
 
         Schema::create($pdo);
 
@@ -53,7 +53,7 @@ class ImportCommand
         $entityCount = $query->countEntities();
         $relCount = $query->countRelationships();
 
-        echo "Graph import complete: $entityCount entities, $relCount relationships imported into $dbPath\n";
+        echo "Graph import complete: $entityCount entities, $relCount relationships imported into " . $factory->resolvePath() . "\n";
     }
 
 }

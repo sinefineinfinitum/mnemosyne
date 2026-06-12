@@ -13,6 +13,7 @@ use SineFine\Ponymator\Cli\HelpPrinter;
 use SineFine\Ponymator\Cli\Show\ShowImpactCommand;
 use SineFine\Ponymator\Cli\Show\ShowPathCommand;
 use SineFine\Ponymator\Cli\Show\ShowEntityCommand;
+use SineFine\Ponymator\Db\PDOFactory;
 use SineFine\Ponymator\Graph\Experimental\GraphQuery;
 
 class Ponymator
@@ -48,14 +49,8 @@ class Ponymator
 
     private function handleShow(Command $cmd): void
     {
-        $dbPath = $cmd->resolveDbPath(false);
-
-        if (!file_exists($dbPath)) {
-            fwrite(STDERR, "Error: Database file not found: $dbPath\n");
-            exit(ExitCode::DATA_ERROR);
-        }
-
-        $pdo = Command::openDb($dbPath);
+        $factory = new PDOFactory($cmd);
+        $pdo = $factory->connect(requireExisting: true);
 
         $query = new GraphQuery($pdo);
 
