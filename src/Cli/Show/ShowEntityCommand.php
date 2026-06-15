@@ -47,6 +47,7 @@ final class ShowEntityCommand
 
         $outgoing = $query->findRelationshipsBySource($entityId);
         $incoming = $query->findRelationshipsByTarget($entityId);
+        $members = $query->findMembersByEntity($entityId);
 
         $external = [];
         $outgoingRows = [];
@@ -86,7 +87,6 @@ final class ShowEntityCommand
         }
 
         $external = array_values(array_unique($external));
-        $outCount = count($outgoingCalls);
         $inCount = count($callIncoming);
 
         $this->printEntityType($entity, $modifiers, $filePath);
@@ -95,7 +95,7 @@ final class ShowEntityCommand
 
         $this->printStructuralIncoming($structuralIncoming);
 
-        $this->printMember($outgoingCalls, $outCount);
+        $this->printMembers($members, $outgoingCalls, $query);
 
         $this->printUsedBy($inCount, $callIncoming);
 
@@ -206,39 +206,32 @@ final class ShowEntityCommand
     }
 
     /**
+     * @param array<int, array<string, mixed>> $members
      * @param array<int, array<string, mixed>> $outgoingCalls
-     * @param int                              $outCount
      */
-    private function printMember(array $outgoingCalls, int $outCount): void
+    private function printMembers(array $members, array $outgoingCalls, GraphQuery $query): void
     {
-        $outgoingByMember = [];
+        $relationshipsByMember = [];
         foreach ($outgoingCalls as $rel) {
-            $memberName = $rel['source_member_name'] ?? '';
-            if ($memberName === '') {
+            $memberId = $rel['source_member_id'];
+            if ($memberId === null) {
                 continue;
             }
-            if (!isset($outgoingByMember[$memberName])) {
-                $outgoingByMember[$memberName] = [
-                    'member_type' => $rel['source_member_type'] ?? 'method',
-                    'visibility' => $rel['source_member_visibility'] ?? 'public',
-                    'is_static' => !empty($rel['source_member_static']),
-                    'relationships' => [],
-                ];
-            }
-            $outgoingByMember[$memberName]['relationships'][] = $rel;
+            $relationshipsByMember[$memberId][] = $rel;
         }
 
         $memberSections = [];
-        foreach ($outgoingByMember as $group) {
-            $type = $group['member_type'];
+        foreach ($members as $member) {
+            $type = $member['member_type'];
             if (!isset($memberSections[$type])) {
                 $memberSections[$type] = [];
             }
-            $memberSections[$type][] = $group;
+            $member['relationships'] = $relationshipsByMember[$member['id']] ?? [];
+            $memberSections[$type][] = $member;
         }
+
         $memberSectionOrder = ['property', 'case', 'constant', 'method'];
 
-        echo "\nUses (" . $outCount . "):\n";
         foreach ($memberSectionOrder as $sectionType) {
             if (empty($memberSections[$sectionType])) {
                 continue;
@@ -251,24 +244,67 @@ final class ShowEntityCommand
             };
             $count = count($memberSections[$sectionType]);
             echo "\n" . $sectionLabel . " (" . $count . "):\n";
-            foreach ($memberSections[$sectionType] as $group) {
-                $name = $group['relationships'][0]['source_member_name'] ?? '';
-                $visibility = $group['visibility'];
-                $isStatic = $group['is_static'];
+            foreach ($memberSections[$sectionType] as $member) {
+                $name = $member['name'];
+                $visibility = $member['visibility'];
+                $isStatic = (int) $member['is_static'] === 1;
+                $isAbstract = (int) $member['is_abstract'] === 1;
+                $isFinal = (int) $member['is_final'] === 1;
+
+                $mods = [];
+                if ($isAbstract) {
+                    $mods[] = 'abstract';
+                }
+                if ($isFinal) {
+                    $mods[] = 'final';
+                }
+                if ($visibility !== null) {
+                    $mods[] = $visibility;
+                }
+                if ($isStatic) {
+                    $mods[] = 'static';
+                }
+
+                $prefix = !empty($mods) ? implode(' ', $mods) . ' ' : '';
 
                 if ($sectionType === 'method') {
-                    $mod = $isStatic ? ' static' : '';
-                    echo "    $visibility$mod function $name()\n";
+                    $params = $query->findParametersByMember((int) $member['id']);
+                    $paramStrings = [];
+                    foreach ($params as $param) {
+                        $pStr = '';
+                        if ($param['declared_type'] !== null) {
+                            $pStr .= ($param['type_nullable'] ? '?' : '') . $param['declared_type'] . ' ';
+                        }
+                        if ($param['is_passed_by_reference']) {
+                            $pStr .= '&';
+                        }
+                        if ($param['is_variadic']) {
+                            $pStr .= '...';
+                        }
+                        $pStr .= '$' . $param['name'];
+                        if ($param['default_value'] !== null) {
+                            $pStr .= ' = ' . $param['default_value'];
+                        }
+                        $paramStrings[] = $pStr;
+                    }
+                    $signature = $prefix . 'function ' . $name . '(' . implode(', ', $paramStrings) . ')';
+                    if ($member['return_type'] !== null) {
+                        $signature .= ': ' . ($member['return_type_nullable'] ? '?' : '') . $member['return_type'];
+                    }
+                    echo "    $signature\n";
                 } elseif ($sectionType === 'property') {
-                    $mod = $isStatic ? ' static' : '';
-                    echo "    $visibility$mod \$$name\n";
+                    $typeStr = '';
+                    if ($member['declared_type'] !== null) {
+                        $typeStr = ($member['type_nullable'] ? '?' : '') . $member['declared_type'] . ' ';
+                    }
+                    echo "    $prefix$typeStr\$$name\n";
                 } elseif ($sectionType === 'constant') {
-                    echo "    $visibility const $name\n";
+                    echo "    $prefix" . "const $name\n";
                 } elseif ($sectionType === 'case') {
                     echo "    case $name\n";
                 }
 
-                foreach ($group['relationships'] as $rel) {
+                foreach ($member['relationships'] as $rel) {
                     $type = $rel['type'];
                     $target = $rel['target_fqn_resolved'] ?? '';
 
@@ -281,8 +317,8 @@ final class ShowEntityCommand
                     } elseif (str_starts_with($type, 'call_global_')) {
                         $strength = str_ends_with($type, '_strong') ? 'strong' : 'weak';
                         echo "      $strength $target\n";
-                    } elseif ($type === 'creates_weak') {
-                        echo "      weak create $target\n";
+                    } elseif ($type === 'creates') {
+                        echo "      create $target\n";
                     } else {
                         echo "      [$type] $target\n";
                     }

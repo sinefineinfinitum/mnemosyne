@@ -146,7 +146,7 @@ final class Psv1GraphDbTest extends TestCase
         if (!self::$query) {
             $this->markTestSkipped('docs/ directory not found, database not initialized');
         }
-        $createsRels = self::$query->findRelationshipsByType('creates_weak');
+        $createsRels = self::$query->findRelationshipsByType('creates');
         $this->assertNotEmpty($createsRels, 'No creates relationships found');
     }
 
@@ -211,15 +211,6 @@ final class Psv1GraphDbTest extends TestCase
         }
         $propRels = self::$query->findRelationshipsByType('property_type');
         $this->assertNotEmpty($propRels, 'No property type relationships found');
-    }
-
-    public function testDomainCoupling(): void
-    {
-        if (!self::$query) {
-            $this->markTestSkipped('docs/ directory not found, database not initialized');
-        }
-        $coupling = self::$query->getDomainCoupling();
-        $this->assertNotEmpty($coupling, 'No cross-domain coupling found');
     }
 
     public function testSampleEntityData(): void

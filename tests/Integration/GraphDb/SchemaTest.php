@@ -63,7 +63,7 @@ final class SchemaTest extends TestCase
 
         $validTypes = [
             'extends', 'implements', 'uses_trait',
-            'creates_weak', 'creates_strong',
+            'creates', 'creates_strong',
             'call_static_weak', 'call_static_strong',
             'call_dynamic_weak', 'call_dynamic_strong',
             'call_global_weak', 'call_global_strong',

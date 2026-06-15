@@ -59,30 +59,8 @@ final class GraphQuery
         if ($stmt === false) {
             return [];
         }
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    public function findEntitiesByNamespace(string $namespaceFqn): array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT e.* FROM entities e
-             JOIN namespaces n ON e.namespace_id = n.id
-             WHERE n.fqn = :fqn
-             ORDER BY e.fqn'
-        );
-        $stmt->execute(['fqn' => $namespaceFqn]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -94,11 +72,8 @@ final class GraphQuery
             'SELECT * FROM members WHERE entity_id = :entity_id ORDER BY member_type, name'
         );
         $stmt->execute(['entity_id' => $entityId]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findMemberId(int $entityId, string $name, string $memberType): ?int
@@ -129,11 +104,8 @@ final class GraphQuery
             'SELECT * FROM parameters WHERE member_id = :member_id ORDER BY position'
         );
         $stmt->execute(['member_id' => $memberId]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -154,14 +126,11 @@ final class GraphQuery
              LEFT JOIN members m ON m.id = r.source_member_id
              LEFT JOIN entities t ON r.target_id = t.id
              WHERE r.source_id = :source_id
-             ORDER BY r.type, COALESCE(t.fqn, r.target_fqn)'
+             ORDER BY r.type, COALESCE(t.fqn, r.target_fqn), r.target_member_name'
         );
         $stmt->execute(['source_id' => $sourceId]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -185,11 +154,8 @@ final class GraphQuery
              ORDER BY r.type, s.fqn'
         );
         $stmt->execute(['target_id' => $targetId]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -206,11 +172,50 @@ final class GraphQuery
              ORDER BY s.fqn, COALESCE(t.fqn, r.target_fqn)'
         );
         $stmt->execute(['type' => $type]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findRelationshipId(int $sourceId, ?int $targetId, ?string $targetFqn, string $type, ?int $sourceMemberId, ?string $targetMemberName = null): ?int
+    {
+        $sql = 'SELECT id FROM relationships WHERE source_id = :source_id AND type = :type';
+        $params = ['source_id' => $sourceId, 'type' => $type];
+
+        if ($targetId !== null) {
+            $sql .= ' AND target_id = :target_id';
+            $params['target_id'] = $targetId;
+        } else {
+            $sql .= ' AND target_id IS NULL';
+        }
+
+        if ($targetFqn !== null) {
+            $sql .= ' AND target_fqn = :target_fqn';
+            $params['target_fqn'] = $targetFqn;
+        } else {
+            $sql .= ' AND target_fqn IS NULL';
+        }
+
+        if ($targetMemberName !== null) {
+            $sql .= ' AND target_member_name = :target_member_name';
+            $params['target_member_name'] = $targetMemberName;
+        } else {
+            $sql .= ' AND target_member_name IS NULL';
+        }
+
+        if ($sourceMemberId !== null) {
+            $sql .= ' AND source_member_id = :source_member_id';
+            $params['source_member_id'] = $sourceMemberId;
+        } else {
+            $sql .= ' AND source_member_id IS NULL';
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row === false || !is_array($row) || !isset($row['id'])) {
+            return null;
+        }
+        return (int) $row['id'];
     }
 
     /**
@@ -228,11 +233,8 @@ final class GraphQuery
         if ($stmt === false) {
             return [];
         }
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -244,89 +246,8 @@ final class GraphQuery
         if ($stmt === false) {
             return [];
         }
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    public function findNamespaceChildren(int $parentId): array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT * FROM namespaces WHERE parent_id = :parent_id ORDER BY fqn'
-        );
-        $stmt->execute(['parent_id' => $parentId]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
-    }
-
-    /**
-     * @return list<array{source_ns: string, target_ns: string, rel_type: string, count: int}>
-     */
-    public function getDomainCoupling(): array
-    {
-        $stmt = $this->pdo->query(
-            'SELECT
-                sn.fqn AS source_ns,
-                tn.fqn AS target_ns,
-                r.type AS rel_type,
-                COUNT(*) AS count
-             FROM relationships r
-             JOIN entities se ON r.source_id = se.id
-             JOIN entities te ON r.target_id = te.id
-             JOIN namespaces sn ON se.namespace_id = sn.id
-             JOIN namespaces tn ON te.namespace_id = tn.id
-             WHERE sn.fqn != tn.fqn
-             GROUP BY sn.fqn, tn.fqn, r.type
-             ORDER BY sn.fqn, tn.fqn, r.type'
-        );
-        if ($stmt === false) {
-            return [];
-        }
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $typed = [];
-        foreach ($result as $row) {
-            if (is_array($row) && isset($row['source_ns'], $row['target_ns'], $row['rel_type'], $row['count'])) {
-                $typed[] = [
-                    'source_ns' => (string) $row['source_ns'],
-                    'target_ns' => (string) $row['target_ns'],
-                    'rel_type' => (string) $row['rel_type'],
-                    'count' => (int) $row['count'],
-                ];
-            }
-        }
-        return $typed;
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     */
-    public function findEntitiesByNamespaceTree(string $namespaceFqn): array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT e.* FROM entities e
-             JOIN namespaces n ON e.namespace_id = n.id
-             WHERE n.fqn = :fqn OR n.fqn LIKE :prefix
-             ORDER BY e.fqn'
-        );
-        $stmt->execute(
-            [
-            'fqn' => $namespaceFqn,
-            'prefix' => $namespaceFqn . '\\%',
-            ]
-        );
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -338,11 +259,8 @@ final class GraphQuery
             'SELECT * FROM entities WHERE short_name = :name ORDER BY fqn'
         );
         $stmt->execute(['name' => $shortName]);
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        /**
- * @phpstan-ignore return.type 
-*/
-        return $result;
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -357,6 +275,17 @@ final class GraphQuery
             return null;
         }
         return $row;
+    }
+
+    public function findFileId(string $path): ?int
+    {
+        $stmt = $this->pdo->prepare('SELECT id FROM files WHERE path = :path');
+        $stmt->execute(['path' => $path]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row === false || !is_array($row) || !isset($row['id'])) {
+            return null;
+        }
+        return (int) $row['id'];
     }
 
     public function countEntities(): int

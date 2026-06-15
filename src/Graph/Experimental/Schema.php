@@ -119,9 +119,10 @@ final class Schema
                 source_id        INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
                 target_id        INTEGER          REFERENCES entities(id) ON DELETE SET NULL,
                 target_fqn       TEXT,
+                target_member_name TEXT,
                 type             TEXT    NOT NULL CHECK(type IN (
                     'extends','implements','uses_trait',
-                    'creates_weak','creates_strong',
+                    'creates','creates_strong',
                     'call_static_weak','call_static_strong',
                     'call_dynamic_weak','call_dynamic_strong',
                     'call_global_weak','call_global_strong',

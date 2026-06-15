@@ -5,13 +5,16 @@ namespace SineFine\Ponymator\Graph\Experimental;
 use PDO;
 
 /**
- * @experimental This API is experimental and may change without notice.
+ * @experimental This API is experimental and may change without notice.\
+ * @since        4.0.0
  */
 final class GraphCommand
 {
+    private GraphQuery $query;
     public function __construct(
         private PDO $pdo,
     ) {
+        $this->query = new GraphQuery($this->pdo);
     }
 
     public function beginTransaction(): void
@@ -49,7 +52,7 @@ final class GraphCommand
 
     public function insertFile(string $path, ?string $relativePath, ?string $hash): int
     {
-        $existing = $this->findFileId($path);
+        $existing = $this->query->findFileId($path);
         if ($existing !== null) {
             return $existing;
         }
@@ -88,7 +91,7 @@ final class GraphCommand
         array $modifiers,
         ?string $scalarType = null
     ): int {
-        $existing = $this->findEntityId($fqn);
+        $existing = $this->query->findEntityId($fqn);
         if ($existing !== null) {
             return $existing;
         }
@@ -129,7 +132,7 @@ final class GraphCommand
         ?string $returnType,
         bool $returnTypeNullable
     ): int {
-        $existing = $this->findMemberId($entityId, $name, $memberType);
+        $existing = $this->query->findMemberId($entityId, $name, $memberType);
         if ($existing !== null) {
             return $existing;
         }
@@ -194,7 +197,7 @@ final class GraphCommand
         string $type,
         ?int $sourceMemberId
     ): int {
-        $existing = $this->findRelationshipId($sourceId, $targetId, $targetFqn, $type, $sourceMemberId);
+        $existing = $this->query->findRelationshipId($sourceId, $targetId, $targetFqn, $type, $sourceMemberId);
         if ($existing !== null) {
             return $existing;
         }
@@ -253,77 +256,5 @@ final class GraphCommand
             $this->pdo->exec("DELETE FROM \"$table\"");
         }
         $this->pdo->exec('PRAGMA foreign_keys=ON');
-    }
-
-    private function findFileId(string $path): ?int
-    {
-        $stmt = $this->pdo->prepare('SELECT id FROM files WHERE path = :path');
-        $stmt->execute(['path' => $path]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row === false || !is_array($row) || !isset($row['id'])) {
-            return null;
-        }
-        return (int) $row['id'];
-    }
-
-    private function findEntityId(string $fqn): ?int
-    {
-        $stmt = $this->pdo->prepare('SELECT id FROM entities WHERE fqn = :fqn');
-        $stmt->execute(['fqn' => $fqn]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row === false || !is_array($row) || !isset($row['id'])) {
-            return null;
-        }
-        return (int) $row['id'];
-    }
-
-    private function findMemberId(int $entityId, string $name, string $memberType): ?int
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT id FROM members WHERE entity_id = :entity_id AND name = :name AND member_type = :member_type'
-        );
-        $stmt->execute(
-            [
-            'entity_id' => $entityId,
-            'name' => $name,
-            'member_type' => $memberType,
-            ]
-        );
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row === false || !is_array($row) || !isset($row['id'])) {
-            return null;
-        }
-        return (int) $row['id'];
-    }
-
-    private function findRelationshipId(int $sourceId, ?int $targetId, ?string $targetFqn, string $type, ?int $sourceMemberId): ?int
-    {
-        if ($targetId !== null) {
-            $sql = 'SELECT id FROM relationships WHERE source_id = :source_id AND target_id = :target_id AND type = :type';
-            $params = ['source_id' => $sourceId, 'target_id' => $targetId, 'type' => $type];
-            if ($sourceMemberId !== null) {
-                $sql .= ' AND source_member_id = :source_member_id';
-                $params['source_member_id'] = $sourceMemberId;
-            } else {
-                $sql .= ' AND source_member_id IS NULL';
-            }
-        } else {
-            $sql = 'SELECT id FROM relationships WHERE source_id = :source_id AND target_id IS NULL AND target_fqn = :target_fqn AND type = :type';
-            $params = ['source_id' => $sourceId, 'target_fqn' => $targetFqn, 'type' => $type];
-            if ($sourceMemberId !== null) {
-                $sql .= ' AND source_member_id = :source_member_id';
-                $params['source_member_id'] = $sourceMemberId;
-            } else {
-                $sql .= ' AND source_member_id IS NULL';
-            }
-        }
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row === false || !is_array($row) || !isset($row['id'])) {
-            return null;
-        }
-        return (int) $row['id'];
     }
 }

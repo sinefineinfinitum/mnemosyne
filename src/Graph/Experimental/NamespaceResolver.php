@@ -2,10 +2,14 @@
 
 namespace SineFine\Ponymator\Graph\Experimental;
 
+/**
+ * @experimental This API is experimental and may change without notice.\
+ * @since        4.0.0
+ */
 final class NamespaceResolver
 {
     /**
-     * @var array<string, int> fqn => id 
+     * @var array<string, int> fqn => id
      */
     private array $namespaceIds = [];
 
