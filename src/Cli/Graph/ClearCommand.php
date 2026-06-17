@@ -3,7 +3,6 @@
 namespace SineFine\Ponymator\Cli\Graph;
 
 use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Cli\Error\ExitCode;
 use SineFine\Ponymator\Db\PDOFactory;
 use SineFine\Ponymator\Graph\Experimental\Schema;
 

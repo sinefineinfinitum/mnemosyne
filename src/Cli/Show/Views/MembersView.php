@@ -3,7 +3,6 @@
 namespace SineFine\Ponymator\Cli\Show\Views;
 
 use SineFine\Ponymator\Cli\Show\EntityView;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
 
 final class MembersView implements ViewObject
 {
@@ -30,10 +29,23 @@ final class MembersView implements ViewObject
             $callsByMember[$memberId][] = $rel;
         }
 
+        $methodIds = [];
+        foreach ($members as $member) {
+            if ($member['member_type'] === 'method') {
+                $methodIds[] = (int) $member['id'];
+            }
+        }
+        $allParams = $query->findParametersByMembers($methodIds);
+        $paramsByMember = [];
+        foreach ($allParams as $param) {
+            $paramsByMember[(int) $param['member_id']][] = $param;
+        }
+
         $sections = [];
         foreach ($members as $member) {
             $type = $member['member_type'];
             $member['relationships'] = $callsByMember[$member['id']] ?? [];
+            $member['_params'] = $paramsByMember[(int) $member['id']] ?? [];
             $sections[$type][] = $member;
         }
 
@@ -53,7 +65,7 @@ final class MembersView implements ViewObject
             $output .= "\n" . $labels[$sectionType] . ' (' . $count . "):\n";
 
             foreach ($sections[$sectionType] as $member) {
-                $output .= $this->renderMember($member, $sectionType, $query);
+                $output .= $this->renderMember($member, $sectionType);
             }
         }
 
@@ -63,7 +75,7 @@ final class MembersView implements ViewObject
     /**
      * @param array<string, mixed> $member
      */
-    private function renderMember(array $member, string $sectionType, GraphQuery $query): string
+    private function renderMember(array $member, string $sectionType): string
     {
         $output = '';
         $name = $member['name'];
@@ -89,7 +101,7 @@ final class MembersView implements ViewObject
         $prefix = !empty($mods) ? implode(' ', $mods) . ' ' : '';
 
         if ($sectionType === 'method') {
-            $params = $query->findParametersByMember((int) $member['id']);
+            $params = $member['_params'] ?? [];
             $paramStrings = [];
             foreach ($params as $param) {
                 $pStr = '';

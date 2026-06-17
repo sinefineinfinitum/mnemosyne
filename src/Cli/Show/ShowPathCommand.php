@@ -123,13 +123,19 @@ final class ShowPathCommand
      */
     private function reconstructPath(array $visited, int $targetId, GraphQuery $query): array
     {
+        $ids = array_keys($visited);
+        $entities = $query->findEntitiesByIds($ids);
+        $fqnById = [];
+        foreach ($entities as $entity) {
+            $fqnById[(int) $entity['id']] = (string) $entity['fqn'];
+        }
+
         $path = [];
         $current = $targetId;
 
         while ($current !== null) {
             $info = $visited[$current];
-            $entity = $query->findEntityById($current);
-            $fqn = $entity !== null ? (string) $entity['fqn'] : (string) $current;
+            $fqn = $fqnById[$current] ?? (string) $current;
 
             $hop = [
                 'fqn' => $fqn,

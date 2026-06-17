@@ -3,7 +3,6 @@
 namespace SineFine\Ponymator\Cli\Show\Views;
 
 use SineFine\Ponymator\Cli\Show\EntityView;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
 
 final class UsedByView implements ViewObject
 {
@@ -20,8 +19,21 @@ final class UsedByView implements ViewObject
             return '';
         }
 
+        $memberIds = [];
+        foreach ($callIncoming as $relation) {
+            if ($relation['source_member_id'] !== null) {
+                $memberIds[] = (int) $relation['source_member_id'];
+            }
+        }
+        $allParams = $this->view->query->findParametersByMembers($memberIds);
+        $paramsByMember = [];
+        foreach ($allParams as $param) {
+            $paramsByMember[(int) $param['member_id']][] = $param;
+        }
+
         $output = "\n  Used by (" . count($callIncoming) . "):\n";
         foreach ($callIncoming as $relation) {
+            $relation['_params'] = $paramsByMember[(int) $relation['source_member_id']] ?? [];
             $output .= $this->renderLine($relation);
         }
 
@@ -46,7 +58,7 @@ final class UsedByView implements ViewObject
             return $line . "\n";
         }
 
-        $sig = self::buildCallSignature($memberId, $relation, $sourceFqn, $type, $memberName, $this->view->query);
+        $sig = self::buildCallSignature($memberId, $relation, $sourceFqn, $type, $memberName);
         return "    $sig\n";
     }
 
@@ -56,7 +68,6 @@ final class UsedByView implements ViewObject
      * @param  string               $sourceFqn
      * @param  string               $type
      * @param  string               $memberName
-     * @param  GraphQuery           $query
      * @return string
      */
     private static function buildCallSignature(
@@ -65,7 +76,6 @@ final class UsedByView implements ViewObject
         string     $sourceFqn,
         string     $type,
         string     $memberName,
-        GraphQuery $query,
     ): string {
         $returnType = $relation['source_member_return_type'];
         $declaredType = $relation['source_member_declared_type'];
@@ -76,7 +86,7 @@ final class UsedByView implements ViewObject
             return "$sourceFqn->\$$memberName ($prefix)";
         }
 
-        $params = $query->findParameterSignatures($memberId);
+        $params = $relation['_params'] ?? [];
         $paramStrings = [];
         foreach ($params as $p) {
             $paramWithTypeAndDefaultValue = '';

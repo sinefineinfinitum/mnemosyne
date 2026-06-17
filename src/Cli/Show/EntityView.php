@@ -70,28 +70,28 @@ final class EntityView
         $outgoingStructural = [];
         $outgoingCalls = [];
         $external = [];
-        foreach ($outgoing as $relation) {
-            if ($relation['target_id'] === null) {
-                $fqn = $relation['target_fqn'] ?? '';
+        foreach ($outgoing as $rel) {
+            if ($rel['target_id'] === null) {
+                $fqn = $rel['target_fqn'] ?? '';
                 if ($fqn !== '') {
                     $external[] = $fqn;
                 }
             }
-            if (in_array($relation['type'], $structuralTypes, true)) {
-                $outgoingStructural[] = $relation;
+            if (in_array($rel['type'], $structuralTypes, true)) {
+                $outgoingStructural[] = $rel;
             } else {
-                $outgoingCalls[] = $relation;
+                $outgoingCalls[] = $rel;
             }
         }
         $external = array_values(array_unique($external));
 
         $structuralIncoming = [];
         $callIncoming = [];
-        foreach ($incoming as $relation) {
-            if (in_array($relation['type'], $structuralTypes, true)) {
-                $structuralIncoming[] = $relation;
+        foreach ($incoming as $rel) {
+            if (in_array($rel['type'], $structuralTypes, true)) {
+                $structuralIncoming[] = $rel;
             } else {
-                $callIncoming[] = $relation;
+                $callIncoming[] = $rel;
             }
         }
 

@@ -10,9 +10,9 @@ use SineFine\Ponymator\Cli\Generate\GenerateCommand;
 use SineFine\Ponymator\Cli\Graph\ClearCommand;
 use SineFine\Ponymator\Cli\Graph\ImportCommand;
 use SineFine\Ponymator\Cli\HelpPrinter;
+use SineFine\Ponymator\Cli\Show\ShowEntityCommand;
 use SineFine\Ponymator\Cli\Show\ShowImpactCommand;
 use SineFine\Ponymator\Cli\Show\ShowPathCommand;
-use SineFine\Ponymator\Cli\Show\ShowEntityCommand;
 use SineFine\Ponymator\Db\PDOFactory;
 use SineFine\Ponymator\Graph\Experimental\GraphQuery;
 

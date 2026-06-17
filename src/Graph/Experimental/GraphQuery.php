@@ -79,6 +79,22 @@ final class GraphQuery
     }
 
     /**
+     * @param  int[] $ids
+     * @return list<array<string, mixed>>
+     */
+    public function findEntitiesByIds(array $ids): array
+    {
+        if (empty($ids)) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->pdo->prepare("SELECT * FROM entities WHERE id IN ($placeholders) ORDER BY fqn");
+        $stmt->execute(array_map('intval', $ids));
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * @return list<array<string, mixed>>
      */
     public function findMembersByEntity(int $entityId): array
@@ -108,6 +124,24 @@ final class GraphQuery
             return null;
         }
         return (int) $row['id'];
+    }
+
+    /**
+     * @param  int[] $memberIds
+     * @return list<array<string, mixed>>
+     */
+    public function findParametersByMembers(array $memberIds): array
+    {
+        if (empty($memberIds)) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($memberIds), '?'));
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM parameters WHERE member_id IN ($placeholders) ORDER BY member_id, position"
+        );
+        $stmt->execute(array_map('intval', $memberIds));
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**

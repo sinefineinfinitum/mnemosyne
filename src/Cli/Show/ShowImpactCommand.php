@@ -49,14 +49,20 @@ final class ShowImpactCommand
             }
         }
 
+        $ids = array_column($discovered, 'id');
+        $entities = $query->findEntitiesByIds($ids);
+        $typeById = [];
+        foreach ($entities as $entity) {
+            $typeById[(int) $entity['id']] = $entity['type'];
+        }
+
         $byType = [];
         foreach ($discovered as $item) {
-            $entity = $query->findEntity($item['fqn']);
-            if ($entity === null) {
+            $type = $typeById[$item['id']] ?? null;
+            if ($type === null) {
                 continue;
             }
 
-            $type = $entity['type'];
             $distance = $item['distance'];
 
             if (!isset($byType[$type])) {
