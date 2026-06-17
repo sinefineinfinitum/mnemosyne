@@ -135,13 +135,13 @@ final class Psv1BuilderTest extends TestCase
         $property = [
             'name' => 'mixed',
             'visibility' => 'public',
-            'type' => null,
+            'type' => 'mixed',
             'defaultValue' => null,
             'isStatic' => false,
             'isReadonly' => false,
         ];
         $result = $this->builder->property($property);
-        $this->assertSame('$+mixed' . PHP_EOL, $result);
+        $this->assertSame('$+mixed:mixed' . PHP_EOL, $result);
     }
 
     public function testPropertyUnionType(): void
@@ -263,12 +263,12 @@ final class Psv1BuilderTest extends TestCase
     {
         $parameter = [
             'name' => 'mixed',
-            'type' => null,
+            'type' => 'mixed',
             'defaultValue' => null,
             'isPassedByReference' => false,
         ];
         $result = $this->builder->parameter($parameter);
-        $this->assertSame('    $mixed' . PHP_EOL, $result);
+        $this->assertSame('    $mixed:mixed' . PHP_EOL, $result);
     }
 
     public function testParameterUnionType(): void
@@ -326,6 +326,24 @@ final class Psv1BuilderTest extends TestCase
     {
         $result = $this->builder->constant('SQL', 'public', 'string', "SELECT *\r\nWHERE id=1");
         $this->assertSame('!+SQL:string=SELECT *\nWHERE id=1' . PHP_EOL, $result);
+    }
+
+    public function testConstantValueStripsAngleBrackets(): void
+    {
+        $result = $this->builder->constant('PHP_CODE', 'public', 'string', "'<?php echo \$x; ?>'");
+        $this->assertSame("!+PHP_CODE:string='?php echo \$x; ?'" . PHP_EOL, $result);
+    }
+
+    public function testConstantValueEscapesTabs(): void
+    {
+        $result = $this->builder->constant('MSG', 'public', 'string', "col1\tcol2");
+        $this->assertSame("!+MSG:string=col1\\tcol2" . PHP_EOL, $result);
+    }
+
+    public function testConstantValueStripsControlChars(): void
+    {
+        $result = $this->builder->constant('DATA', 'public', 'string', "a\x00b\x0Bc\x0Cd");
+        $this->assertSame("!+DATA:string=abcd" . PHP_EOL, $result);
     }
 
     public function testReturnType(): void
@@ -427,6 +445,50 @@ final class Psv1BuilderTest extends TestCase
         $case = ['name' => 'Draft'];
         $result = $this->builder->enumCase($case, 'string');
         $this->assertSame('~Draft' . PHP_EOL, $result);
+    }
+
+    public function testConstantLongValueTruncated(): void
+    {
+        $long = "'" . str_repeat('a', 200) . "'";
+        $result = $this->builder->constant('TEMPLATE', 'private', 'string', $long);
+        $trimmed = rtrim($result, "\r\n");
+        $this->assertStringStartsWith('!-TEMPLATE:string=', $trimmed);
+        $this->assertStringEndsWith("...'", $trimmed);
+        $this->assertSame(121, strlen($trimmed) - strlen('!-TEMPLATE:string='));
+    }
+
+    public function testConstantShortValueNotTruncated(): void
+    {
+        $result = $this->builder->constant('NAME', 'public', 'string', "'hello'");
+        $this->assertSame("!+NAME:string='hello'" . PHP_EOL, $result);
+    }
+
+    public function testPropertyLongValueTruncated(): void
+    {
+        $property = [
+            'name' => 'sql',
+            'visibility' => 'private',
+            'type' => 'string',
+            'defaultValue' => "'" . str_repeat('x', 200) . "'",
+            'isStatic' => false,
+            'isReadonly' => false,
+        ];
+        $result = $this->builder->property($property);
+        $trimmed = rtrim($result, "\r\n");
+        $this->assertStringEndsWith("...'", $trimmed);
+    }
+
+    public function testParameterLongValueTruncated(): void
+    {
+        $parameter = [
+            'name' => 'template',
+            'type' => 'string',
+            'defaultValue' => "'" . str_repeat('y', 200) . "'",
+            'isPassedByReference' => false,
+        ];
+        $result = $this->builder->parameter($parameter);
+        $trimmed = rtrim($result, "\r\n");
+        $this->assertStringEndsWith("...'", $trimmed);
     }
 
     public function testDeterministicAcrossMethods(): void

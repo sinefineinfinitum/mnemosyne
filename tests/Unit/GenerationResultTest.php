@@ -3,8 +3,8 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Processor\ErrorDiagnostic;
-use SineFine\Ponymator\Documentation\Processor\GenerationResult;
+use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Ponymator\Documentation\Generator\GenerationResult;
 
 final class GenerationResultTest extends TestCase
 {
@@ -73,36 +73,4 @@ final class GenerationResultTest extends TestCase
         $this->assertSame(1, $report->warningCount());
     }
 
-    public function testExecutionTimeNullByDefault(): void
-    {
-        $result = new GenerationResult();
-        $this->assertNull($result->getExecutionTimeSec());
-    }
-
-    public function testExecutionTime(): void
-    {
-        $result = new GenerationResult();
-
-        $result->setExecutionTimeNs(1_500_000_000);
-
-        $this->assertSame(1.5, $result->getExecutionTimeSec());
-    }
-
-    public function testExecutionTimePrecise(): void
-    {
-        $result = new GenerationResult();
-
-        $result->setExecutionTimeNs(1_234_567_890);
-
-        $this->assertSame(1.23456789, $result->getExecutionTimeSec());
-    }
-
-    public function testZeroExecutionTime(): void
-    {
-        $result = new GenerationResult();
-
-        $result->setExecutionTimeNs(0);
-
-        $this->assertSame(0.0, $result->getExecutionTimeSec());
-    }
 }

@@ -90,9 +90,9 @@
         <exclude-pattern>*/templates/*</exclude-pattern>
     </rule>
     <rule ref="Generic.Commenting.DocComment.ContentBeforeClose">
-        <exclude-pattern>*/templates/*</exclude-pattern>
+        <severity>0</severity>
     </rule>
     <rule ref="Generic.Commenting.DocComment.ContentAfterOpen">
-        <exclude-pattern>*/templates/*</exclude-pattern>
+        <severity>0</severity>
     </rule>
 </ruleset>

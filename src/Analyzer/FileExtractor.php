@@ -34,8 +34,7 @@ class FileExtractor
             foreach ($node->getParams() as $param) {
                 $params[] = [
                     'name' => $param->var->name ?? '',
-                    'type' => $param->type !== null ? $this->resolveType($param->type) : null,
-                    'typeNullable' => $param->type instanceof NullableType,
+                    'type' => $param->type !== null ? $this->resolveType($param->type) : 'mixed',
                     'defaultValue' => $param->default !== null ? $this->resolveDefault($param->default) : null,
                     'isVariadic' => $param->variadic,
                     'isPassedByReference' => $param->byRef,
@@ -46,7 +45,6 @@ class FileExtractor
                 'name' => $node->name->toString(),
                 'parameters' => $params,
                 'returnType' => $node->returnType !== null ? $this->resolveType($node->returnType) : null,
-                'returnTypeNullable' => $node->returnType instanceof NullableType,
             ];
         }
 

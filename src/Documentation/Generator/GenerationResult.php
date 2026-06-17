@@ -1,17 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Processor;
+namespace SineFine\Ponymator\Documentation\Generator;
 
 class GenerationResult
 {
-    /**
-     * @param int $generated
-     * @param int $skipped
-     * @param int $unchanged
-     * @param int $removed
-     * @param ErrorReport|null $errorReport
-     * @param int|null $executionTimeNs
-     */
     private ErrorReport $errorReport;
 
     public function __construct(
@@ -20,7 +12,6 @@ class GenerationResult
         private int $unchanged = 0,
         private int $removed = 0,
         ?ErrorReport $errorReport = null,
-        private ?int $executionTimeNs = null,
     ) {
         $this->errorReport = $errorReport ?? new ErrorReport();
     }
@@ -50,13 +41,6 @@ class GenerationResult
         return $this->errorReport;
     }
 
-    public function getExecutionTimeSec(): ?float
-    {
-        return $this->executionTimeNs !== null
-            ? $this->executionTimeNs / 1_000_000_000
-            : null;
-    }
-
     public function incrementGenerated(): void
     {
         $this->generated++;
@@ -80,10 +64,5 @@ class GenerationResult
     public function addError(ErrorDiagnostic $diagnostic): void
     {
         $this->errorReport->add($diagnostic);
-    }
-
-    public function setExecutionTimeNs(int $nanoseconds): void
-    {
-        $this->executionTimeNs = $nanoseconds;
     }
 }

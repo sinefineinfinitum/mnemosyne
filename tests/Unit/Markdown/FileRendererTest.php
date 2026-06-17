@@ -30,7 +30,7 @@ final class FileRendererTest extends TestCase
     public function testRenderFileWithFunctions(): void
     {
         $functions = [
-            ['name' => 'renderHeader', 'parameters' => [['name' => 'title', 'type' => 'string', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => 'void', 'returnTypeNullable' => false],
+            ['name' => 'renderHeader', 'parameters' => [['name' => 'title', 'type' => 'string', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => 'void', ],
         ];
         $result = $this->renderer->renderFile('templates/header.php', $functions, [], [], []);
 
@@ -41,7 +41,7 @@ final class FileRendererTest extends TestCase
     public function testRenderFileWithFunctionsNoLeadingWhitespaceInSignature(): void
     {
         $functions = [
-            ['name' => 'foo', 'parameters' => [], 'returnType' => 'void', 'returnTypeNullable' => false],
+            ['name' => 'foo', 'parameters' => [], 'returnType' => 'void', ],
         ];
         $result = $this->renderer->renderFile('test.php', $functions, [], [], []);
         $this->assertStringContainsString("```php\nfunction foo(): void\n```", $result);
@@ -73,7 +73,7 @@ final class FileRendererTest extends TestCase
     public function testRenderFileWithFileCallsEmitsCallGraph(): void
     {
         $functions = [
-            ['name' => 'loadConfig', 'parameters' => [], 'returnType' => 'array', 'returnTypeNullable' => false],
+            ['name' => 'loadConfig', 'parameters' => [], 'returnType' => 'array', ],
         ];
         $calls = [
             'loadConfig' => [
@@ -93,7 +93,7 @@ final class FileRendererTest extends TestCase
     public function testRenderFileWithoutFileCallsOmitsCallGraph(): void
     {
         $functions = [
-            ['name' => 'helper', 'parameters' => [], 'returnType' => 'void', 'returnTypeNullable' => false],
+            ['name' => 'helper', 'parameters' => [], 'returnType' => 'void', ],
         ];
         $result = $this->renderer->renderFile('utils.php', $functions, [], [], []);
 
@@ -103,7 +103,7 @@ final class FileRendererTest extends TestCase
     public function testRenderFileFileCallsIgnoreUnknownFunctions(): void
     {
         $functions = [
-            ['name' => 'a', 'parameters' => [], 'returnType' => 'void', 'returnTypeNullable' => false],
+            ['name' => 'a', 'parameters' => [], 'returnType' => 'void', ],
         ];
         $calls = [
             'unknownFunction' => [

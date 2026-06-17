@@ -1,0 +1,4 @@
+@enum GraphDbTest\Domain\Enums\UserStatus:string
+~Active='active'
+~Inactive='inactive'
+~Banned='banned'

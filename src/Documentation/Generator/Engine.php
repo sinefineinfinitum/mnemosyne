@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Processor;
+namespace SineFine\Ponymator\Documentation\Generator;
 
 use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\ParserException;
@@ -11,7 +11,7 @@ use SineFine\Ponymator\Filesystem\FileSystemException;
 use SineFine\Ponymator\Filesystem\PathResolver;
 use Throwable;
 
-final class DocumentationProcessor
+final class Engine
 {
     public function __construct(
         private HashComparator               $hashComparator,

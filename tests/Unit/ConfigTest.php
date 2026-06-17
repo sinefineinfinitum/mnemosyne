@@ -52,7 +52,10 @@ final class ConfigTest extends TestCase
 
     public function testMissingConfigDefaults(): void
     {
+        $cwd = getcwd();
+        chdir($this->tempDir);
         $config = new Config(null);
+        chdir($cwd);
         $this->assertSame('src', $config->getSource());
         $this->assertSame('docs', $config->getTarget());
     }
@@ -81,6 +84,31 @@ final class ConfigTest extends TestCase
         $this->assertSame('custom_src', $config->getSource());
         $this->assertSame('docs', $config->getTarget());
         $this->assertSame(['vendor', 'tests'], $config->getIgnore());
+    }
+
+    public function testDbPathDefaultIsNull(): void
+    {
+        $cwd = getcwd();
+        chdir($this->tempDir);
+        $config = new Config(null);
+        chdir($cwd);
+        $this->assertNull($config->getDbPath());
+    }
+
+    public function testDbPathFromConfig(): void
+    {
+        $path = $this->tempDir . '/.ponymator.json';
+        file_put_contents($path, json_encode(['dbPath' => 'data/graph.db']));
+        $config = new Config($path);
+        $this->assertSame('data/graph.db', $config->getDbPath());
+    }
+
+    public function testDbPathNotOverriddenByDefault(): void
+    {
+        $path = $this->tempDir . '/.ponymator.json';
+        file_put_contents($path, json_encode(['source' => 'app']));
+        $config = new Config($path);
+        $this->assertNull($config->getDbPath());
     }
 
     private function rrmdir(string $dir): void

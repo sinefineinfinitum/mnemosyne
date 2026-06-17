@@ -1,0 +1,31 @@
+@class GraphDbTest\Domain\Models\User
+!+ROLE_ADMIN='admin'
+!+ROLE_USER='user'
+$+id:int
+$+name:string
+$+email:string
+$+status:GraphDbTest\Domain\Enums\UserStatus
+.+__construct
+    $id:int
+    $name:string
+    $email:string
+    $status:GraphDbTest\Domain\Enums\UserStatus
+.+getId
+    :int
+.+getName
+    :string
+.+getEmail
+    :string
+.+getStatus
+    :GraphDbTest\Domain\Enums\UserStatus
+.+getLogContext
+    :array
+.+createFromArray
+    $data:array
+    ^GraphDbTest\Domain\Models\User
+    :GraphDbTest\Domain\Models\User
+.+testCalls
+    *GraphDbTest\Domain\Models\User::createFromArray
+    ?GraphDbTest\Domain\Models\User->getId
+>GraphDbTest\Domain\Support\TimestampTrait
+<GraphDbTest\Domain\Contracts\LoggableInterface

@@ -11,8 +11,8 @@ use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Config;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
 use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
-use SineFine\Ponymator\Documentation\Processor\DocumentationProcessor;
-use SineFine\Ponymator\Documentation\Processor\PageGenerator;
+use SineFine\Ponymator\Documentation\Generator\Engine;
+use SineFine\Ponymator\Documentation\Generator\PageGenerator;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer;
@@ -56,7 +56,7 @@ final class EdgeCaseTest extends TestCase
         return $config;
     }
 
-    private function makeGenerator(Config $config): DocumentationProcessor
+    private function makeGenerator(Config $config): Engine
     {
         $parser = new Parser();
         $combinedAnalyzer = new EntityAnalyzer();
@@ -86,7 +86,7 @@ final class EdgeCaseTest extends TestCase
         );
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
 
-        return new DocumentationProcessor(
+        return new Engine(
             $hashComparator,
             $pathResolver,
             $documenter,

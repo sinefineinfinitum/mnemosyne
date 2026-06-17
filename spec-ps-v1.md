@@ -152,7 +152,7 @@ Built-in PHP types used without namespace:
 <App\Contracts\SearchInterface
 %App\LoggableTrait
 
-$-readonly vectorStore:App\Storage\VectorStore
+$-vectorStore readonly:App\Storage\VectorStore
 $-mixedResult:int|string|null
 
 !+DEFAULT_LIMIT:int=25

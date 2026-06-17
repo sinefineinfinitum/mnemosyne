@@ -3,8 +3,8 @@
 namespace SineFine\Ponymator\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Processor\ErrorDiagnostic;
-use SineFine\Ponymator\Documentation\Processor\ErrorReport;
+use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Ponymator\Documentation\Generator\ErrorReport;
 
 final class ErrorReportTest extends TestCase
 {

@@ -10,10 +10,11 @@ class Config
         'source' => 'src',
         'target' => 'docs',
         'ignore' => ['vendor', 'tests'],
+        'dbPath' => null,
     ];
 
     /**
-     * @var array{source: string, target: string, ignore: string[]} 
+     * @var array{source: string, target: string, ignore: string[], dbPath: string|null}
      */
     private array $config;
 
@@ -49,6 +50,9 @@ class Config
         if (isset($parsed['ignore']) && is_array($parsed['ignore'])) {
             $this->config['ignore'] = $parsed['ignore'];
         }
+        if (isset($parsed['dbPath']) && is_string($parsed['dbPath'])) {
+            $this->config['dbPath'] = $parsed['dbPath'];
+        }
     }
 
     public function getSource(): string
@@ -67,6 +71,11 @@ class Config
     public function getIgnore(): array
     {
         return $this->config['ignore'];
+    }
+
+    public function getDbPath(): ?string
+    {
+        return $this->config['dbPath'];
     }
 
     public function getSourceAbsolute(): string

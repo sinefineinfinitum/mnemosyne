@@ -4,13 +4,13 @@
     "license": ["MIT"],
     "keywords": ["docs", "analysis"],
     "bin": [
-        "ponymator",
-        "ponymator.phar"
+        "ponymator"
     ],
     "require": {
         "php": "^8.0",
         "nikic/php-parser": "^5.7",
-        "sinefineinfinitum/parser-ps": "v0.0.1"
+        "sinefineinfinitum/parser-ps": "0.1.2",
+      "ext-pdo": "*"
     },
     "autoload": {
         "psr-4": {

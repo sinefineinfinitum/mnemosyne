@@ -2,7 +2,7 @@
 
 namespace SineFine\Ponymator\Cli\Error;
 
-use SineFine\Ponymator\Documentation\Processor\ErrorReport;
+use SineFine\Ponymator\Documentation\Generator\ErrorReport;
 
 final class ErrorOutputFormatter
 {

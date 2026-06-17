@@ -167,7 +167,7 @@ final class EnumRendererTest extends TestCase
                         'isAbstract' => false,
                         'parameters' => [],
                         'returnType' => 'bool',
-                        'returnTypeNullable' => false,
+                        
                     ],
                 ],
                 'dependencies' => [],

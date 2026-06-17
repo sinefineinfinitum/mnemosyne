@@ -1,0 +1,7 @@
+@trait GraphDbTest\Domain\Support\TimestampTrait
+$#createdAt:string|null
+$#updatedAt:string|null
+.+getCreatedAt
+    :string|null
+.+setCreatedAt
+    $timestamp:string

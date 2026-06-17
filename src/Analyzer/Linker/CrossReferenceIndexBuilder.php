@@ -12,8 +12,8 @@ use RecursiveIteratorIterator;
 use SineFine\Ponymator\Analyzer\Parser;
 use SineFine\Ponymator\Analyzer\ParserException;
 use SineFine\Ponymator\Analyzer\Visitor\CrossReferenceScannerVisitor;
-use SineFine\Ponymator\Documentation\Processor\ErrorDiagnostic;
-use SineFine\Ponymator\Documentation\Processor\GenerationResult;
+use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Ponymator\Documentation\Generator\GenerationResult;
 use SineFine\Ponymator\Filesystem\PathResolver;
 use Throwable;
 

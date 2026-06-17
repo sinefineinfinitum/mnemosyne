@@ -165,7 +165,7 @@ final class TraitRendererTest extends TestCase
                     'isAbstract' => false,
                     'parameters' => [],
                     'returnType' => 'self',
-                    'returnTypeNullable' => false,
+                    
                 ],
             ],
             ]
@@ -228,10 +228,10 @@ final class TraitRendererTest extends TestCase
                         'isStatic' => false,
                         'isAbstract' => false,
                         'parameters' => [
-                            ['name' => 'message', 'type' => 'string', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
+                            ['name' => 'message', 'type' => 'string', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
                         ],
                         'returnType' => 'void',
-                        'returnTypeNullable' => false,
+                        
                     ],
                     [
                         'name' => 'formatMessage',
@@ -239,10 +239,10 @@ final class TraitRendererTest extends TestCase
                         'isStatic' => false,
                         'isAbstract' => false,
                         'parameters' => [
-                            ['name' => 'msg', 'type' => 'string', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
+                            ['name' => 'msg', 'type' => 'string', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
                         ],
                         'returnType' => 'string',
-                        'returnTypeNullable' => false,
+                        
                     ],
                 ],
                 'dependencies' => [],

@@ -6,8 +6,8 @@ use PHPUnit\Framework\TestCase;
 use SineFine\Ponymator\Cli\Error\ErrorOutputFormatter;
 use SineFine\Ponymator\Cli\Error\ExitCode;
 use SineFine\Ponymator\Config;
-use SineFine\Ponymator\Documentation\Processor\ErrorDiagnostic;
-use SineFine\Ponymator\Documentation\Processor\ErrorReport;
+use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Ponymator\Documentation\Generator\ErrorReport;
 use SineFine\Ponymator\Ponymator;
 
 final class PonymatorErrorHandlingTest extends TestCase

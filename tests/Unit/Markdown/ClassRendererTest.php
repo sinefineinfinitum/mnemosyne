@@ -264,11 +264,11 @@ final class ClassRendererTest extends TestCase
                         'isStatic' => false,
                         'isAbstract' => false,
                         'parameters' => [
-                            ['name' => 'id', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
-                            ['name' => 'active', 'type' => '?bool', 'typeNullable' => true, 'defaultValue' => 'true', 'isVariadic' => false, 'isPassedByReference' => false],
+                            ['name' => 'id', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
+                            ['name' => 'active', 'type' => '?bool', 'defaultValue' => 'true', 'isVariadic' => false, 'isPassedByReference' => false],
                         ],
                         'returnType' => '?User',
-                        'returnTypeNullable' => true,
+                        
                     ],
                 ],
                 'dependencies' => ['App\Models\User'],

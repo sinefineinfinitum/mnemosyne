@@ -10,3 +10,9 @@ docs
 .phpunit.result.cache
 .phpunit.cache
 .editorconfig
+temp-doc
+temp-md
+temp
+*.db
+.ponymator.json
+.dockerignore

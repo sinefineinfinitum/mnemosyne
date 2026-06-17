@@ -11,8 +11,8 @@ use SineFine\Ponymator\Comparator\HashComparator;
 use SineFine\Ponymator\Config;
 use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
 use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
-use SineFine\Ponymator\Documentation\Processor\DocumentationProcessor;
-use SineFine\Ponymator\Documentation\Processor\PageGenerator;
+use SineFine\Ponymator\Documentation\Generator\Engine;
+use SineFine\Ponymator\Documentation\Generator\PageGenerator;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer;
 use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer;
@@ -56,7 +56,7 @@ final class ErrorAggregationTest extends TestCase
         return $config;
     }
 
-    private function makeGenerator(Config $config): DocumentationProcessor
+    private function makeGenerator(Config $config): Engine
     {
         $parser = new Parser();
         $combinedAnalyzer = new EntityAnalyzer();
@@ -86,7 +86,7 @@ final class ErrorAggregationTest extends TestCase
         );
         $documentRemover = new OutdatedDocumentationRemover($pathResolver);
 
-        return new DocumentationProcessor(
+        return new Engine(
             $hashComparator,
             $pathResolver,
             $documenter,
@@ -160,7 +160,7 @@ final class ErrorAggregationTest extends TestCase
         $cwd = getcwd();
         chdir($testDir);
 
-        $result = $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' --full 2>&1', $exitCode);
+        $result = $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' generate --full 2>&1', $exitCode);
         chdir($cwd);
 
         $this->assertSame(0, $exitCode);
@@ -176,7 +176,7 @@ final class ErrorAggregationTest extends TestCase
         $cwd = getcwd();
         chdir($emptyDir);
 
-        $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' --full 2>&1', $exitCode);
+        $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' generate --full 2>&1', $exitCode);
         chdir($cwd);
 
         $this->assertSame(66, $exitCode);
@@ -189,18 +189,18 @@ final class ErrorAggregationTest extends TestCase
         $this->assertSame(2, $exitCode);
     }
 
-    public function testExitCode64ForUnexpectedArgument(): void
+    public function testExitCode2ForUnknownCommand(): void
     {
         $bin = __DIR__ . '/../../ponymator';
         $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' unexpected-arg 2>&1', $exitCode);
-        $this->assertSame(64, $exitCode);
+        $this->assertSame(2, $exitCode);
     }
 
-    public function testExitCode64ForUnknownShortArgument(): void
+    public function testExitCode2ForUnknownShortArgument(): void
     {
         $bin = __DIR__ . '/../../ponymator';
         $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' -x 2>&1', $exitCode);
-        $this->assertSame(64, $exitCode);
+        $this->assertSame(2, $exitCode);
     }
 
     public function testExitCode78ForMissingConfig(): void
@@ -214,7 +214,7 @@ final class ErrorAggregationTest extends TestCase
         chdir($testDir);
 
         $this->runProcess(
-            escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' --full --config=' . $testDir . '/nonexistent.json 2>&1',
+            escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' generate --full --config=' . $testDir . '/nonexistent.json 2>&1',
             $exitCode
         );
         chdir($cwd);

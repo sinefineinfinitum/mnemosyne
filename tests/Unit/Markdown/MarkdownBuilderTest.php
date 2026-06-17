@@ -205,8 +205,8 @@ final class MarkdownBuilderTest extends TestCase
         ];
 
         yield 'without type' => [
-            [['name' => 'mixed', 'visibility' => 'public', 'type' => null, 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
-            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|`\$mixed`|public|—|—|\n",
+            [['name' => 'mixed', 'visibility' => 'public', 'type' => 'mixed', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
+            "|Property|Visibility|Type|Default|\n|---|---|---|---|\n|`\$mixed`|public|mixed|—|\n",
         ];
 
         yield 'default with pipe' => [
@@ -246,7 +246,7 @@ final class MarkdownBuilderTest extends TestCase
         ];
 
         yield 'with params' => [
-            ['name' => 'bar', 'visibility' => 'public', 'parameters' => [['name' => 'x', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]]],
+            ['name' => 'bar', 'visibility' => 'public', 'parameters' => [['name' => 'x', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]]],
             'public function bar(int $x)',
         ];
 
@@ -261,17 +261,17 @@ final class MarkdownBuilderTest extends TestCase
         ];
 
         yield 'variadic' => [
-            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'args', 'type' => 'string', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => true, 'isPassedByReference' => false]]],
+            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'args', 'type' => 'string', 'defaultValue' => null, 'isVariadic' => true, 'isPassedByReference' => false]]],
             'public function f(string ...$args)',
         ];
 
         yield 'by reference' => [
-            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'ref', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => true]]],
+            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'ref', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => true]]],
             'public function f(int &$ref)',
         ];
 
         yield 'with default' => [
-            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'flag', 'type' => 'bool', 'typeNullable' => false, 'defaultValue' => 'true', 'isVariadic' => false, 'isPassedByReference' => false]]],
+            ['name' => 'f', 'visibility' => 'public', 'parameters' => [['name' => 'flag', 'type' => 'bool', 'defaultValue' => 'true', 'isVariadic' => false, 'isPassedByReference' => false]]],
             'public function f(bool $flag = true)',
         ];
     }
@@ -286,13 +286,13 @@ final class MarkdownBuilderTest extends TestCase
 
     public static function provideParameterStringData(): iterable
     {
-        yield 'simple' => [['name' => 'x', 'type' => null, 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], '$x'];
-        yield 'typed' => [['name' => 'x', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], 'int $x'];
-        yield 'nullable' => [['name' => 'x', 'type' => '?string', 'typeNullable' => true, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], '?string $x'];
-        yield 'variadic' => [['name' => 'items', 'type' => 'array', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => true, 'isPassedByReference' => false], 'array ...$items'];
-        yield 'by ref' => [['name' => 'out', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => true], 'int &$out'];
-        yield 'default value' => [['name' => 'age', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => '0', 'isVariadic' => false, 'isPassedByReference' => false], 'int $age = 0'];
-        yield 'all options' => [['name' => 'x', 'type' => 'string', 'typeNullable' => false, 'defaultValue' => "'hi'", 'isVariadic' => false, 'isPassedByReference' => false], "string \$x = 'hi'"];
+        yield 'simple' => [['name' => 'x', 'type' => 'mixed', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], 'mixed $x'];
+        yield 'typed' => [['name' => 'x', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], 'int $x'];
+        yield 'nullable' => [['name' => 'x', 'type' => '?string', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false], '?string $x'];
+        yield 'variadic' => [['name' => 'items', 'type' => 'array', 'defaultValue' => null, 'isVariadic' => true, 'isPassedByReference' => false], 'array ...$items'];
+        yield 'by ref' => [['name' => 'out', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => true], 'int &$out'];
+        yield 'default value' => [['name' => 'age', 'type' => 'int', 'defaultValue' => '0', 'isVariadic' => false, 'isPassedByReference' => false], 'int $age = 0'];
+        yield 'all options' => [['name' => 'x', 'type' => 'string', 'defaultValue' => "'hi'", 'isVariadic' => false, 'isPassedByReference' => false], "string \$x = 'hi'"];
     }
 
     /**
@@ -328,7 +328,7 @@ final class MarkdownBuilderTest extends TestCase
         $noLink = fn(string $fqn): ?string => null;
         $methods = [
             ['name' => 'foo', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [], 'returnType' => null],
-            ['name' => 'bar', 'visibility' => 'protected', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [['name' => 'x', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => null],
+            ['name' => 'bar', 'visibility' => 'protected', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [['name' => 'x', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => null],
         ];
         $expected = "- `public function foo(``)`\n- `protected function bar(``int`` \$x``)`\n";
         $this->assertSame($expected, $this->builder->methodsList($methods, $noLink));
@@ -353,7 +353,7 @@ final class MarkdownBuilderTest extends TestCase
     {
         $linkResolver = fn(string $fqn): ?string => $fqn === 'App\Entity\User' ? 'user.md' : null;
         $methods = [
-            ['name' => 'getUser', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [['name' => 'id', 'type' => 'int', 'typeNullable' => false, 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => 'App\Entity\User'],
+            ['name' => 'getUser', 'visibility' => 'public', 'isStatic' => false, 'isAbstract' => false, 'parameters' => [['name' => 'id', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false]], 'returnType' => 'App\Entity\User'],
         ];
         $result = $this->builder->methodsList($methods, $linkResolver);
         $this->assertStringContainsString('[App\Entity\User](user.md)', $result);
@@ -586,9 +586,9 @@ final class MarkdownBuilderTest extends TestCase
         ];
 
         yield 'without type' => [
-            [['name' => 'mixed', 'visibility' => 'public', 'type' => null, 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
+            [['name' => 'mixed', 'visibility' => 'public', 'type' => 'mixed', 'defaultValue' => null, 'isStatic' => false, 'isReadonly' => false]],
             $noLink,
-            "- `public` `\$mixed`\n",
+            "- `public` `mixed` `\$mixed`\n",
         ];
 
         yield 'empty' => [[], $noLink, ''];

@@ -22,8 +22,10 @@ For identical source code and configuration, repeated runs produce byte-identica
 
 | Mode | Flag | Description |
 | :--- | :--- | :--- |
-| Full | `--full` | Regenerate all documentation |
-| Diff | `--diff` | Regenerate only changed files (default) |
+| Full | `generate --full` | Regenerate all documentation |
+| Diff | `generate --diff` | Regenerate only changed files (default) |
+| Graph | `graph import` | Import PHP analysis into graph database |
+| Show | `show entity` | Analyze entity dependencies and impact |
 
 Exit codes:
 
@@ -31,8 +33,9 @@ Exit codes:
 | :--- | :--- |
 | `0` | Success |
 | `1` | Generic error (parsing, runtime) |
-| `2` | Command-line syntax error (unknown flag) |
+| `2` | Command-line syntax error (unknown flag/command) |
 | `64` | Wrong usage (invalid arguments) |
+| `65` | Data error (database, entity not found) |
 | `66` | Source not found |
 | `73` | Output file/directory error |
 | `78` | Config file missing, unreadable, or malformed |
@@ -50,10 +53,43 @@ composer require sinefineinfinitum/ponymator
 ## Usage
 
 ```bash
-vendor/bin/ponymator [--full | --diff] [--config=<path>] [--help]
+# Main help
+vendor/bin/ponymator --help
+
+# Generate documentation
+vendor/bin/ponymator generate [--full | --diff] [--config=<path>] [--output=md|psv1]
+
+# Manage graph database
+vendor/bin/ponymator graph import [--db-path=<path>]
+vendor/bin/ponymator graph clear
+
+# Analyze entities
+vendor/bin/ponymator show entity <name> [--depth=N]
+vendor/bin/ponymator show impact <name> [--depth=N]
+vendor/bin/ponymator show path <from> <to>
 ```
 
-By default, Ponimator runs in diff mode — only regenerating documentation for changed source files.
+### Commands
+
+#### `generate`
+Produces documentation from PHP source code.
+- `--full`: Force regeneration of all files.
+- `--diff`: Only update files that changed since last run (default).
+- `--output=md`: (Default) Standard Markdown output.
+- `--output=psv1`: [Ponymator Syntax v1](spec-ps-v1.md) (compact, machine-readable format for graph analysis).
+
+#### `graph`
+Handles the SQLite graph database used for deep dependency analysis.
+- `import`: Scans source code, parses AST, and populates the graph database with entities and relationships.
+- `clear`: Drops all tables and recreates the schema in the graph database. Useful for a fresh start or fixing corruption.
+
+#### `show`
+Interactive analysis of the dependency graph. Supports FQCN or short names (if unique).
+- `entity <name>`: Shows detailed info about an entity (class, method, etc.) and its direct outgoing dependencies (structural and calls).
+- `impact <name>`: Performs reverse dependency analysis. Lists all entities that depend on the target, recursively up to `--depth`.
+- `path <from> <to>`: Finds the shortest path between two entities. Analyzes both forward (depends on) and reverse (is used by) relationships to show how two parts of the system are connected.
+- `--depth=N`: Limits recursion depth for `impact` command (default: 3).
+- `--db-path=<path>`: Override the database path from config.
 
 ## Generated Documentation Example
 
@@ -147,7 +183,8 @@ Configuration file: `.ponymator.json`. Example:
 {
     "source": "app",
     "target": "api-docs",
-    "ignore": ["vendor", "node_modules"]
+    "ignore": ["vendor", "node_modules"],
+    "dbPath": "./db/path"
 }
 ```
 

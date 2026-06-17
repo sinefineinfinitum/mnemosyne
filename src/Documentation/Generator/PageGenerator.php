@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Processor;
+namespace SineFine\Ponymator\Documentation\Generator;
 
 use SineFine\Ponymator\Analyzer\CallInfo;
 use SineFine\Ponymator\Analyzer\EntityAnalysisResult;

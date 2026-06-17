@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d59e58842a9a819e956628ad75aa9b2c",
+    "content-hash": "36fea8e0b75750e1d96dc102bda5fb65",
     "packages": [
         {
             "name": "nikic/php-parser",
@@ -66,16 +66,16 @@
         },
         {
             "name": "sinefineinfinitum/parser-ps",
-            "version": "v0.0.1",
+            "version": "0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sinefineinfinitum/parser-ps.git",
-                "reference": "b05f65326fee9584872a86d45a49e7631ff96f9f"
+                "reference": "e8c96ed9a9ba252c94f7e820eaa0d3b449fa25c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sinefineinfinitum/parser-ps/zipball/b05f65326fee9584872a86d45a49e7631ff96f9f",
-                "reference": "b05f65326fee9584872a86d45a49e7631ff96f9f",
+                "url": "https://api.github.com/repos/sinefineinfinitum/parser-ps/zipball/e8c96ed9a9ba252c94f7e820eaa0d3b449fa25c0",
+                "reference": "e8c96ed9a9ba252c94f7e820eaa0d3b449fa25c0",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,8 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Ponymator\\Parser\\": "src/"
+                    "Ponymator\\Parser\\": "src/",
+                    "Ponymator\\Parser\\Tests\\": "tests/"
                 }
             },
             "scripts": {
@@ -108,10 +109,10 @@
             ],
             "description": "Documentation parser for PS v1.0 syntax",
             "support": {
-                "source": "https://github.com/sinefineinfinitum/parser-ps/tree/v0.0.1",
+                "source": "https://github.com/sinefineinfinitum/parser-ps/tree/0.1.2",
                 "issues": "https://github.com/sinefineinfinitum/parser-ps/issues"
             },
-            "time": "2026-06-06T21:01:55+00:00"
+            "time": "2026-06-11T11:57:12+00:00"
         }
     ],
     "packages-dev": [
@@ -364,11 +365,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.1",
+            "version": "2.2.2",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/dea9c8f2d25cc849391042b71e429c1a4bf82660",
-                "reference": "dea9c8f2d25cc849391042b71e429c1a4bf82660",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e5cc34d491a90e79c216d824f60fe21fd4d93bd6",
+                "reference": "e5cc34d491a90e79c216d824f60fe21fd4d93bd6",
                 "shasum": ""
             },
             "require": {
@@ -424,7 +425,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-28T14:44:12+00:00"
+            "time": "2026-06-05T09:00:01+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

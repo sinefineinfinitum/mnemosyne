@@ -60,8 +60,7 @@ final class AstHelper
             foreach ($method->getParams() as $param) {
                 $params[] = [
                     'name' => $param->var->name ?? '',
-                    'type' => $param->type !== null ? $this->resolveType($param->type) : null,
-                    'typeNullable' => $param->type instanceof NullableType,
+                    'type' => $param->type !== null ? $this->resolveType($param->type) : 'mixed',
                     'defaultValue' => $param->default !== null ? $this->resolveDefault($param->default) : null,
                     'isVariadic' => $param->variadic,
                     'isPassedByReference' => $param->byRef,
@@ -76,7 +75,6 @@ final class AstHelper
                 'isFinal' => $method->isFinal(),
                 'parameters' => $params,
                 'returnType' => $method->returnType !== null ? $this->resolveType($method->returnType) : null,
-                'returnTypeNullable' => $method->returnType instanceof NullableType,
             ];
         }
         return $methods;
@@ -95,7 +93,7 @@ final class AstHelper
                 $properties[] = [
                     'name' => $p->name->toString(),
                     'visibility' => $visibility,
-                    'type' => $prop->type !== null ? $this->resolveType($prop->type) : null,
+                    'type' => $prop->type !== null ? $this->resolveType($prop->type) : 'mixed',
                     'defaultValue' => $p->default !== null ? $this->resolveDefault($p->default) : null,
                     'isStatic' => $prop->isStatic(),
                     'isReadonly' => $prop->isReadonly(),
