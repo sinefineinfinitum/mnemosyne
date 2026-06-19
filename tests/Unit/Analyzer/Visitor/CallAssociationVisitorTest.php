@@ -19,7 +19,7 @@ final class CallAssociationVisitorTest extends TestCase
      */
     private function collectAndResolve(string $code, array $projectFunctions = []): array
     {
-        $parser = (new ParserFactory())->createForHostVersion();
+        $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $ast = $parser->parse('<?php ' . $code);
 
         $traverser = new NodeTraverser();
@@ -355,5 +355,85 @@ final class CallAssociationVisitorTest extends TestCase
         $this->assertCount(1, $dynamic);
         $this->assertSame(CallInfo::STRONG, $dynamic[0]->association);
         $this->assertSame('App\Service\UserService->helper', $dynamic[0]->resolvedTargetFqcn);
+    }
+
+    public function testGlobalCallWithLeadingBackslash(): void
+    {
+        $calls = $this->collectAndResolve(
+            '
+            namespace App\Service;
+            class UserService {
+                public function run(): void {
+                    \strlen("a");
+                }
+            }
+        ',
+            ['strlen']
+        );
+
+        $bucket = $calls['App\Service\UserService']['run'];
+        $globals = array_values(array_filter($bucket, fn(CallInfo $c) => $c->kind === CallInfo::KIND_GLOBAL));
+        $this->assertCount(1, $globals);
+        $this->assertSame(CallInfo::STRONG, $globals[0]->association);
+    }
+
+    public function testNewWithAnonymousClassSkipped(): void
+    {
+        $calls = $this->collectAndResolve(
+            '
+            namespace App\Service;
+            class UserService {
+                public function run(): void {
+                    $obj = new class { public function test() {} };
+                }
+            }
+        '
+        );
+
+        $bucket = $calls['App\Service\UserService']['run'] ?? [];
+        $creates = array_values(array_filter($bucket, fn(CallInfo $c) => $c->kind === CallInfo::KIND_CREATE));
+        $this->assertCount(0, $creates);
+    }
+
+    public function testDynamicCallWithPropertyFetchVariableType(): void
+    {
+        $calls = $this->collectAndResolve(
+            '
+            namespace App\Service;
+            class UserService {
+                private \App\Entity\User $user;
+                public function run(): void {
+                    $this->user->save();
+                }
+            }
+        '
+        );
+
+        $bucket = $calls['App\Service\UserService']['run'];
+        $dynamic = array_values(array_filter($bucket, fn(CallInfo $c) => $c->kind === CallInfo::KIND_DYNAMIC));
+        $this->assertCount(1, $dynamic);
+        $this->assertSame(CallInfo::WEAK, $dynamic[0]->association);
+    }
+
+    public function testGlobalCallOnlyMatchesExactFunctionName(): void
+    {
+        $calls = $this->collectAndResolve(
+            '
+            namespace App\Service;
+            class UserService {
+                public function run(): void {
+                    strlen("a");
+                    substr("b", 0, 1);
+                }
+            }
+        ',
+            ['strlen']
+        );
+
+        $bucket = $calls['App\Service\UserService']['run'];
+        $globals = array_values(array_filter($bucket, fn(CallInfo $c) => $c->kind === CallInfo::KIND_GLOBAL));
+        $this->assertCount(1, $globals);
+        $this->assertSame('strlen', $globals[0]->targetName);
+        $this->assertSame(CallInfo::STRONG, $globals[0]->association);
     }
 }

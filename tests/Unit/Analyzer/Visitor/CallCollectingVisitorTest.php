@@ -24,13 +24,14 @@ final class CallCollectingVisitorTest extends TestCase
     }
 
     /**
-     * @return array<int, array<string, mixed>>
+     * @param  string $code
+     * @return void
      */
-    private function parseAndTraverse(string $code): array
+    private function parseAndTraverse(string $code): void
     {
-        $parser = (new ParserFactory())->createForHostVersion();
+        $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $ast = $parser->parse('<?php ' . $code);
-        return $this->traverser->traverse($ast);
+        $this->traverser->traverse($ast);
     }
 
     /**

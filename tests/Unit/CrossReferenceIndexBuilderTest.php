@@ -2,10 +2,21 @@
 
 namespace SineFine\Ponymator\Tests\Unit;
 
+use FilesystemIterator;
+use PhpParser\Node;
+use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor\NameResolver;
+use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
 use SineFine\Ponymator\Analyzer\Linker\CrossReferenceContext;
 use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
 use SineFine\Ponymator\Analyzer\Parser;
+use SineFine\Ponymator\Analyzer\ParserException;
+use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Ponymator\Documentation\Generator\GenerationResult;
 use SineFine\Ponymator\Filesystem\PathResolver;
 
 final class CrossReferenceIndexBuilderTest extends TestCase
@@ -56,7 +67,7 @@ final class CrossReferenceIndexBuilderTest extends TestCase
             ->willReturnCallback(
                 fn(string $path) => match ($path) {
                 '/project/src/good.php' => $this->parseCode('<?php namespace App; class Good {}'),
-                default => throw new \RuntimeException('Parse error'),
+                default => throw new RuntimeException('Parse error'),
                 }
             );
 
@@ -193,6 +204,164 @@ final class CrossReferenceIndexBuilderTest extends TestCase
         $this->removeDir($tempDir);
     }
 
+    public function testBuildRemovesDuplicateEntityFqns(): void
+    {
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+
+        $parser->method('parseFile')
+            ->willReturnCallback(
+                fn(string $path) => match ($path) {
+                '/project/src/A.php' => $this->parseCode('<?php namespace App; class A {}'),
+                '/project/src/B.php' => $this->parseCode('<?php namespace App; class A {}'),
+                }
+            );
+
+        $pathResolver->method('sourcePath')
+            ->willReturnCallback(fn(string $r) => '/project/src/' . $r);
+        $pathResolver->method('docRelativePath')
+            ->willReturnCallback(fn(string $r) => preg_replace('/\.php$/', '.md', $r));
+
+        $context = $builder->build(['A.php', 'B.php']);
+
+        $projectFqns = array_keys($context->getFqnToDocPath());
+        $this->assertCount(1, $projectFqns);
+        $this->assertSame('App\A', $projectFqns[0]);
+    }
+
+    public function testBuildTypeIndexSortsResults(): void
+    {
+        $tempDir = $this->createPsv1Fixture(
+            '@class App\Zebra' . PHP_EOL .
+            '@class App\Apple' . PHP_EOL .
+            '@class App\Mango' . PHP_EOL
+        );
+
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $pathResolver->method('sourcePath')->willReturn('/project/src/A.php');
+        $pathResolver->method('docRelativePath')->willReturn('A.md');
+        $pathResolver->method('targetDir')->willReturn($tempDir);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+        $context = $builder->build([]);
+
+        $typeIndex = $context->getTypeIndex();
+        $keys = array_keys($typeIndex);
+        $this->assertSame(['App\Apple', 'App\Mango', 'App\Zebra'], $keys);
+
+        $this->removeDir($tempDir);
+    }
+
+    public function testBuildTypeIndexSortsMembers(): void
+    {
+        $tempDir = $this->createPsv1Fixture(
+            '@class App\Foo' . PHP_EOL .
+            '.+zebra' . PHP_EOL .
+            '.+apple' . PHP_EOL .
+            '.+mango' . PHP_EOL .
+            '$zprop:string' . PHP_EOL .
+            '$aprop:int' . PHP_EOL .
+            '!ZCONST' . PHP_EOL .
+            '!ACONST' . PHP_EOL
+        );
+
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $pathResolver->method('sourcePath')->willReturn('/project/src/A.php');
+        $pathResolver->method('docRelativePath')->willReturn('A.md');
+        $pathResolver->method('targetDir')->willReturn($tempDir);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+        $context = $builder->build([]);
+
+        $typeInfo = $context->getTypeIndex()['App\Foo'];
+        $this->assertSame(['apple', 'mango', 'zebra'], $typeInfo->methods);
+        $this->assertSame(['aprop', 'zprop'], $typeInfo->properties);
+        $this->assertSame(['ACONST', 'ZCONST'], $typeInfo->constants);
+
+        $this->removeDir($tempDir);
+    }
+
+    public function testBuildTypeIndexHandlesCaseInsensitiveExtension(): void
+    {
+        $tempDir = sys_get_temp_dir() . '/ponymator-test-' . uniqid();
+        mkdir($tempDir, 0755, true);
+        file_put_contents($tempDir . '/Foo.PSV1', '@class App\Foo' . PHP_EOL);
+        file_put_contents($tempDir . '/Bar.Psv1', '@class App\Bar' . PHP_EOL);
+
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $pathResolver->method('sourcePath')->willReturn('/project/src/A.php');
+        $pathResolver->method('docRelativePath')->willReturn('A.md');
+        $pathResolver->method('targetDir')->willReturn($tempDir);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+        $context = $builder->build([]);
+
+        $typeIndex = $context->getTypeIndex();
+        $this->assertArrayHasKey('App\Foo', $typeIndex);
+        $this->assertArrayHasKey('App\Bar', $typeIndex);
+
+        $this->removeDir($tempDir);
+    }
+
+    public function testBuildReportsParserExceptionWithFilePath(): void
+    {
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+
+        $parser->method('parseFile')
+            ->willThrowException(new ParserException('Parse error'));
+
+        $pathResolver->method('sourcePath')
+            ->willReturnCallback(fn(string $r) => '/project/src/' . $r);
+        $pathResolver->method('docRelativePath')
+            ->willReturnCallback(fn(string $r) => preg_replace('/\.php$/', '.md', $r));
+
+        $result = new GenerationResult();
+        $context = $builder->build(['broken.php'], $result);
+
+        $this->assertInstanceOf(CrossReferenceContext::class, $context);
+        $this->assertTrue($result->getErrorReport()->hasErrors());
+        $diagnostics = $result->getErrorReport()->getDiagnostics();
+        $this->assertCount(1, $diagnostics);
+        $this->assertStringContainsString('broken.php', $diagnostics[0]->message);
+        $this->assertStringContainsString('Parse error', $diagnostics[0]->message);
+        $this->assertSame('broken.php', $diagnostics[0]->filePath);
+    }
+
+    public function testBuildReportsThrowableWithWarningSeverity(): void
+    {
+        $parser = $this->createMock(Parser::class);
+        $pathResolver = $this->createMock(PathResolver::class);
+
+        $builder = new CrossReferenceIndexBuilder($parser, $pathResolver);
+
+        $parser->method('parseFile')
+            ->willThrowException(new RuntimeException('Unexpected error'));
+
+        $pathResolver->method('sourcePath')
+            ->willReturnCallback(fn(string $r) => '/project/src/' . $r);
+        $pathResolver->method('docRelativePath')
+            ->willReturnCallback(fn(string $r) => preg_replace('/\.php$/', '.md', $r));
+
+        $result = new GenerationResult();
+        $context = $builder->build(['broken.php'], $result);
+
+        $this->assertInstanceOf(CrossReferenceContext::class, $context);
+        $diagnostics = $result->getErrorReport()->getDiagnostics();
+        $this->assertCount(1, $diagnostics);
+        $this->assertSame(ErrorDiagnostic::WARNING, $diagnostics[0]->severity);
+    }
+
     private function createPsv1Fixture(string $contents): string
     {
         $tempDir = sys_get_temp_dir() . '/ponymator-test-' . uniqid();
@@ -206,9 +375,9 @@ final class CrossReferenceIndexBuilderTest extends TestCase
         if (!is_dir($path)) {
             return;
         }
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($iterator as $file) {
             $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
@@ -217,14 +386,14 @@ final class CrossReferenceIndexBuilderTest extends TestCase
     }
 
     /**
-     * @return array<int, \PhpParser\Node>
+     * @return array<int, Node>
      */
     private function parseCode(string $code): array
     {
-        $parser = (new \PhpParser\ParserFactory())->createForNewestSupportedVersion();
+        $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $ast = $parser->parse($code);
-        $traverser = new \PhpParser\NodeTraverser();
-        $traverser->addVisitor(new \PhpParser\NodeVisitor\NameResolver());
+        $traverser = new NodeTraverser();
+        $traverser->addVisitor(new NameResolver());
         return $traverser->traverse($ast);
     }
 }

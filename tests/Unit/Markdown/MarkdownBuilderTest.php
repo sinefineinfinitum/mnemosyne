@@ -50,7 +50,7 @@ final class MarkdownBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider provideTableData 
+     * @dataProvider provideTableData
      */
     public function testTable(array $headers, array $rows, string $expected): void
     {
@@ -118,7 +118,7 @@ final class MarkdownBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider provideCodeBlockData 
+     * @dataProvider provideCodeBlockData
      */
     public function testCodeBlock(string $code, string $lang, string $expected): void
     {
@@ -149,7 +149,7 @@ final class MarkdownBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider provideKvListData 
+     * @dataProvider provideKvListData
      */
     public function testKvList(array $pairs, string $expected): void
     {
@@ -175,7 +175,7 @@ final class MarkdownBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider providePropertiesTableData 
+     * @dataProvider providePropertiesTableData
      */
     public function testPropertiesTable(array $properties, string $expected): void
     {
@@ -231,7 +231,7 @@ final class MarkdownBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider provideMethodSignatureData 
+     * @dataProvider provideMethodSignatureData
      */
     public function testMethodSignature(array $method, string $expected): void
     {
@@ -277,7 +277,7 @@ final class MarkdownBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider provideParameterStringData 
+     * @dataProvider provideParameterStringData
      */
     public function testParameterString(array $param, string $expected): void
     {
@@ -296,7 +296,7 @@ final class MarkdownBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider provideConstantsTableData 
+     * @dataProvider provideConstantsTableData
      */
     public function testConstantsTable(array $constants, string $expected): void
     {
@@ -400,7 +400,7 @@ final class MarkdownBuilderTest extends TestCase
     }
 
     /**
-     * @dataProvider provideInlineCodeEdgeCases 
+     * @dataProvider provideInlineCodeEdgeCases
      */
     public function testInlineCodeViaItemList(string $value, string $expected): void
     {
@@ -653,5 +653,95 @@ final class MarkdownBuilderTest extends TestCase
             . $this->builder->kvList(['k' => 'v']);
 
         $this->assertSame($block(), $block(), 'Full output must be deterministic');
+    }
+
+    public function testTableSeparatorColumnCount(): void
+    {
+        $headers = ['A', 'B', 'C', 'D'];
+        $rows = [['1', '2', '3', '4']];
+        $result = $this->builder->table($headers, $rows);
+        $this->assertStringContainsString('|---|---|---|---|', $result);
+    }
+
+    public function testMethodSignatureMultipleParametersCommaSeparated(): void
+    {
+        $method = [
+            'name' => 'test',
+            'visibility' => 'public',
+            'parameters' => [
+                ['name' => 'a', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
+                ['name' => 'b', 'type' => 'string', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
+                ['name' => 'c', 'type' => 'bool', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
+            ],
+        ];
+        $result = $this->builder->methodSignature($method);
+        $this->assertSame('public function test(int $a, string $b, bool $c)', $result);
+    }
+
+    public function testRenderTypeStripsLeadingBackslash(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $result = $this->builder->renderType('\\App\\Entity\\User', $noLink);
+        $this->assertSame('`App\\Entity\\User`', $result);
+    }
+
+    public function testRenderTypeNullableStripsLeadingBackslash(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $result = $this->builder->renderType('?\\App\\Entity\\User', $noLink);
+        $this->assertSame('`?App\\Entity\\User`', $result);
+    }
+
+    public function testCreatesSectionAccumulatesMultipleMethods(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $creates = [
+            'method1' => ['\\App\\A'],
+            'method2' => ['\\App\\B'],
+            'method3' => ['\\App\\C'],
+        ];
+        $result = $this->builder->createsSection($creates, $noLink);
+        $this->assertStringContainsString('`method1`', $result);
+        $this->assertStringContainsString('`method2`', $result);
+        $this->assertStringContainsString('`method3`', $result);
+        $lines = explode("\n", trim($result));
+        $this->assertCount(3, $lines);
+    }
+
+    public function testCreatesSectionAccumulatesMultipleFqcnsPerMethod(): void
+    {
+        $noLink = fn(string $fqn): ?string => null;
+        $creates = [
+            'build' => ['\\App\\A', '\\App\\B', '\\App\\C'],
+        ];
+        $result = $this->builder->createsSection($creates, $noLink);
+        $this->assertStringContainsString('`\\App\\A`', $result);
+        $this->assertStringContainsString('`\\App\\B`', $result);
+        $this->assertStringContainsString('`\\App\\C`', $result);
+    }
+
+    public function testUsedBySectionAccumulatesMultipleLinks(): void
+    {
+        $links = [
+            '[App\\A](A.md)',
+            '[App\\B](B.md)',
+            '[App\\C](C.md)',
+        ];
+        $result = $this->builder->usedBySection($links);
+        $this->assertStringContainsString('[App\\A](A.md)', $result);
+        $this->assertStringContainsString('[App\\B](B.md)', $result);
+        $this->assertStringContainsString('[App\\C](C.md)', $result);
+    }
+
+    public function testDeclarationLineWithLeadingBackslashInParent(): void
+    {
+        $result = $this->builder->declarationLine('class', '\\App\\Base', null, [], [], null);
+        $this->assertSame("`class` extends `\\App\\Base`\n", $result);
+    }
+
+    public function testDeclarationLineWithLeadingBackslashInInterfaces(): void
+    {
+        $result = $this->builder->declarationLine('class', null, null, ['\\App\\Contract'], ['contract.md'], null);
+        $this->assertSame("`class` implements [\\App\\Contract](contract.md)\n", $result);
     }
 }

@@ -1,6 +1,9 @@
 name: CI
 
-on: push
+on:
+  push:
+    paths-ignore:
+      - '*.md'
 
 jobs:
   static:
@@ -56,3 +59,55 @@ jobs:
 
       - name: PHP CodeSniffer
         run: vendor/bin/phpcs -s  --standard=phpcs.xml.dist
+
+  infection:
+    name: Mutation Tests (PHP 8.4)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer
+          extensions: zip, simplexml, pdo_sqlite, ffi
+          coverage: pcov
+          ini-values: ffi.enable=true
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.composer/cache
+            vendor
+          key: composer-${{ runner.os }}-infection-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-infection-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run Infection
+        run: php -d memory_limit=-1 vendor/bin/infection --threads=4 --coverage=build
+
+      - name: Extract MSI and generate badge
+        run: |
+          MSI=$(grep -oP 'MSI: \K[\d.]+(?=%)' infection.log | tail -1)
+          if [ -z "$MSI" ]; then MSI="0"; fi
+          if [ "$(echo "$MSI >= 75" | bc -l)" -eq 1 ]; then
+            COLOR="green"
+          elif [ "$(echo "$MSI >= 50" | bc -l)" -eq 1 ]; then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+          echo "{\"schemaVersion\":1,\"label\":\"MSI\",\"message\":\"$MSI%\",\"color\":\"$COLOR\"}" > infection-badge.json
+
+      - name: Upload badge artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: infection-badge.json

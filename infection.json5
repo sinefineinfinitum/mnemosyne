@@ -1,0 +1,16 @@
+{
+    "$schema": "https://raw.githubusercontent.com/infection/infection/0.32.0/resources/schema.json",
+    "source": {
+        "directories": [
+            "src"
+        ]
+    },
+    "logs": {
+        "text": "infection.diff",
+        "html": "infection-report.html"
+    },
+    "initialTestsPhpOptions": "-d memory_limit=8G -d pcov.enabled=1 -d pcov.directory=. -d pcov.exclude=~vendor~",
+    "mutators": {
+        "@default": true
+    }
+}

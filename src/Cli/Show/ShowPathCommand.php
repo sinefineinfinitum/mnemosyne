@@ -42,8 +42,9 @@ final class ShowPathCommand
             echo $node['fqn'];
 
             if ($i < count($path) - 1) {
-                $relType = $node['rel_type'];
-                $direction = $node['direction'];
+                $arrowNode = $path[$i + 1];
+                $relType = $arrowNode['rel_type'];
+                $direction = $arrowNode['direction'];
 
                 if ($direction === 'forward') {
                     echo " --[" . $relType . "]--> ";

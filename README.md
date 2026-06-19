@@ -5,6 +5,7 @@
 [![License](https://img.shields.io/packagist/l/sinefineinfinitum/ponymator)](https://packagist.org/packages/sinefineinfinitum/ponymator)
 [![CI](https://img.shields.io/github/actions/workflow/status/sinefineinfinitum/ponymator/ci.yml?branch=main)](https://github.com/sinefineinfinitum/ponymator/actions)
 [![PHPStan level](https://img.shields.io/badge/PHPStan-8-brightgreen)](https://github.com/phpstan/phpstan)
+[![Mutation Score](https://img.shields.io/badge/MSI-71%25-yellow)](https://github.com/sinefineinfinitum/ponymator/actions)
 
 A CLI-first PHP documentation generator that produces deterministic Markdown documentation for a project's API surface.
 

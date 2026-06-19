@@ -24,7 +24,7 @@ final class ObjectCreationCollectingVisitorTest extends TestCase
 
     private function parseAndTraverse(string $code): void
     {
-        $parser = (new ParserFactory())->createForHostVersion();
+        $parser = (new ParserFactory())->createForNewestSupportedVersion();
         $ast = $parser->parse('<?php ' . $code);
         $this->traverser->traverse($ast);
     }
