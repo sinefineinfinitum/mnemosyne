@@ -17,3 +17,8 @@ temp
 .ponymator.json
 .mnemosyne.json
 .dockerignore
+build
+infection.diff
+infection-report.html
+run.sh
+temp.txt

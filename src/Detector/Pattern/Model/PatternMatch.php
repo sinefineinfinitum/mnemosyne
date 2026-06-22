@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Detector\Pattern\Model;
+namespace SineFine\Mnemosyne\Detector\Pattern\Model;
 
-use SineFine\Ponymator\Detector\Pattern\Catalog\PatternInterface;
+use SineFine\Mnemosyne\Detector\Pattern\Catalog\PatternInterface;
 
 final class PatternMatch
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Detector\Pattern\Model;
+namespace SineFine\Mnemosyne\Detector\Pattern\Model;
 
 final class PatternResult
 {

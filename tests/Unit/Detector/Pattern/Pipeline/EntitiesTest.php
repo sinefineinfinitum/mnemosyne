@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Detector\Pattern\Pipeline;
+namespace SineFine\Mnemosyne\Tests\Unit\Detector\Pattern\Pipeline;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Detector\Pattern\Model\PatternMatch;
-use SineFine\Ponymator\Detector\Pattern\Model\PatternParticipant;
-use SineFine\Ponymator\Detector\Pattern\Model\PatternResult;
-use SineFine\Ponymator\Tests\Unit\Detector\Pattern\Stub\PatternInterfaceStub;
+use SineFine\Mnemosyne\Detector\Pattern\Model\PatternMatch;
+use SineFine\Mnemosyne\Detector\Pattern\Model\PatternParticipant;
+use SineFine\Mnemosyne\Detector\Pattern\Model\PatternResult;
+use SineFine\Mnemosyne\Tests\Unit\Detector\Pattern\Stub\PatternInterfaceStub;
 
 final class EntitiesTest extends TestCase
 {

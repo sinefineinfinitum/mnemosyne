@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Detector\Pattern;
+namespace SineFine\Mnemosyne\Detector\Pattern;
 
-use SineFine\Ponymator\Detector\Pattern\Model\PatternResult;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Detector\Pattern\Model\PatternResult;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
 
 interface PatternDetector
 {
