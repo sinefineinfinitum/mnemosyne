@@ -29,6 +29,8 @@ final class SchemaTest extends TestCase
         $this->assertContains('parameters', $tables);
         $this->assertContains('relationships', $tables);
         $this->assertContains('types', $tables);
+        $this->assertContains('pattern_matches', $tables);
+        $this->assertContains('pattern_participants', $tables);
     }
 
     public function testDropRemovesAllTables(): void
@@ -45,6 +47,8 @@ final class SchemaTest extends TestCase
         $this->assertNotContains('parameters', $tables);
         $this->assertNotContains('relationships', $tables);
         $this->assertNotContains('types', $tables);
+        $this->assertNotContains('pattern_matches', $tables);
+        $this->assertNotContains('pattern_participants', $tables);
     }
 
     public function testCreateIsIdempotent(): void
@@ -53,7 +57,7 @@ final class SchemaTest extends TestCase
         Schema::create($this->pdo);
 
         $tables = $this->getTableNames();
-        $this->assertCount(7, $tables);
+        $this->assertCount(9, $tables);
     }
 
     public function testRelationshipTypeConstraint(): void
@@ -136,7 +140,7 @@ final class SchemaTest extends TestCase
         $this->assertSame(4, $count);
     }
 
-    public function testCascadeDeleteEntityRemovesMembersAndRelationships(): void
+    public function testDeleteEntityFailsWhenDependenciesExist(): void
     {
         Schema::create($this->pdo);
 
@@ -145,13 +149,8 @@ final class SchemaTest extends TestCase
         $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES (1, 'foo', 'method')");
         $this->pdo->exec("INSERT INTO relationships (source_id, target_id, type) VALUES (1, 2, 'extends')");
 
+        $this->expectException(\PDOException::class);
         $this->pdo->exec("DELETE FROM entities WHERE id = 1");
-
-        $members = (int) $this->pdo->query('SELECT COUNT(*) FROM members')->fetchColumn();
-        $rels = (int) $this->pdo->query('SELECT COUNT(*) FROM relationships')->fetchColumn();
-
-        $this->assertSame(0, $members);
-        $this->assertSame(0, $rels);
     }
 
     /**

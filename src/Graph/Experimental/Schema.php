@@ -18,6 +18,8 @@ final class Schema
         'parameters',
         'types',
         'relationships',
+        'pattern_matches',
+        'pattern_participants',
     ];
 
     public static function create(PDO $pdo): void
@@ -43,6 +45,17 @@ final class Schema
      * @return list<string>
      */
     private static function ddl(): array
+    {
+        return array_merge(
+            self::tableDdl(),
+            self::indexDdl()
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function tableDdl(): array
     {
         return [
             <<<'SQL'
@@ -83,7 +96,7 @@ final class Schema
             <<<'SQL'
             CREATE TABLE IF NOT EXISTS members (
                 id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-                entity_id           INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+                entity_id           INTEGER NOT NULL REFERENCES entities(id),
                 name                TEXT    NOT NULL,
                 member_type         TEXT    NOT NULL CHECK(member_type IN ('method','property','constant','case')),
                 visibility          TEXT    CHECK(visibility IN ('public','protected','private')),
@@ -101,7 +114,7 @@ final class Schema
             <<<'SQL'
             CREATE TABLE IF NOT EXISTS parameters (
                 id                   INTEGER PRIMARY KEY AUTOINCREMENT,
-                member_id            INTEGER NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+                member_id            INTEGER NOT NULL REFERENCES members(id),
                 name                 TEXT    NOT NULL,
                 declared_type        TEXT,
                 default_value        TEXT,
@@ -124,13 +137,10 @@ final class Schema
             )
             SQL,
 
-            'CREATE INDEX IF NOT EXISTS idx_types_owner ON types(owner_type, owner_id)',
-            'CREATE INDEX IF NOT EXISTS idx_types_entity ON types(entity_id)',
-
             <<<'SQL'
             CREATE TABLE IF NOT EXISTS relationships (
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
-                source_id        INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+                source_id        INTEGER NOT NULL REFERENCES entities(id),
                 target_id        INTEGER          REFERENCES entities(id) ON DELETE SET NULL,
                 target_fqn       TEXT,
                 target_member_name TEXT,
@@ -146,17 +156,47 @@ final class Schema
             )
             SQL,
 
+            <<<'SQL'
+            CREATE TABLE IF NOT EXISTS pattern_matches (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                pattern_name    TEXT    NOT NULL
+            )
+            SQL,
+
+            <<<'SQL'
+            CREATE TABLE IF NOT EXISTS pattern_participants (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                match_id        INTEGER NOT NULL REFERENCES pattern_matches(id),
+                entity_id       INTEGER NOT NULL REFERENCES entities(id),
+                role            TEXT    NOT NULL,
+                UNIQUE(match_id, entity_id, role)
+            )
+            SQL,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function indexDdl(): array
+    {
+        return [
+            'CREATE INDEX IF NOT EXISTS idx_types_owner ON types(owner_type, owner_id)',
+            'CREATE INDEX IF NOT EXISTS idx_types_entity ON types(entity_id)',
             'CREATE INDEX IF NOT EXISTS idx_entities_namespace  ON entities(namespace_id)',
             'CREATE INDEX IF NOT EXISTS idx_entities_file       ON entities(file_id)',
             'CREATE INDEX IF NOT EXISTS idx_entities_type       ON entities(type)',
             'CREATE INDEX IF NOT EXISTS idx_members_entity      ON members(entity_id)',
+            'CREATE INDEX IF NOT EXISTS idx_members_lookup      ON members(entity_id, member_type, is_abstract, visibility)',
             'CREATE INDEX IF NOT EXISTS idx_parameters_member   ON parameters(member_id)',
-            'CREATE INDEX IF NOT EXISTS idx_rel_source          ON relationships(source_id)',
-            'CREATE INDEX IF NOT EXISTS idx_rel_target          ON relationships(target_id)',
             'CREATE INDEX IF NOT EXISTS idx_rel_type            ON relationships(type)',
             'CREATE INDEX IF NOT EXISTS idx_rel_source_member   ON relationships(source_member_id)',
+            'CREATE INDEX IF NOT EXISTS idx_rel_target_type     ON relationships(target_id, type, source_id)',
+            'CREATE INDEX IF NOT EXISTS idx_rel_source_type     ON relationships(source_id, type, target_id)',
             'CREATE INDEX IF NOT EXISTS idx_namespaces_parent   ON namespaces(parent_id)',
             'CREATE INDEX IF NOT EXISTS idx_namespaces_depth    ON namespaces(depth)',
+            'CREATE INDEX IF NOT EXISTS idx_participants_match   ON pattern_participants(match_id)',
+            'CREATE INDEX IF NOT EXISTS idx_participants_entity  ON pattern_participants(entity_id)',
         ];
     }
 }

@@ -60,7 +60,7 @@ final class GraphClearTest extends TestCase
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
         )->fetchAll(PDO::FETCH_COLUMN);
 
-        $this->assertCount(7, $tables);
+        $this->assertCount(9, $tables);
 
         $counts = [
             'entities' => (int) $pdo->query('SELECT COUNT(*) FROM entities')->fetchColumn(),
@@ -92,7 +92,7 @@ final class GraphClearTest extends TestCase
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
         )->fetchAll(PDO::FETCH_COLUMN);
 
-        $this->assertCount(7, $tables);
+        $this->assertCount(9, $tables);
     }
 
     public function testClearCreatesDatabaseFileIfNotExists(): void
@@ -109,7 +109,7 @@ final class GraphClearTest extends TestCase
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
         )->fetchAll(PDO::FETCH_COLUMN);
 
-        $this->assertCount(7, $tables);
+        $this->assertCount(9, $tables);
     }
 
     public function testClearOnNewDatabaseIsIdempotent(): void
@@ -127,6 +127,6 @@ final class GraphClearTest extends TestCase
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
         )->fetchAll(PDO::FETCH_COLUMN);
 
-        $this->assertCount(7, $tables);
+        $this->assertCount(9, $tables);
     }
 }

@@ -14,6 +14,20 @@ final class GraphQuery
     ) {
     }
 
+    public function getPdo(): PDO
+    {
+        return $this->pdo;
+    }
+
+    /** @var array<string, ?int> */
+    private array $entityIdCache = [];
+
+    public function clearEntityCache(string $fqn, ?int $id): void
+    {
+        $this->entityIdCache[$fqn] = $id;
+        unset($this->entityCache[$fqn]);
+    }
+
     public function findNamespaceId(string $fqn): ?int
     {
         $stmt = $this->pdo->prepare('SELECT id FROM namespaces WHERE fqn = :fqn');
@@ -27,27 +41,34 @@ final class GraphQuery
 
     public function findEntityId(string $fqn): ?int
     {
+        if (array_key_exists($fqn, $this->entityIdCache)) {
+            return $this->entityIdCache[$fqn];
+        }
         $stmt = $this->pdo->prepare('SELECT id FROM entities WHERE fqn = :fqn');
         $stmt->execute(['fqn' => $fqn]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row === false || !is_array($row) || !isset($row['id'])) {
-            return null;
-        }
-        return (int) $row['id'];
+        $id = ($row === false || !is_array($row) || !isset($row['id'])) ? null : (int) $row['id'];
+        $this->entityIdCache[$fqn] = $id;
+        return $id;
     }
+
+    /** @var array<string, array<string, mixed>|null> */
+    private array $entityCache = [];
 
     /**
      * @return array<string, mixed>|null
      */
     public function findEntity(string $fqn): ?array
     {
+        if (array_key_exists($fqn, $this->entityCache)) {
+            return $this->entityCache[$fqn];
+        }
         $stmt = $this->pdo->prepare('SELECT * FROM entities WHERE fqn = :fqn');
         $stmt->execute(['fqn' => $fqn]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row === false || !is_array($row)) {
-            return null;
-        }
-        return $row;
+        $result = ($row === false || !is_array($row)) ? null : $row;
+        $this->entityCache[$fqn] = $result;
+        return $result;
     }
 
     /**
