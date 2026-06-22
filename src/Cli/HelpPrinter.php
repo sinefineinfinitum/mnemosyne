@@ -14,6 +14,7 @@ Commands:
   generate    Generate documentation from PHP source code
   graph       Manage the SQLite graph database
   show        Analyze entity dependencies
+  detect      Detect design patterns in the imported codebase
 
 Run 'mnemosyne <command> --help' for more information on a command.
 
@@ -59,6 +60,21 @@ Options:
   --db-path=<path>    Path to SQLite graph database
   --config=<path>     Path to config file (default: .mnemosyne.json)
   --help              Display this help message
+
+HELP;
+    }
+
+    public static function printDetectHelp(): void
+    {
+        echo <<<'HELP'
+Usage: ponymator detect [<flags>]
+
+Detect design patterns in the imported PHP codebase.
+
+Flags:
+  --db-path=<path>              Path to SQLite graph database
+  --config=<path>               Path to config file (default: .ponymator.json)
+  --help                        Display this help message
 
 HELP;
     }

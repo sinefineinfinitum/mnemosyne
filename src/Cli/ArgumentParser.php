@@ -8,8 +8,7 @@ final class ArgumentParser
 {
     public const OUTPUT_MD = 'md';
     public const OUTPUT_PSV1 = 'psv1';
-
-    private const COMMANDS = ['generate', 'graph', 'show'];
+    private const COMMANDS = ['generate', 'graph', 'show', 'detect'];
 
     /**
      * @param string[] $argv
@@ -43,6 +42,7 @@ final class ArgumentParser
             'generate' => self::parseGenerate($argv),
             'graph' => self::parseGraph($argv),
             'show' => self::parseShow($argv),
+            'detect' => self::parseDetect($argv),
         };
     }
 
@@ -183,6 +183,32 @@ final class ArgumentParser
         }
 
         return ['entity' => $positionalArgs[0]];
+    }
+
+    /**
+     * @param string[] $argv
+     */
+    private static function parseDetect(array $argv): Command
+    {
+        if (empty($argv)) {
+            return new Command('detect', null, [], null, self::OUTPUT_MD, null, null, true, false);
+        }
+
+        $configPath = null;
+        $dbPath = null;
+        $helpRequested = false;
+
+        foreach ($argv as $arg) {
+            match (true) {
+                $arg === '--help' => $helpRequested = true,
+                str_starts_with($arg, '--config=') => $configPath = substr($arg, 9),
+                str_starts_with($arg, '--db-path=') => $dbPath = substr($arg, 10),
+                str_starts_with($arg, '--') => self::mistakeExit('Unknown flag: ' . $arg),
+                default => self::usageExit('Unexpected argument: ' . $arg),
+            };
+        }
+
+        return new Command('detect', null, [], $configPath, self::OUTPUT_MD, $dbPath, null, $helpRequested, false);
     }
 
     private static function parseOutput(string $output): string
