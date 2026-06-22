@@ -4,8 +4,14 @@ namespace SineFine\Mnemosyne\Cli\Detect;
 
 final class ConsoleRenderer
 {
+    private const COL_PATTERN = 0;
+    private const COL_CLASS = 2;
+
     private const HEADERS = ['Pattern', 'Role', 'Class'];
-    private const COL_WIDTHS = [9, 15, 46]; // Separators width 2+3+3+2, sum of all widths must be = 80
+    private const COL_WIDTHS = [9, 15, 46];
+
+    private const SEPARATOR_NAMESPACE = '\\';
+    private const SEPARATOR_UNDERSCORE = '_';
 
     /**
      * @param list<list<list<string>>> $blocks
@@ -17,69 +23,153 @@ final class ConsoleRenderer
             return;
         }
 
-        $widths = self::COL_WIDTHS;
+        $this->renderTable($blocks);
+    }
 
-        $border = '+' . implode('+', array_map(fn(int $w) => str_repeat('-', $w + 2), $widths)) . '+';
+    /**
+     * @param list<list<list<string>>> $blocks
+     */
+    private function renderTable(array $blocks): void
+    {
+        $border = $this->buildBorder();
 
         echo $border . "\n";
-        $this->outputRow(self::HEADERS, $widths);
+        $this->printRow(self::HEADERS);
         echo $border . "\n";
 
-        $last = array_key_last($blocks);
-        foreach ($blocks as $idx => $rows) {
-            foreach ($rows as $row) {
-                $this->outputMultiRow($row, $widths);
-            }
-            if ($idx !== $last) {
-                echo $border . "\n";
-            }
-        }
+        $this->printDataRows($blocks, $border);
 
         echo $border . "\n";
     }
 
+    private function buildBorder(): string
+    {
+        $segments = array_map(
+            fn(int $width) => str_repeat('-', $width + 2),
+            self::COL_WIDTHS
+        );
+
+        return '+' . implode('+', $segments) . '+';
+    }
+
     /**
-     * @param string[] $cells
-     * @param int[]    $widths
+     * @param list<list<list<string>>> $blocks
      */
-    private function outputMultiRow(array $cells, array $widths): void
+    private function printDataRows(array $blocks, string $border): void
+    {
+        $lastBlockIndex = array_key_last($blocks);
+
+        foreach ($blocks as $blockIndex => $rows) {
+            foreach ($rows as $row) {
+                $this->printWrappedRow($row);
+            }
+
+            if ($blockIndex !== $lastBlockIndex) {
+                echo $border . "\n";
+            }
+        }
+    }
+
+    /**
+     * @param list<string> $cells
+     */
+    private function printWrappedRow(array $cells): void
+    {
+        $wrappedCells = $this->wrapAllCells($cells);
+        $maxLines = $this->getMaxLines($wrappedCells);
+
+        for ($lineIndex = 0; $lineIndex < $maxLines; $lineIndex++) {
+            $lineParts = $this->extractLineParts($wrappedCells, $lineIndex);
+            $this->printRow($lineParts);
+        }
+    }
+
+    /**
+     * @param  list<string> $cells
+     * @return list<list<string>>
+     */
+    private function wrapAllCells(array $cells): array
     {
         $wrapped = [];
+
+        foreach ($cells as $columnIndex => $cell) {
+            $wrapped[] = $this->wrapCell($cell, $columnIndex);
+        }
+
+        return $wrapped;
+    }
+
+    /**
+     * @param list<list<string>> $wrappedCells
+     */
+    private function getMaxLines(array $wrappedCells): int
+    {
         $maxLines = 1;
-        foreach ($cells as $i => $cell) {
-            $separator = match ($i) {
-                0 => '_',
-                2 => '\\',
-                default => '',
-            };
-            $appendSemicolon = $i === 2;
-            $lines = $this->wrapCell($cell, $widths[$i], $separator, $appendSemicolon);
-            $wrapped[] = $lines;
-            $cnt = count($lines);
-            if ($cnt > $maxLines) {
-                $maxLines = $cnt;
+
+        foreach ($wrappedCells as $lines) {
+            $lineCount = count($lines);
+            if ($lineCount > $maxLines) {
+                $maxLines = $lineCount;
             }
         }
 
-        for ($line = 0; $line < $maxLines; $line++) {
-            $parts = [];
-            foreach ($wrapped as $i => $lines) {
-                $parts[] = $lines[$line] ?? '';
-            }
-            $this->outputRow($parts, $widths);
+        return $maxLines;
+    }
+
+    /**
+     * @param  list<list<string>> $wrappedCells
+     * @return list<string>
+     */
+    private function extractLineParts(array $wrappedCells, int $lineIndex): array
+    {
+        $parts = [];
+
+        foreach ($wrappedCells as $lines) {
+            $parts[] = $lines[$lineIndex] ?? '';
         }
+
+        return $parts;
     }
 
     /**
      * @return list<string>
      */
-    private function wrapCell(string $text, int $width, string $separator = '\\', bool $appendSemicolon = false): array
+    private function wrapCell(string $text, int $columnIndex): array
     {
         if ($text === '') {
             return [''];
         }
 
+        $width = self::COL_WIDTHS[$columnIndex];
+        $separator = $this->getSeparatorForColumn($columnIndex);
+        $appendSemicolon = $columnIndex === self::COL_CLASS;
+
         if ($separator === '' || mb_strlen($text) <= $width) {
+            return [$appendSemicolon ? $text . ';' : $text];
+        }
+
+        return $this->wrapLongText($text, $width, $separator, $appendSemicolon);
+    }
+
+    private function getSeparatorForColumn(int $columnIndex): string
+    {
+        return match ($columnIndex) {
+            self::COL_PATTERN => self::SEPARATOR_UNDERSCORE,
+            self::COL_CLASS => self::SEPARATOR_NAMESPACE,
+            default => '',
+        };
+    }
+
+    /**
+     * @param  non-empty-string $text
+     * @param  int              $width
+     * @param  string           $separator
+     * @param  bool             $appendSemicolon
+     * @return list<string>
+     */
+    private function wrapLongText(string $text, int $width, string $separator, bool $appendSemicolon): array
+    {
+        if ($separator === '') {
             return [$appendSemicolon ? $text . ';' : $text];
         }
 
@@ -90,37 +180,51 @@ final class ConsoleRenderer
         }
 
         $lines = [];
-        $current = '';
+        $currentLine = '';
 
-        foreach ($segments as $seg) {
-            $candidate = $current === '' ? $seg : $current . $separator . $seg;
+        foreach ($segments as $segment) {
+            $candidate = $this->buildCandidate($currentLine, $segment, $separator);
+
             if (mb_strlen($candidate) <= $width) {
-                $current = $candidate;
+                $currentLine = $candidate;
             } else {
-                if ($current !== '') {
-                    $lines[] = $current;
+                if ($currentLine !== '') {
+                    $lines[] = $currentLine;
                 }
-                $current = ($separator === '_' ? '' : $separator) . $seg;
+                $currentLine = $this->startNewLine($segment, $separator);
             }
         }
 
-        if ($current !== '') {
-            $lines[] = $appendSemicolon ? $current . ';' : $current;
+        if ($currentLine !== '') {
+            $lines[] = $appendSemicolon ? $currentLine . ';' : $currentLine;
         }
 
         return $lines;
     }
 
+    private function buildCandidate(string $currentLine, string $segment, string $separator): string
+    {
+        return $currentLine === '' ? $segment : $currentLine . $separator . $segment;
+    }
+
+    private function startNewLine(string $segment, string $separator): string
+    {
+        $prefix = $separator === self::SEPARATOR_UNDERSCORE ? '' : $separator;
+        return $prefix . $segment;
+    }
+
     /**
-     * @param string[] $cells
-     * @param int[]    $widths
+     * @param list<string> $cells
      */
-    private function outputRow(array $cells, array $widths): void
+    private function printRow(array $cells): void
     {
         echo '|';
-        foreach ($cells as $i => $cell) {
-            echo ' ' . str_pad($cell, $widths[$i]) . ' |';
+
+        foreach ($cells as $columnIndex => $cell) {
+            $width = self::COL_WIDTHS[$columnIndex];
+            echo ' ' . str_pad($cell, $width) . ' |';
         }
+
         echo "\n";
     }
 }
