@@ -3,7 +3,6 @@
 namespace SineFine\Mnemosyne\Cli\Generate;
 
 use SineFine\Mnemosyne\Cli\Command;
-use SineFine\Mnemosyne\Cli\Error\ConfigException;
 use SineFine\Mnemosyne\Cli\Error\ErrorOutputFormatter;
 use SineFine\Mnemosyne\Cli\Error\ExitCode;
 use SineFine\Mnemosyne\Config;
@@ -16,15 +15,8 @@ use SineFine\Mnemosyne\Filesystem\Scanner;
 
 final class GenerateCommand
 {
-    public function execute(Command $cmd): void
+    public function execute(Command $cmd, Config $config): void
     {
-        try {
-            $config = new Config($cmd->configPath);
-        } catch (ConfigException $e) {
-            fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
-            exit(ExitCode::CONFIG_ERROR);
-        }
-
         $factory = new GeneratorFactory();
         $generator = $factory->create($config, $cmd->output);
 

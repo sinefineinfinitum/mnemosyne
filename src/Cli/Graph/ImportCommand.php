@@ -3,7 +3,6 @@
 namespace SineFine\Mnemosyne\Cli\Graph;
 
 use SineFine\Mnemosyne\Cli\Command;
-use SineFine\Mnemosyne\Cli\Error\ConfigException;
 use SineFine\Mnemosyne\Cli\Error\ExitCode;
 use SineFine\Mnemosyne\Config;
 use SineFine\Mnemosyne\Db\PDOFactory;
@@ -16,17 +15,10 @@ use Throwable;
 
 class ImportCommand
 {
-    public function execute(Command $cmd): void
+    public function execute(Command $cmd, Config $config): void
     {
-        $factory = new PDOFactory($cmd);
+        $factory = new PDOFactory($cmd, $config);
         $pdo = $factory->connect();
-
-        try {
-            $config = new Config($cmd->configPath);
-        } catch (ConfigException $e) {
-            fwrite(STDERR, "Error: " . $e->getMessage() . "\n");
-            exit(ExitCode::CONFIG_ERROR);
-        }
 
         Schema::create($pdo);
 

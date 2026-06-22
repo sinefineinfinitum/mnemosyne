@@ -114,7 +114,12 @@ final class GraphCommand
             'scalar_type' => $scalarType,
             ]
         );
-        return (int) $this->pdo->lastInsertId();
+
+        $id = (int) $this->pdo->lastInsertId();
+        $this->query->clearEntityCache($fqn, $id);
+
+        return $id;
+    
     }
 
     public function insertMember(
