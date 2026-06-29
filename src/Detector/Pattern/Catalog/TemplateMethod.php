@@ -17,7 +17,7 @@ final class TemplateMethod implements PatternInterface
         return ['AbstractClass', 'ConcreteClass'];
     }
 
-    private const CTE_BASE = <<<'SQL'
+    private const PATTERN_BASE = <<<'SQL'
             WITH base AS (
                 SELECT DISTINCT
                     abs.id   AS abstract_id,
@@ -54,13 +54,13 @@ final class TemplateMethod implements PatternInterface
             SQL;
 
     private const SELECT_ABSTRACT = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY abstract_id, concrete_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY abstract_id) AS match_id,
                    abstract_id AS entity_id, 'AbstractClass' AS role
             FROM base
             SQL;
 
     private const SELECT_CONCRETE = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY abstract_id, concrete_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY abstract_id) AS match_id,
                    concrete_id AS entity_id, 'ConcreteClass' AS role
             FROM base
             SQL;
@@ -68,7 +68,7 @@ final class TemplateMethod implements PatternInterface
     public function candidateSql(): string
     {
         return
-            self::CTE_BASE . "\n" .
+            self::PATTERN_BASE . "\n" .
             self::SELECT_ABSTRACT . "\n" .
             "UNION ALL\n" .
             self::SELECT_CONCRETE;

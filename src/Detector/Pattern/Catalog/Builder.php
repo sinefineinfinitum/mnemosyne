@@ -29,18 +29,6 @@ final class Builder implements PatternInterface
             )
             SQL;
 
-    private const SELECT_BUILDER_FROM_CONCRETE = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY builder_id, concrete_id) AS match_id,
-                   builder_id AS entity_id, 'Builder' AS role
-            FROM concrete_pairs
-            SQL;
-
-    private const SELECT_CONCRETE = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY builder_id, concrete_id) AS match_id,
-                   concrete_id AS entity_id, 'ConcreteBuilder' AS role
-            FROM concrete_pairs
-            SQL;
-
     private const CTE_DIRECTOR = <<<'SQL'
             director_pairs AS (
                 SELECT b.id AS builder_id,
@@ -52,14 +40,26 @@ final class Builder implements PatternInterface
             )
             SQL;
 
+    private const SELECT_BUILDER_FROM_CONCRETE = <<<'SQL'
+            SELECT DENSE_RANK() OVER (ORDER BY builder_id) AS match_id,
+                   builder_id AS entity_id, 'Builder' AS role
+            FROM concrete_pairs
+            SQL;
+
+    private const SELECT_CONCRETE = <<<'SQL'
+            SELECT DENSE_RANK() OVER (ORDER BY builder_id) AS match_id,
+                   concrete_id AS entity_id, 'ConcreteBuilder' AS role
+            FROM concrete_pairs
+            SQL;
+
     private const SELECT_BUILDER_FROM_DIRECTOR = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY builder_id, director_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY builder_id) AS match_id,
                    builder_id AS entity_id, 'Builder' AS role
             FROM director_pairs
             SQL;
 
     private const SELECT_DIRECTOR = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY builder_id, director_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY builder_id) AS match_id,
                    director_id AS entity_id, 'Director' AS role
             FROM director_pairs
             SQL;

@@ -30,13 +30,13 @@ final class Decorator implements PatternInterface
             SQL;
 
     private const SELECT_COMPONENT = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY component_id, decorator_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY component_id) AS match_id,
                    component_id AS entity_id, 'Component' AS role
             FROM impl_pairs
             SQL;
 
     private const SELECT_DECORATOR = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY component_id, decorator_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY component_id) AS match_id,
                    decorator_id AS entity_id, 'Decorator' AS role
             FROM impl_pairs
             SQL;

@@ -44,19 +44,19 @@ final class FactoryMethod implements PatternInterface
             SQL;
 
     private const SELECT_CREATOR = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY creator_id, concrete_id, product_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY creator_id) AS match_id,
                    creator_id AS entity_id, 'Creator' AS role
             FROM base
             SQL;
 
     private const SELECT_CONCRETE = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY creator_id, concrete_id, product_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY creator_id) AS match_id,
                    concrete_id AS entity_id, 'ConcreteCreator' AS role
             FROM base
             SQL;
 
     private const SELECT_PRODUCT = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY creator_id, concrete_id, product_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY creator_id) AS match_id,
                    product_id AS entity_id, 'Product' AS role
             FROM base
             SQL;

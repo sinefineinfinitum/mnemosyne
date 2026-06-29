@@ -17,7 +17,7 @@ final class Adapter implements PatternInterface
         return ['Adapter', 'Target', 'Adaptee'];
     }
 
-    private const CTE_BASE = <<<'SQL'
+    private const PATTERN_BASE = <<<'SQL'
             WITH base AS (
                 SELECT adapter.id AS adapter_id,
                        iface.id   AS target_id,
@@ -42,19 +42,19 @@ final class Adapter implements PatternInterface
             SQL;
 
     private const SELECT_ADAPTER = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY adapter_id, target_id, adaptee_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY adapter_id, target_id) AS match_id,
                    adapter_id AS entity_id, 'Adapter' AS role
             FROM base
             SQL;
 
     private const SELECT_TARGET = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY adapter_id, target_id, adaptee_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY adapter_id, target_id) AS match_id,
                    target_id AS entity_id, 'Target' AS role
             FROM base
             SQL;
 
     private const SELECT_ADAPTEE = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY adapter_id, target_id, adaptee_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY adapter_id, target_id) AS match_id,
                    adaptee_id AS entity_id, 'Adaptee' AS role
             FROM base
             SQL;
@@ -62,7 +62,7 @@ final class Adapter implements PatternInterface
     public function candidateSql(): string
     {
         return
-            self::CTE_BASE . "\n" .
+            self::PATTERN_BASE . "\n" .
             self::SELECT_ADAPTER . "\n" .
             "UNION ALL\n" .
             self::SELECT_TARGET . "\n" .

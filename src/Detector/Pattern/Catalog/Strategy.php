@@ -60,14 +60,14 @@ final class Strategy implements PatternInterface
             SQL;
 
     private const SELECT_STRATEGY_FROM_CTX = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY cp.strategy_id, cp.context_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY cp.strategy_id) AS match_id,
                    cp.strategy_id AS entity_id, 'Strategy' AS role
             FROM ctx_pairs cp
             JOIN multi_impls mi ON mi.strategy_id = cp.strategy_id
             SQL;
 
     private const SELECT_CONTEXT = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY cp.strategy_id, cp.context_id) AS match_id,
+            SELECT DENSE_RANK() OVER (ORDER BY cp.strategy_id) AS match_id,
                    cp.context_id AS entity_id, 'Context' AS role
             FROM ctx_pairs cp
             JOIN multi_impls mi ON mi.strategy_id = cp.strategy_id
