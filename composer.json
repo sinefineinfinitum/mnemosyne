@@ -1,8 +1,9 @@
 {
     "name": "sinefineinfinitum/ponymator",
-    "description": "Ponymator - generate docs for php project",
+    "description": "A CLI-first PHP documentation generator that produces deterministic Markdown and PSV1 documentation using AST analysis. Optimized for AI agents context with significant token savings.",
+    "type": "library",
     "license": ["MIT"],
-    "keywords": ["docs", "analysis"],
+    "keywords": ["docs", "analysis", "php", "ast", "markdown", "psv1", "ai-context", "documentation-generator"],
     "bin": [
         "ponymator"
     ],
