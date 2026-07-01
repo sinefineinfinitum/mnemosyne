@@ -1,4 +1,4 @@
-# Ponymator Syntax (PS) v1.1
+# Mnemosyne Syntax (MS) v1.1
 
 Minimal, deterministic syntax for describing code structure as a graph.
 
@@ -129,7 +129,7 @@ Only **project-defined** functions appear. PHP language functions (`strlen`, `ar
 
 ```
 .+parse
-    *Ponymator\Parser\Parser::parseFile
+    *Parser\Parser::parseFile
     ?App\Service\Handler1->process
     ?App\Service\Handler2->process
     *App\Util\formatDate
