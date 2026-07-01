@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Markdown;
+namespace SineFine\Mnemosyne\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
 
 final class MarkdownBuilderTest extends TestCase
 {

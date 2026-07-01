@@ -1,16 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Cli\Error\ErrorOutputFormatter;
-use SineFine\Ponymator\Cli\Error\ExitCode;
-use SineFine\Ponymator\Config;
-use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
-use SineFine\Ponymator\Documentation\Generator\ErrorReport;
-use SineFine\Ponymator\Ponymator;
+use SineFine\Mnemosyne\Cli\Error\ErrorOutputFormatter;
+use SineFine\Mnemosyne\Cli\Error\ExitCode;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorReport;
 
-final class PonymatorErrorHandlingTest extends TestCase
+final class MnemosyneErrorHandlingTest extends TestCase
 {
     public function testExitCodesConstants(): void
     {

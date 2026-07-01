@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Cli\Error\ConfigException;
-use SineFine\Ponymator\Config;
+use SineFine\Mnemosyne\Cli\Error\ConfigException;
+use SineFine\Mnemosyne\Config;
 
 final class ConfigTest extends TestCase
 {
@@ -12,7 +12,7 @@ final class ConfigTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tempDir = sys_get_temp_dir() . '/ponymator_test_' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/mnemosyne_test_' . uniqid();
         mkdir($this->tempDir, 0777, true);
     }
 
@@ -34,7 +34,7 @@ final class ConfigTest extends TestCase
 
     public function testCustomConfig(): void
     {
-        $path = $this->tempDir . '/.ponymator.json';
+        $path = $this->tempDir . '/.mnemosyne.json';
         file_put_contents(
             $path, json_encode(
                 [
@@ -78,7 +78,7 @@ final class ConfigTest extends TestCase
 
     public function testPartialConfigMergesWithDefaults(): void
     {
-        $path = $this->tempDir . '/.ponymator.json';
+        $path = $this->tempDir . '/.mnemosyne.json';
         file_put_contents($path, json_encode(['source' => 'custom_src']));
         $config = new Config($path);
         $this->assertSame('custom_src', $config->getSource());
@@ -97,7 +97,7 @@ final class ConfigTest extends TestCase
 
     public function testDbPathFromConfig(): void
     {
-        $path = $this->tempDir . '/.ponymator.json';
+        $path = $this->tempDir . '/.mnemosyne.json';
         file_put_contents($path, json_encode(['dbPath' => 'data/graph.db']));
         $config = new Config($path);
         $this->assertSame('data/graph.db', $config->getDbPath());
@@ -105,7 +105,7 @@ final class ConfigTest extends TestCase
 
     public function testDbPathNotOverriddenByDefault(): void
     {
-        $path = $this->tempDir . '/.ponymator.json';
+        $path = $this->tempDir . '/.mnemosyne.json';
         file_put_contents($path, json_encode(['source' => 'app']));
         $config = new Config($path);
         $this->assertNull($config->getDbPath());

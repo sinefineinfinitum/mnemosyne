@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Cli\Error;
+namespace SineFine\Mnemosyne\Tests\Unit\Cli\Error;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Cli\Error\ErrorOutputFormatter;
-use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
-use SineFine\Ponymator\Documentation\Generator\ErrorReport;
+use SineFine\Mnemosyne\Cli\Error\ErrorOutputFormatter;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorReport;
 
 final class ErrorOutputFormatterTest extends TestCase
 {

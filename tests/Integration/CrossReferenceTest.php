@@ -1,26 +1,26 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Integration;
+namespace SineFine\Mnemosyne\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\EntityAnalyzer;
-use SineFine\Ponymator\Analyzer\FileExtractor;
-use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
-use SineFine\Ponymator\Analyzer\Parser;
-use SineFine\Ponymator\Comparator\HashComparator;
-use SineFine\Ponymator\Config;
-use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
-use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
-use SineFine\Ponymator\Documentation\Generator\Engine;
-use SineFine\Ponymator\Documentation\Generator\PageGenerator;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\InterfaceRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer;
-use SineFine\Ponymator\Filesystem\PathResolver;
-use SineFine\Ponymator\Filesystem\Scanner;
+use SineFine\Mnemosyne\Analyzer\EntityAnalyzer;
+use SineFine\Mnemosyne\Analyzer\FileExtractor;
+use SineFine\Mnemosyne\Analyzer\Linker\CrossReferenceIndexBuilder;
+use SineFine\Mnemosyne\Analyzer\Parser;
+use SineFine\Mnemosyne\Comparator\HashComparator;
+use SineFine\Mnemosyne\Config;
+use SineFine\Mnemosyne\Documentation\Cleaner\OutdatedDocumentationRemover;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReferenceFactory;
+use SineFine\Mnemosyne\Documentation\Generator\Engine;
+use SineFine\Mnemosyne\Documentation\Generator\PageGenerator;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\ClassRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\EnumRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\FileRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\InterfaceRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\TraitRenderer;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Filesystem\Scanner;
 
 final class CrossReferenceTest extends TestCase
 {
@@ -30,7 +30,7 @@ final class CrossReferenceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tempDir = sys_get_temp_dir() . '/ponymator-crossref-' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/mnemosyne-crossref-' . uniqid();
         $this->sourceDir = $this->tempDir . '/src';
         $this->targetDir = $this->tempDir . '/docs';
 

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Linker\DocLinker;
-use SineFine\Ponymator\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Documentation\Linker\DocLinker;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
 
 final class DocLinkerTest extends TestCase
 {

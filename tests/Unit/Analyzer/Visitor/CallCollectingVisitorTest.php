@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Analyzer\Visitor;
+namespace SineFine\Mnemosyne\Tests\Unit\Analyzer\Visitor;
 
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\CallInfo;
-use SineFine\Ponymator\Analyzer\Visitor\CallCollectingVisitor;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Analyzer\Visitor\CallCollectingVisitor;
 
 final class CallCollectingVisitorTest extends TestCase
 {

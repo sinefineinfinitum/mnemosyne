@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Integration\GraphDb;
+namespace SineFine\Mnemosyne\Tests\Integration\GraphDb;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Graph\Experimental\GraphCommand;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
-use SineFine\Ponymator\Graph\Experimental\Psv1ToGraphImporter;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Graph\Experimental\Psv1ToGraphImporter;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 final class GraphImportTest extends TestCase
 {
@@ -16,7 +16,7 @@ final class GraphImportTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->dbPath = sys_get_temp_dir() . '/ponymator_graph_import_test_' . uniqid() . '.db';
+        $this->dbPath = sys_get_temp_dir() . '/mnemosyne_graph_import_test_' . uniqid() . '.db';
         $this->pdo = new PDO('sqlite:' . $this->dbPath);
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         Schema::create($this->pdo);

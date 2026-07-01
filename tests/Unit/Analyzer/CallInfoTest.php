@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Analyzer;
+namespace SineFine\Mnemosyne\Tests\Unit\Analyzer;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\CallInfo;
-use SineFine\Ponymator\Analyzer\ParserException;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Analyzer\ParserException;
 
 final class CallInfoTest extends TestCase
 {

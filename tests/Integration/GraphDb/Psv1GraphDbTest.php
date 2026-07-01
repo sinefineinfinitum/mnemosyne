@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Integration\GraphDb;
+namespace SineFine\Mnemosyne\Tests\Integration\GraphDb;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Graph\Experimental\GraphCommand;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
-use SineFine\Ponymator\Graph\Experimental\Psv1ToGraphImporter;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Graph\Experimental\Psv1ToGraphImporter;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 final class Psv1GraphDbTest extends TestCase
 {
-    private const DB_PATH = __DIR__ . '/ponymator-graph-v3.db';
+    private const DB_PATH = __DIR__ . '/mnemosyne-graph-v3.db';
 
     private static bool $built = false;
 

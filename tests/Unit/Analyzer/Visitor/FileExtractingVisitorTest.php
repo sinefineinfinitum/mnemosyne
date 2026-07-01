@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Analyzer\Visitor;
+namespace SineFine\Mnemosyne\Tests\Unit\Analyzer\Visitor;
 
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\Visitor\FileExtractingVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\FileExtractingVisitor;
 
 final class FileExtractingVisitorTest extends TestCase
 {

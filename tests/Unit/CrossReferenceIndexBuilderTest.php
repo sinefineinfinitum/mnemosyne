@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use FilesystemIterator;
 use PhpParser\Node;
@@ -11,13 +11,13 @@ use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
-use SineFine\Ponymator\Analyzer\Linker\CrossReferenceContext;
-use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
-use SineFine\Ponymator\Analyzer\Parser;
-use SineFine\Ponymator\Analyzer\ParserException;
-use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
-use SineFine\Ponymator\Documentation\Generator\GenerationResult;
-use SineFine\Ponymator\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Analyzer\Linker\CrossReferenceContext;
+use SineFine\Mnemosyne\Analyzer\Linker\CrossReferenceIndexBuilder;
+use SineFine\Mnemosyne\Analyzer\Parser;
+use SineFine\Mnemosyne\Analyzer\ParserException;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Mnemosyne\Documentation\Generator\GenerationResult;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
 
 final class CrossReferenceIndexBuilderTest extends TestCase
 {
@@ -185,7 +185,7 @@ final class CrossReferenceIndexBuilderTest extends TestCase
 
     public function testBuildTypeIndexHandlesMalformedPsv1(): void
     {
-        $tempDir = sys_get_temp_dir() . '/ponymator-test-' . uniqid();
+        $tempDir = sys_get_temp_dir() . '/mnemosyne-test-' . uniqid();
         mkdir($tempDir, 0755, true);
         file_put_contents($tempDir . '/bad.psv1', '@class');
 
@@ -289,7 +289,7 @@ final class CrossReferenceIndexBuilderTest extends TestCase
 
     public function testBuildTypeIndexHandlesCaseInsensitiveExtension(): void
     {
-        $tempDir = sys_get_temp_dir() . '/ponymator-test-' . uniqid();
+        $tempDir = sys_get_temp_dir() . '/mnemosyne-test-' . uniqid();
         mkdir($tempDir, 0755, true);
         file_put_contents($tempDir . '/Foo.PSV1', '@class App\Foo' . PHP_EOL);
         file_put_contents($tempDir . '/Bar.Psv1', '@class App\Bar' . PHP_EOL);
@@ -364,7 +364,7 @@ final class CrossReferenceIndexBuilderTest extends TestCase
 
     private function createPsv1Fixture(string $contents): string
     {
-        $tempDir = sys_get_temp_dir() . '/ponymator-test-' . uniqid();
+        $tempDir = sys_get_temp_dir() . '/mnemosyne-test-' . uniqid();
         mkdir($tempDir, 0755, true);
         file_put_contents($tempDir . '/Fixture.psv1', $contents);
         return $tempDir;

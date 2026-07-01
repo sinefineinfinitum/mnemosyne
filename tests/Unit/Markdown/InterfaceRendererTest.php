@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Markdown;
+namespace SineFine\Mnemosyne\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\InterfaceRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\InterfaceRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
 
 final class InterfaceRendererTest extends TestCase
 {
@@ -141,7 +141,7 @@ final class InterfaceRendererTest extends TestCase
                             ['name' => 'id', 'type' => 'int', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
                         ],
                         'returnType' => '?User',
-                        
+
                     ],
                 ],
                 'dependencies' => [],

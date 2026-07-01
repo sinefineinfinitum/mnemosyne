@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Graph\Experimental;
+namespace SineFine\Mnemosyne\Tests\Unit\Graph\Experimental;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 class GraphQueryTest extends TestCase
 {

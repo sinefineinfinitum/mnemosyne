@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Analyzer\Extractor;
+namespace SineFine\Mnemosyne\Tests\Unit\Analyzer\Extractor;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
@@ -8,8 +8,8 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\Extractor\AstHelper;
-use SineFine\Ponymator\Analyzer\Extractor\ClassExtractor;
+use SineFine\Mnemosyne\Analyzer\Extractor\AstHelper;
+use SineFine\Mnemosyne\Analyzer\Extractor\ClassExtractor;
 
 final class ClassExtractorTest extends TestCase
 {

@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Integration\GraphDb;
+namespace SineFine\Mnemosyne\Tests\Integration\GraphDb;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 final class GraphClearTest extends TestCase
 {
@@ -12,7 +12,7 @@ final class GraphClearTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->dbPath = sys_get_temp_dir() . '/ponymator_graph_clear_test_' . uniqid() . '.db';
+        $this->dbPath = sys_get_temp_dir() . '/mnemosyne_graph_clear_test_' . uniqid() . '.db';
     }
 
     protected function tearDown(): void

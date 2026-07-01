@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Graph\Experimental;
+namespace SineFine\Mnemosyne\Tests\Unit\Graph\Experimental;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -8,11 +8,11 @@ use Ponymator\Parser\Ast\CallNode;
 use Ponymator\Parser\Ast\EntityNode;
 use Ponymator\Parser\Ast\MemberNode;
 use Ponymator\Parser\Ast\ParameterNode;
-use SineFine\Ponymator\Graph\Experimental\EntityGraphProcessor;
-use SineFine\Ponymator\Graph\Experimental\GraphCommand;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
-use SineFine\Ponymator\Graph\Experimental\NamespaceResolver;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Graph\Experimental\EntityGraphProcessor;
+use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Graph\Experimental\NamespaceResolver;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 class EntityGraphProcessorTest extends TestCase
 {

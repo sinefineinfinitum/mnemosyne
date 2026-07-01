@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Cli\Show;
+namespace SineFine\Mnemosyne\Tests\Unit\Cli\Show;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Cli\Show\ShowImpactCommand;
-use SineFine\Ponymator\Graph\Experimental\GraphCommand;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Cli\Show\ShowImpactCommand;
+use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 class ShowImpactCommandTest extends TestCase
 {
@@ -183,7 +183,7 @@ class ShowImpactCommandTest extends TestCase
         $posB = strpos($output, 'App\\B');
         $posC = strpos($output, 'App\\C');
         $posD = strpos($output, 'App\\D');
-        
+
         $this->assertLessThan($posC, $posB);
         $this->assertLessThan($posD, $posC);
     }

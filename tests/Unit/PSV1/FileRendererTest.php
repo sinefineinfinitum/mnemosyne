@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\PSV1;
+namespace SineFine\Mnemosyne\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\CallInfo;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\Psv1Builder;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\FileRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
 
 final class FileRendererTest extends TestCase
 {

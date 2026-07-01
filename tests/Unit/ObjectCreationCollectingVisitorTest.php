@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\Visitor\ObjectCreationCollectingVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\ObjectCreationCollectingVisitor;
 
 final class ObjectCreationCollectingVisitorTest extends TestCase
 {
