@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Analyzer;
+namespace SineFine\Mnemosyne\Tests\Unit\Analyzer;
 
 use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\FileExtractor;
+use SineFine\Mnemosyne\Analyzer\FileExtractor;
 
 final class FileExtractorTest extends TestCase
 {

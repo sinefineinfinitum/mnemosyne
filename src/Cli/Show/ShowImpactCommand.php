@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Show;
+namespace SineFine\Mnemosyne\Cli\Show;
 
-use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
 
 final class ShowImpactCommand
 {

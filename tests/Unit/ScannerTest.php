@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Filesystem\FileSystemException;
-use SineFine\Ponymator\Filesystem\Scanner;
+use SineFine\Mnemosyne\Filesystem\FileSystemException;
+use SineFine\Mnemosyne\Filesystem\Scanner;
 
 final class ScannerTest extends TestCase
 {
@@ -12,7 +12,7 @@ final class ScannerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tempDir = sys_get_temp_dir() . '/ponymator_scan_' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/mnemosyne_scan_' . uniqid();
         mkdir($this->tempDir . '/sub', 0777, true);
         mkdir($this->tempDir . '/vendor', 0777, true);
         touch($this->tempDir . '/User.php');

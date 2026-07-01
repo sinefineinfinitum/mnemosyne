@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Analyzer\Visitor;
+namespace SineFine\Mnemosyne\Tests\Unit\Analyzer\Visitor;
 
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\New_;
@@ -18,7 +18,7 @@ use PhpParser\Node\Stmt\PropertyProperty;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\UnionType;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\Visitor\CallResolutionContext;
+use SineFine\Mnemosyne\Analyzer\Visitor\CallResolutionContext;
 
 final class CallResolutionContextTest extends TestCase
 {

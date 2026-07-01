@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
-use SineFine\Ponymator\Analyzer\Visitor\CrossReferenceScannerVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\CrossReferenceScannerVisitor;
 
 final class CrossReferenceScannerVisitorTest extends TestCase
 {

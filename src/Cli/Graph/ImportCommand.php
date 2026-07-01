@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Graph;
+namespace SineFine\Mnemosyne\Cli\Graph;
 
-use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Cli\Error\ConfigException;
-use SineFine\Ponymator\Cli\Error\ExitCode;
-use SineFine\Ponymator\Config;
-use SineFine\Ponymator\Db\PDOFactory;
-use SineFine\Ponymator\Filesystem\FileFinder;
-use SineFine\Ponymator\Graph\Experimental\GraphCommand;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
-use SineFine\Ponymator\Graph\Experimental\Psv1ToGraphImporter;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Cli\Error\ConfigException;
+use SineFine\Mnemosyne\Cli\Error\ExitCode;
+use SineFine\Mnemosyne\Config;
+use SineFine\Mnemosyne\Db\PDOFactory;
+use SineFine\Mnemosyne\Filesystem\FileFinder;
+use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Graph\Experimental\Psv1ToGraphImporter;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 use Throwable;
 
 class ImportCommand

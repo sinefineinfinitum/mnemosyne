@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Markdown;
+namespace SineFine\Mnemosyne\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\FileRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
 
 final class FileRendererTest extends TestCase
 {
@@ -62,8 +62,8 @@ final class FileRendererTest extends TestCase
         ];
         $calls = [
             'loadConfig' => [
-                new \SineFine\Ponymator\Analyzer\CallInfo(
-                    \SineFine\Ponymator\Analyzer\CallInfo::KIND_STATIC,
+                new \SineFine\Mnemosyne\Analyzer\CallInfo(
+                    \SineFine\Mnemosyne\Analyzer\CallInfo::KIND_STATIC,
                     'parse',
                 ),
             ],
@@ -90,8 +90,8 @@ final class FileRendererTest extends TestCase
         ];
         $calls = [
             'unknownFunction' => [
-                new \SineFine\Ponymator\Analyzer\CallInfo(
-                    \SineFine\Ponymator\Analyzer\CallInfo::KIND_GLOBAL,
+                new \SineFine\Mnemosyne\Analyzer\CallInfo(
+                    \SineFine\Mnemosyne\Analyzer\CallInfo::KIND_GLOBAL,
                     'doStuff',
                 ),
             ],

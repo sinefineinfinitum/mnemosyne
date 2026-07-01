@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli;
+namespace SineFine\Mnemosyne\Cli;
 
 final class ExecutionTimer
 {

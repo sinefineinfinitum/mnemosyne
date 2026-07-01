@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\PSV1;
+namespace SineFine\Mnemosyne\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\CallInfo;
-use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\Psv1Builder;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\TraitRenderer;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\TraitRenderer;
 
 final class TraitRendererTest extends TestCase
 {

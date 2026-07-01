@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Linker;
+namespace SineFine\Mnemosyne\Documentation\Linker;
 
-use SineFine\Ponymator\Analyzer\EntityAnalysisResult;
-use SineFine\Ponymator\Analyzer\Linker\CrossReferenceContext;
+use SineFine\Mnemosyne\Analyzer\EntityAnalysisResult;
+use SineFine\Mnemosyne\Analyzer\Linker\CrossReferenceContext;
 
 final class CrossReferenceProvider
 {

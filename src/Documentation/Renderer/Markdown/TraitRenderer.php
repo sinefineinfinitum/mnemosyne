@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer\Markdown;
+namespace SineFine\Mnemosyne\Documentation\Renderer\Markdown;
 
-use SineFine\Ponymator\Comparator\HashGenerator;
-use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
+use SineFine\Mnemosyne\Comparator\HashGenerator;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
+use SineFine\Mnemosyne\Documentation\Renderer\EntityRendererInterface;
 
 final class TraitRenderer implements EntityRendererInterface
 {

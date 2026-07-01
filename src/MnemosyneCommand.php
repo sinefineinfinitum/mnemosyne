@@ -1,22 +1,22 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator;
+namespace SineFine\Mnemosyne;
 
-use SineFine\Ponymator\Cli\ArgumentParser;
-use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Cli\Error\ExitCode;
-use SineFine\Ponymator\Cli\ExecutionTimer;
-use SineFine\Ponymator\Cli\Generate\GenerateCommand;
-use SineFine\Ponymator\Cli\Graph\ClearCommand;
-use SineFine\Ponymator\Cli\Graph\ImportCommand;
-use SineFine\Ponymator\Cli\HelpPrinter;
-use SineFine\Ponymator\Cli\Show\ShowEntityCommand;
-use SineFine\Ponymator\Cli\Show\ShowImpactCommand;
-use SineFine\Ponymator\Cli\Show\ShowPathCommand;
-use SineFine\Ponymator\Db\PDOFactory;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Cli\ArgumentParser;
+use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Cli\Error\ExitCode;
+use SineFine\Mnemosyne\Cli\ExecutionTimer;
+use SineFine\Mnemosyne\Cli\Generate\GenerateCommand;
+use SineFine\Mnemosyne\Cli\Graph\ClearCommand;
+use SineFine\Mnemosyne\Cli\Graph\ImportCommand;
+use SineFine\Mnemosyne\Cli\HelpPrinter;
+use SineFine\Mnemosyne\Cli\Show\ShowEntityCommand;
+use SineFine\Mnemosyne\Cli\Show\ShowImpactCommand;
+use SineFine\Mnemosyne\Cli\Show\ShowPathCommand;
+use SineFine\Mnemosyne\Db\PDOFactory;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
 
-class Ponymator
+class MnemosyneCommand
 {
     public function run(): void
     {

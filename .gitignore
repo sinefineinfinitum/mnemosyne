@@ -15,4 +15,5 @@ temp-md
 temp
 *.db
 .ponymator.json
+.mnemosyne.json
 .dockerignore

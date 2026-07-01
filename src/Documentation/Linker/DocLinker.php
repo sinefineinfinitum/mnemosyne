@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Linker;
+namespace SineFine\Mnemosyne\Documentation\Linker;
 
-use SineFine\Ponymator\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
 
 final class DocLinker
 {

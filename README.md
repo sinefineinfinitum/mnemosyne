@@ -1,11 +1,11 @@
-# Ponymator
+# Mnemosyne
 
-[![Packagist Version](https://img.shields.io/packagist/v/sinefineinfinitum/ponymator)](https://packagist.org/packages/sinefineinfinitum/ponymator)
-[![PHP Version](https://img.shields.io/badge/PHP-8.0+-purple)](https://packagist.org/packages/sinefineinfinitum/ponymator)
-[![License](https://img.shields.io/packagist/l/sinefineinfinitum/ponymator)](https://packagist.org/packages/sinefineinfinitum/ponymator)
-[![CI](https://img.shields.io/github/actions/workflow/status/sinefineinfinitum/ponymator/ci.yml?branch=main)](https://github.com/sinefineinfinitum/ponymator/actions)
+[![Packagist Version](https://img.shields.io/packagist/v/sinefineinfinitum/mnemosyne)](https://packagist.org/packages/sinefineinfinitum/mnemosyne)
+[![PHP Version](https://img.shields.io/badge/PHP-8.0+-purple)](https://packagist.org/packages/sinefineinfinitum/mnemosyne)
+[![License](https://img.shields.io/packagist/l/sinefineinfinitum/mnemosyne)](https://packagist.org/packages/sinefineinfinitum/mnemosyne)
+[![CI](https://img.shields.io/github/actions/workflow/status/sinefineinfinitum/mnemosyne/ci.yml?branch=main)](https://github.com/sinefineinfinitum/mnemosyne/actions)
 [![PHPStan level](https://img.shields.io/badge/PHPStan-8-brightgreen)](https://github.com/phpstan/phpstan)
-[![Mutation Score](https://img.shields.io/badge/MSI-71%25-yellow)](https://github.com/sinefineinfinitum/ponymator/actions)
+[![Mutation Score](https://img.shields.io/badge/MSI-71%25-yellow)](https://github.com/sinefineinfinitum/mnemosyne/actions)
 
 A CLI-first PHP documentation generator that produces deterministic Markdown documentation for a project's API surface.
 
@@ -13,7 +13,7 @@ A CLI-first PHP documentation generator that produces deterministic Markdown doc
 
 ### AST-First Correctness
 
-Ponymator uses PHP Abstract Syntax Tree analysis (via [`nikic/php-parser`](https://github.com/nikic/PHP-Parser)) as the single source of truth. API extraction — classes, interfaces, traits, enums, constants, properties, methods, signatures, inheritance, implemented interfaces, modifiers, and dependencies — is derived from parsed PHP source code, never from regex or string matching. If source code cannot be parsed, the tool fails with actionable diagnostics.
+Mnenosyne uses PHP Abstract Syntax Tree analysis (via [`nikic/php-parser`](https://github.com/nikic/PHP-Parser)) as the single source of truth. API extraction — classes, interfaces, traits, enums, constants, properties, methods, signatures, inheritance, implemented interfaces, modifiers, and dependencies — is derived from parsed PHP source code, never from regex or string matching. If source code cannot be parsed, the tool fails with actionable diagnostics.
 
 ### Deterministic Output
 
@@ -48,26 +48,26 @@ Every behavior affecting documentation, CLI contracts, configuration, parsing, o
 ## Installation
 
 ```bash
-composer require sinefineinfinitum/ponymator
+composer require sinefineinfinitum/mnemosyne
 ```
 
 ## Usage
 
 ```bash
 # Main help
-vendor/bin/ponymator --help
+vendor/bin/mnemosyne --help
 
 # Generate documentation
-vendor/bin/ponymator generate [--full | --diff] [--config=<path>] [--output=md|psv1]
+vendor/bin/mnemosyne generate [--full | --diff] [--config=<path>] [--output=md|psv1]
 
 # Manage graph database
-vendor/bin/ponymator graph import [--db-path=<path>]
-vendor/bin/ponymator graph clear
+vendor/bin/mnemosyne graph import [--db-path=<path>]
+vendor/bin/mnemosyne graph clear
 
 # Analyze entities
-vendor/bin/ponymator show entity <name> [--depth=N]
-vendor/bin/ponymator show impact <name> [--depth=N]
-vendor/bin/ponymator show path <from> <to>
+vendor/bin/mnemosyne show entity <name> [--depth=N]
+vendor/bin/mnemosyne show impact <name> [--depth=N]
+vendor/bin/mnemosyne show path <from> <to>
 ```
 
 ### Commands
@@ -77,7 +77,7 @@ Produces documentation from PHP source code.
 - `--full`: Force regeneration of all files.
 - `--diff`: Only update files that changed since last run (default).
 - `--output=md`: (Default) Standard Markdown output.
-- `--output=psv1`: [Ponymator Syntax v1](spec-ps-v1.md) (compact, machine-readable format for graph analysis).
+- `--output=psv1`: [mnemosyne Syntax v1](spec-ps-v1.md) (compact, machine-readable format for graph analysis).
 
 #### `graph`
 Handles the SQLite graph database used for deep dependency analysis.
@@ -165,21 +165,23 @@ src/
 │   ├── Extractor/          #  — class, interface, trait, enum extractors
 │   ├── Linker/             #  — cross-reference index builder
 │   ├── Visitor/            #  — AST visitors (entities, deps, creations)
-├── Cli/                    # Argument parsing
+├── Cli/                    # Cli Commands
 ├── Comparator/             # Hash-based file comparison
+├── Db/                     # sqlite3 database access
 ├── Documentation/          # Generation, cross-linking, rendering, cleanup
 │   ├── Cleaner/            #  — outdated doc removal
 │   ├── Linker/             #  — cross-reference resolution
 │   ├── Processor/          #  — page generation orchestration
 │   └── Renderer/           #  — per-entity Markdown renderers
 ├── Filesystem/             # Path resolution, file scanning
+├── Graph/                  # Experiemental graph database access
 ├── Config.php              # Configuration loading & validation
-└── Ponymator.php           # Main orchestrator
+└── MnemosyneCommand.php    # Main orchestrator
 ```
 
 ## Configuration
 
-Configuration file: `.ponymator.json`. Example:
+Configuration file: `.mnemosyne.json`. Example:
 ```json
 {
     "source": "app",

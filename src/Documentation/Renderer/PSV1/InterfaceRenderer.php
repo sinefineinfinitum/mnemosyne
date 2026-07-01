@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer\PSV1;
+namespace SineFine\Mnemosyne\Documentation\Renderer\PSV1;
 
-use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
+use SineFine\Mnemosyne\Documentation\Renderer\EntityRendererInterface;
 
 final class InterfaceRenderer implements EntityRendererInterface
 {

@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Markdown;
+namespace SineFine\Mnemosyne\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\CallInfo;
-use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\ClassRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
 
 final class ClassRendererTest extends TestCase
 {
@@ -268,7 +268,7 @@ final class ClassRendererTest extends TestCase
                             ['name' => 'active', 'type' => '?bool', 'defaultValue' => 'true', 'isVariadic' => false, 'isPassedByReference' => false],
                         ],
                         'returnType' => '?User',
-                        
+
                     ],
                 ],
                 'dependencies' => ['App\Models\User'],

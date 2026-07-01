@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Generator;
+namespace SineFine\Mnemosyne\Documentation\Generator;
 
-use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
-use SineFine\Ponymator\Analyzer\ParserException;
-use SineFine\Ponymator\Comparator\HashComparator;
-use SineFine\Ponymator\Comparator\HashGenerator;
-use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
-use SineFine\Ponymator\Filesystem\FileSystemException;
-use SineFine\Ponymator\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Analyzer\Linker\CrossReferenceIndexBuilder;
+use SineFine\Mnemosyne\Analyzer\ParserException;
+use SineFine\Mnemosyne\Comparator\HashComparator;
+use SineFine\Mnemosyne\Comparator\HashGenerator;
+use SineFine\Mnemosyne\Documentation\Cleaner\OutdatedDocumentationRemover;
+use SineFine\Mnemosyne\Filesystem\FileSystemException;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
 use Throwable;
 
 final class Engine

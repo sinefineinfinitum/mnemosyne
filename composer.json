@@ -1,5 +1,5 @@
 {
-    "name": "sinefineinfinitum/ponymator",
+    "name": "sinefineinfinitum/mnemosyne",
     "description": "Ponymator - generate docs for php project",
     "license": ["MIT"],
     "keywords": ["docs", "analysis"],
@@ -14,8 +14,8 @@
     },
     "autoload": {
         "psr-4": {
-            "SineFine\\Ponymator\\": "src/",
-            "SineFine\\Ponymator\\Tests\\": "tests/"
+            "SineFine\\Mnemosyne\\": "src/",
+            "SineFine\\Mnemosyne\\Tests\\": "tests/"
         }
     },
     "require-dev": {

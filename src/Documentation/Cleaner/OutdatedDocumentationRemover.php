@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Cleaner;
+namespace SineFine\Mnemosyne\Documentation\Cleaner;
 
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SineFine\Ponymator\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
 
 final class OutdatedDocumentationRemover
 {

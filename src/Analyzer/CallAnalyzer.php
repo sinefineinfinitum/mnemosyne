@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer;
+namespace SineFine\Mnemosyne\Analyzer;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
-use SineFine\Ponymator\Analyzer\Visitor\CallAssociationVisitor;
-use SineFine\Ponymator\Analyzer\Visitor\CallCollectingVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\CallAssociationVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\CallCollectingVisitor;
 
 final class CallAnalyzer
 {

@@ -1,12 +1,12 @@
 #!/usr/bin/env php
 <?php
 /**
- * Ponimator - generate docs for php project
+ * Mnemosyne - generate docs for php project
  *
  */
 
 require_once __DIR__.'/vendor/autoload.php';
 
-$runner   = new SineFine\Ponymator\Ponymator();
+$runner   = new SineFine\Mnemosyne\MnemosyneCommand();
 $runner->run();
 

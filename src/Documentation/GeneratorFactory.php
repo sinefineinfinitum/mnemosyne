@@ -1,34 +1,34 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation;
+namespace SineFine\Mnemosyne\Documentation;
 
-use SineFine\Ponymator\Analyzer\CallAnalyzer;
-use SineFine\Ponymator\Analyzer\EntityAnalyzer;
-use SineFine\Ponymator\Analyzer\FileExtractor;
-use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
-use SineFine\Ponymator\Analyzer\Parser;
-use SineFine\Ponymator\Cli\ArgumentParser;
-use SineFine\Ponymator\Comparator\HashComparator;
-use SineFine\Ponymator\Config;
-use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
-use SineFine\Ponymator\Documentation\Generator\Engine;
-use SineFine\Ponymator\Documentation\Generator\PageGenerator;
-use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
-use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
-use SineFine\Ponymator\Documentation\Renderer\FileRendererInterface;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer as MarkdownClassRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer as MarkdownEnumRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer as MarkdownFileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\InterfaceRenderer as MarkdownInterfaceRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer as MarkdownTraitRenderer;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\ClassRenderer as Psv1ClassRenderer;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\EnumRenderer as Psv1EnumRenderer;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\FileRenderer as Psv1FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\InterfaceRenderer as Psv1InterfaceRenderer;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\Psv1Builder;
-use SineFine\Ponymator\Documentation\Renderer\PSV1\TraitRenderer as Psv1TraitRenderer;
-use SineFine\Ponymator\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Analyzer\CallAnalyzer;
+use SineFine\Mnemosyne\Analyzer\EntityAnalyzer;
+use SineFine\Mnemosyne\Analyzer\FileExtractor;
+use SineFine\Mnemosyne\Analyzer\Linker\CrossReferenceIndexBuilder;
+use SineFine\Mnemosyne\Analyzer\Parser;
+use SineFine\Mnemosyne\Cli\ArgumentParser;
+use SineFine\Mnemosyne\Comparator\HashComparator;
+use SineFine\Mnemosyne\Config;
+use SineFine\Mnemosyne\Documentation\Cleaner\OutdatedDocumentationRemover;
+use SineFine\Mnemosyne\Documentation\Generator\Engine;
+use SineFine\Mnemosyne\Documentation\Generator\PageGenerator;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReferenceFactory;
+use SineFine\Mnemosyne\Documentation\Renderer\EntityRendererInterface;
+use SineFine\Mnemosyne\Documentation\Renderer\FileRendererInterface;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\ClassRenderer as MarkdownClassRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\EnumRenderer as MarkdownEnumRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\FileRenderer as MarkdownFileRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\InterfaceRenderer as MarkdownInterfaceRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\TraitRenderer as MarkdownTraitRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\ClassRenderer as Psv1ClassRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\EnumRenderer as Psv1EnumRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\FileRenderer as Psv1FileRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\InterfaceRenderer as Psv1InterfaceRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
+use SineFine\Mnemosyne\Documentation\Renderer\PSV1\TraitRenderer as Psv1TraitRenderer;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
 
 class GeneratorFactory
 {

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli;
+namespace SineFine\Mnemosyne\Cli;
 
-use SineFine\Ponymator\Cli\Error\ExitCode;
+use SineFine\Mnemosyne\Cli\Error\ExitCode;
 
 final class ArgumentParser
 {
@@ -33,7 +33,7 @@ final class ArgumentParser
         }
 
         if (!in_array($first, self::COMMANDS, true)) {
-            self::mistakeExit('Unknown command: ' . $first . '. Run ponymator --help for usage.');
+            self::mistakeExit('Unknown command: ' . $first . '. Run mnemosyne --help for usage.');
         }
 
         $group = $first;

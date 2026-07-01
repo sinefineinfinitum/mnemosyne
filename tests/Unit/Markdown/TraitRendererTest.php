@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Markdown;
+namespace SineFine\Mnemosyne\Tests\Unit\Markdown;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\CallInfo;
-use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\TraitRenderer;
 
 final class TraitRendererTest extends TestCase
 {
@@ -165,7 +165,7 @@ final class TraitRendererTest extends TestCase
                     'isAbstract' => false,
                     'parameters' => [],
                     'returnType' => 'self',
-                    
+
                 ],
             ],
             ]
@@ -231,7 +231,7 @@ final class TraitRendererTest extends TestCase
                             ['name' => 'message', 'type' => 'string', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
                         ],
                         'returnType' => 'void',
-                        
+
                     ],
                     [
                         'name' => 'formatMessage',
@@ -242,7 +242,7 @@ final class TraitRendererTest extends TestCase
                             ['name' => 'msg', 'type' => 'string', 'defaultValue' => null, 'isVariadic' => false, 'isPassedByReference' => false],
                         ],
                         'returnType' => 'string',
-                        
+
                     ],
                 ],
                 'dependencies' => [],

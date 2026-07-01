@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Analyzer\Visitor;
+namespace SineFine\Mnemosyne\Tests\Unit\Analyzer\Visitor;
 
 use PHPUnit\Framework\TestCase;
 use PhpParser\Node\Name;
@@ -11,7 +11,7 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Enum_;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\PropertyProperty;
-use SineFine\Ponymator\Analyzer\Visitor\DependencyCollectingVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\DependencyCollectingVisitor;
 
 final class DependencyCollectingVisitorTest extends TestCase
 {

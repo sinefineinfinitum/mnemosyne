@@ -1,26 +1,26 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Integration;
+namespace SineFine\Mnemosyne\Tests\Integration;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\EntityAnalyzer;
-use SineFine\Ponymator\Analyzer\FileExtractor;
-use SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder;
-use SineFine\Ponymator\Analyzer\Parser;
-use SineFine\Ponymator\Comparator\HashComparator;
-use SineFine\Ponymator\Config;
-use SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover;
-use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
-use SineFine\Ponymator\Documentation\Generator\Engine;
-use SineFine\Ponymator\Documentation\Generator\PageGenerator;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\InterfaceRenderer;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder;
-use SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer;
-use SineFine\Ponymator\Filesystem\PathResolver;
-use SineFine\Ponymator\Filesystem\Scanner;
+use SineFine\Mnemosyne\Analyzer\EntityAnalyzer;
+use SineFine\Mnemosyne\Analyzer\FileExtractor;
+use SineFine\Mnemosyne\Analyzer\Linker\CrossReferenceIndexBuilder;
+use SineFine\Mnemosyne\Analyzer\Parser;
+use SineFine\Mnemosyne\Comparator\HashComparator;
+use SineFine\Mnemosyne\Config;
+use SineFine\Mnemosyne\Documentation\Cleaner\OutdatedDocumentationRemover;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReferenceFactory;
+use SineFine\Mnemosyne\Documentation\Generator\Engine;
+use SineFine\Mnemosyne\Documentation\Generator\PageGenerator;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\ClassRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\EnumRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\FileRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\InterfaceRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
+use SineFine\Mnemosyne\Documentation\Renderer\Markdown\TraitRenderer;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Filesystem\Scanner;
 
 final class ErrorAggregationTest extends TestCase
 {
@@ -30,7 +30,7 @@ final class ErrorAggregationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tempDir = sys_get_temp_dir() . '/ponymator-error-test-' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/mnemosyne-error-test-' . uniqid();
         $this->sourceDir = $this->tempDir . '/src';
         $this->targetDir = $this->tempDir . '/docs';
         mkdir($this->sourceDir, 0755, true);
@@ -151,7 +151,7 @@ final class ErrorAggregationTest extends TestCase
 
     public function testExitCodesFromProcessExecution(): void
     {
-        $bin = __DIR__ . '/../../ponymator';
+        $bin = __DIR__ . '/../../mnemosyne';
 
         $testDir = $this->tempDir . '/exit-test';
         mkdir($testDir . '/src', 0755, true);
@@ -168,7 +168,7 @@ final class ErrorAggregationTest extends TestCase
 
     public function testExitCode66ForNoFiles(): void
     {
-        $bin = __DIR__ . '/../../ponymator';
+        $bin = __DIR__ . '/../../mnemosyne';
 
         $emptyDir = $this->tempDir . '/empty-project';
         mkdir($emptyDir . '/src', 0755, true);
@@ -184,28 +184,28 @@ final class ErrorAggregationTest extends TestCase
 
     public function testExitCode2ForUnknownFlag(): void
     {
-        $bin = __DIR__ . '/../../ponymator';
+        $bin = __DIR__ . '/../../mnemosyne';
         $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' --unknown-flag 2>&1', $exitCode);
         $this->assertSame(2, $exitCode);
     }
 
     public function testExitCode2ForUnknownCommand(): void
     {
-        $bin = __DIR__ . '/../../ponymator';
+        $bin = __DIR__ . '/../../mnemosyne';
         $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' unexpected-arg 2>&1', $exitCode);
         $this->assertSame(2, $exitCode);
     }
 
     public function testExitCode2ForUnknownShortArgument(): void
     {
-        $bin = __DIR__ . '/../../ponymator';
+        $bin = __DIR__ . '/../../mnemosyne';
         $this->runProcess(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($bin) . ' -x 2>&1', $exitCode);
         $this->assertSame(2, $exitCode);
     }
 
     public function testExitCode78ForMissingConfig(): void
     {
-        $bin = __DIR__ . '/../../ponymator';
+        $bin = __DIR__ . '/../../mnemosyne';
 
         $testDir = $this->tempDir . '/no-config';
         mkdir($testDir, 0755, true);

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer\Linker;
+namespace SineFine\Mnemosyne\Analyzer\Linker;
 
 use FilesystemIterator;
 use PhpParser\NodeTraverser;
@@ -9,12 +9,12 @@ use Ponymator\Parser\Parser as PsParser;
 use Ponymator\Parser\SyntaxException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SineFine\Ponymator\Analyzer\Parser;
-use SineFine\Ponymator\Analyzer\ParserException;
-use SineFine\Ponymator\Analyzer\Visitor\CrossReferenceScannerVisitor;
-use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
-use SineFine\Ponymator\Documentation\Generator\GenerationResult;
-use SineFine\Ponymator\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Analyzer\Parser;
+use SineFine\Mnemosyne\Analyzer\ParserException;
+use SineFine\Mnemosyne\Analyzer\Visitor\CrossReferenceScannerVisitor;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Mnemosyne\Documentation\Generator\GenerationResult;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
 use Throwable;
 
 final class CrossReferenceIndexBuilder

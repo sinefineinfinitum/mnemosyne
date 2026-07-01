@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer;
+namespace SineFine\Mnemosyne\Analyzer;
 
 final class EntityAnalysisResult
 {

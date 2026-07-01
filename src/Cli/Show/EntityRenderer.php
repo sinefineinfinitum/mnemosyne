@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Show;
+namespace SineFine\Mnemosyne\Cli\Show;
 
 interface EntityRenderer
 {

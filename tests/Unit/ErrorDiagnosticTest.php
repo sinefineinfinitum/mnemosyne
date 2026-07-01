@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Documentation\Generator\ErrorDiagnostic;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorDiagnostic;
 
 final class ErrorDiagnosticTest extends TestCase
 {

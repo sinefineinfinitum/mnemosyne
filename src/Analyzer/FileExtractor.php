@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer;
+namespace SineFine\Mnemosyne\Analyzer;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
@@ -13,7 +13,7 @@ use PhpParser\Node\Stmt\Const_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeTraverser;
-use SineFine\Ponymator\Analyzer\Visitor\FileExtractingVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\FileExtractingVisitor;
 
 class FileExtractor
 {

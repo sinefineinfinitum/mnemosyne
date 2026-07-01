@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli;
+namespace SineFine\Mnemosyne\Cli;
 
 class HelpPrinter
 {
@@ -8,14 +8,14 @@ class HelpPrinter
     public static function printHelp(): void
     {
         echo <<<'HELP'
-Usage: ponymator <command> [<subcommand>] [<args>] [<flags>]
+Usage: mnemosyne <command> [<subcommand>] [<args>] [<flags>]
 
 Commands:
   generate    Generate documentation from PHP source code
   graph       Manage the SQLite graph database
   show        Analyze entity dependencies
 
-Run 'ponymator <command> --help' for more information on a command.
+Run 'mnemosyne <command> --help' for more information on a command.
 
 Exit codes:
   0   Success
@@ -33,14 +33,14 @@ HELP;
     public static function printGenerateHelp(): void
     {
         echo <<<'HELP'
-Usage: ponymator generate [--full | --diff] [--config=<path>] [--output=md|psv1]
+Usage: mnemosyne generate [--full | --diff] [--config=<path>] [--output=md|psv1]
 
 Options:
   --full              Regenerate all documentation
   --diff              Regenerate only changed files (default)
-  --config=<path>     Path to config file (default: .ponymator.json)
+  --config=<path>     Path to config file (default: .mnemosyne.json)
   --output=md         Generate Markdown documentation (default)
-  --output=psv1       Generate Ponymator Syntax v1 documentation
+  --output=psv1       Generate mnemosyne Syntax v1 documentation
   --help              Display this help message
 
 HELP;
@@ -49,7 +49,7 @@ HELP;
     public static function printGraphHelp(): void
     {
         echo <<<'HELP'
-Usage: ponymator graph <subcommand> [<flags>]
+Usage: mnemosyne graph <subcommand> [<flags>]
 
 Subcommands:
   import              Import PHP analysis into graph database
@@ -57,7 +57,7 @@ Subcommands:
 
 Options:
   --db-path=<path>    Path to SQLite graph database
-  --config=<path>     Path to config file (default: .ponymator.json)
+  --config=<path>     Path to config file (default: .mnemosyne.json)
   --help              Display this help message
 
 HELP;
@@ -66,7 +66,7 @@ HELP;
     public static function printShowHelp(): void
     {
         echo <<<'HELP'
-Usage: ponymator show <subcommand> <args> [<flags>]
+Usage: mnemosyne show <subcommand> <args> [<flags>]
 
 Subcommands:
   entity <name>       Display entity card (file, type, dependencies)

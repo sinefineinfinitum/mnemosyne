@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Show;
+namespace SineFine\Mnemosyne\Cli\Show;
 
-use SineFine\Ponymator\Cli\Show\Views\EntityHeaderView;
-use SineFine\Ponymator\Cli\Show\Views\ExtendsView;
-use SineFine\Ponymator\Cli\Show\Views\ExternalView;
-use SineFine\Ponymator\Cli\Show\Views\InheritorsView;
-use SineFine\Ponymator\Cli\Show\Views\MembersView;
-use SineFine\Ponymator\Cli\Show\Views\UsedByView;
+use SineFine\Mnemosyne\Cli\Show\Views\EntityHeaderView;
+use SineFine\Mnemosyne\Cli\Show\Views\ExtendsView;
+use SineFine\Mnemosyne\Cli\Show\Views\ExternalView;
+use SineFine\Mnemosyne\Cli\Show\Views\InheritorsView;
+use SineFine\Mnemosyne\Cli\Show\Views\MembersView;
+use SineFine\Mnemosyne\Cli\Show\Views\UsedByView;
 
 final class ConsoleRenderer implements EntityRenderer
 {

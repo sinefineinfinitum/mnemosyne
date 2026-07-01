@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Cli\Show;
+namespace SineFine\Mnemosyne\Tests\Unit\Cli\Show;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Cli\Show\EntityView;
-use SineFine\Ponymator\Graph\Experimental\GraphCommand;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Cli\Show\EntityView;
+use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 class EntityViewTest extends TestCase
 {

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Show\Views;
+namespace SineFine\Mnemosyne\Cli\Show\Views;
 
-use SineFine\Ponymator\Cli\Show\EntityView;
+use SineFine\Mnemosyne\Cli\Show\EntityView;
 
 final class ExternalView implements ViewObject
 {

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer\Linker;
+namespace SineFine\Mnemosyne\Analyzer\Linker;
 
-use SineFine\Ponymator\Analyzer\ParserException;
+use SineFine\Mnemosyne\Analyzer\ParserException;
 
 final class CrossReferenceIndex
 {

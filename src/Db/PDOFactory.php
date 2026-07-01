@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Db;
+namespace SineFine\Mnemosyne\Db;
 
 use PDO;
 use PDOException;
-use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Cli\Error\ConfigException;
-use SineFine\Ponymator\Cli\Error\ExitCode;
-use SineFine\Ponymator\Config;
+use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Cli\Error\ConfigException;
+use SineFine\Mnemosyne\Cli\Error\ExitCode;
+use SineFine\Mnemosyne\Config;
 
 final class PDOFactory
 {

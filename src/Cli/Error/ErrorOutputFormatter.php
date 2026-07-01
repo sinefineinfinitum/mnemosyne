@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Error;
+namespace SineFine\Mnemosyne\Cli\Error;
 
-use SineFine\Ponymator\Documentation\Generator\ErrorReport;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorReport;
 
 final class ErrorOutputFormatter
 {

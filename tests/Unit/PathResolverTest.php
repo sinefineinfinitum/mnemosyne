@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Config;
-use SineFine\Ponymator\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Config;
+use SineFine\Mnemosyne\Filesystem\PathResolver;
 
 final class PathResolverTest extends TestCase
 {

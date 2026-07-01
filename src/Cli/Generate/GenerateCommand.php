@@ -1,18 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Generate;
+namespace SineFine\Mnemosyne\Cli\Generate;
 
-use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Cli\Error\ConfigException;
-use SineFine\Ponymator\Cli\Error\ErrorOutputFormatter;
-use SineFine\Ponymator\Cli\Error\ExitCode;
-use SineFine\Ponymator\Config;
-use SineFine\Ponymator\Documentation\GeneratorFactory;
-use SineFine\Ponymator\Documentation\Generator\Engine;
-use SineFine\Ponymator\Documentation\Generator\ErrorReport;
-use SineFine\Ponymator\Documentation\Generator\GenerationResult;
-use SineFine\Ponymator\Filesystem\FileSystemException;
-use SineFine\Ponymator\Filesystem\Scanner;
+use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Cli\Error\ConfigException;
+use SineFine\Mnemosyne\Cli\Error\ErrorOutputFormatter;
+use SineFine\Mnemosyne\Cli\Error\ExitCode;
+use SineFine\Mnemosyne\Config;
+use SineFine\Mnemosyne\Documentation\GeneratorFactory;
+use SineFine\Mnemosyne\Documentation\Generator\Engine;
+use SineFine\Mnemosyne\Documentation\Generator\ErrorReport;
+use SineFine\Mnemosyne\Documentation\Generator\GenerationResult;
+use SineFine\Mnemosyne\Filesystem\FileSystemException;
+use SineFine\Mnemosyne\Filesystem\Scanner;
 
 final class GenerateCommand
 {

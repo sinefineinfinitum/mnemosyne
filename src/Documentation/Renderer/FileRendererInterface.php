@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer;
+namespace SineFine\Mnemosyne\Documentation\Renderer;
 
 interface FileRendererInterface
 {
@@ -9,7 +9,7 @@ interface FileRendererInterface
      * @param  array<int, array<string, mixed>>                           $functions
      * @param  string[]                                                   $globals
      * @param  array<int, array<string, mixed>>                           $constants
-     * @param  array<string, list<\SineFine\Ponymator\Analyzer\CallInfo>> $fileCalls    functionName => list<CallInfo>
+     * @param  array<string, list<\SineFine\Mnemosyne\Analyzer\CallInfo>> $fileCalls    functionName => list<CallInfo>
      * @return string
      */
     public function renderFile(

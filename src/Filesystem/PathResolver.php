@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Filesystem;
+namespace SineFine\Mnemosyne\Filesystem;
 
-use SineFine\Ponymator\Config;
+use SineFine\Mnemosyne\Config;
 
 class PathResolver
 {

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer\Extractor;
+namespace SineFine\Mnemosyne\Analyzer\Extractor;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Trait_;

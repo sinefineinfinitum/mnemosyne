@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Comparator\HashComparator;
+use SineFine\Mnemosyne\Comparator\HashComparator;
 
 final class HashComparatorTest extends TestCase
 {
@@ -13,7 +13,7 @@ final class HashComparatorTest extends TestCase
     protected function setUp(): void
     {
         $this->comparator = new HashComparator();
-        $this->tempDir = sys_get_temp_dir() . '/ponymator-hash-test-' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/mnemosyne-hash-test-' . uniqid();
         mkdir($this->tempDir, 0755, true);
     }
 

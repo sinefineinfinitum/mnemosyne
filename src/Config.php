@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator;
+namespace SineFine\Mnemosyne;
 
-use SineFine\Ponymator\Cli\Error\ConfigException;
+use SineFine\Mnemosyne\Cli\Error\ConfigException;
 
 class Config
 {
@@ -22,7 +22,7 @@ class Config
     {
         $this->config = self::DEFAULTS;
 
-        $path = $configPath ?? getcwd() . '/.ponymator.json';
+        $path = $configPath ?? getcwd() . '/.mnemosyne.json';
 
         if (!file_exists($path)) {
             if ($configPath !== null) {

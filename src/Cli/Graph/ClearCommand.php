@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Graph;
+namespace SineFine\Mnemosyne\Cli\Graph;
 
-use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Db\PDOFactory;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Db\PDOFactory;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 class ClearCommand
 {

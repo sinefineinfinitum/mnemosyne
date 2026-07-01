@@ -1,19 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer;
+namespace SineFine\Mnemosyne\Analyzer;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use SineFine\Ponymator\Analyzer\Extractor\AstHelper;
-use SineFine\Ponymator\Analyzer\Extractor\ClassExtractor;
-use SineFine\Ponymator\Analyzer\Extractor\EnumExtractor;
-use SineFine\Ponymator\Analyzer\Extractor\InterfaceExtractor;
-use SineFine\Ponymator\Analyzer\Extractor\TraitExtractor;
-use SineFine\Ponymator\Analyzer\Visitor\DependencyCollectingVisitor;
-use SineFine\Ponymator\Analyzer\Visitor\EntityExtractingVisitor;
-use SineFine\Ponymator\Analyzer\Visitor\ObjectCreationCollectingVisitor;
+use SineFine\Mnemosyne\Analyzer\Extractor\AstHelper;
+use SineFine\Mnemosyne\Analyzer\Extractor\ClassExtractor;
+use SineFine\Mnemosyne\Analyzer\Extractor\EnumExtractor;
+use SineFine\Mnemosyne\Analyzer\Extractor\InterfaceExtractor;
+use SineFine\Mnemosyne\Analyzer\Extractor\TraitExtractor;
+use SineFine\Mnemosyne\Analyzer\Visitor\DependencyCollectingVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\EntityExtractingVisitor;
+use SineFine\Mnemosyne\Analyzer\Visitor\ObjectCreationCollectingVisitor;
 
 final class EntityAnalyzer
 {

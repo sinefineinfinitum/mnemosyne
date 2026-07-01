@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer\PSV1;
+namespace SineFine\Mnemosyne\Documentation\Renderer\PSV1;
 
 final class Psv1Builder
 {

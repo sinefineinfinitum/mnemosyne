@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer\Visitor;
+namespace SineFine\Mnemosyne\Analyzer\Visitor;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
@@ -20,7 +20,7 @@ use PhpParser\Node\Stmt\Trait_;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\NodeVisitorAbstract;
-use SineFine\Ponymator\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
 
 
 final class CallAssociationVisitor extends NodeVisitorAbstract

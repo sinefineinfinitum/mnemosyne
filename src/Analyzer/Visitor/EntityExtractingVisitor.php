@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer\Visitor;
+namespace SineFine\Mnemosyne\Analyzer\Visitor;
 
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
-use SineFine\Ponymator\Analyzer\Extractor\EntityExtractorInterface;
+use SineFine\Mnemosyne\Analyzer\Extractor\EntityExtractorInterface;
 
 class EntityExtractingVisitor extends NodeVisitorAbstract
 {

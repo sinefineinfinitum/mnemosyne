@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit\Analyzer\Visitor;
+namespace SineFine\Mnemosyne\Tests\Unit\Analyzer\Visitor;
 
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\Extractor\AstHelper;
-use SineFine\Ponymator\Analyzer\Extractor\ClassExtractor;
-use SineFine\Ponymator\Analyzer\Extractor\EntityExtractorInterface;
-use SineFine\Ponymator\Analyzer\Extractor\InterfaceExtractor;
-use SineFine\Ponymator\Analyzer\Visitor\EntityExtractingVisitor;
+use SineFine\Mnemosyne\Analyzer\Extractor\AstHelper;
+use SineFine\Mnemosyne\Analyzer\Extractor\ClassExtractor;
+use SineFine\Mnemosyne\Analyzer\Extractor\EntityExtractorInterface;
+use SineFine\Mnemosyne\Analyzer\Extractor\InterfaceExtractor;
+use SineFine\Mnemosyne\Analyzer\Visitor\EntityExtractingVisitor;
 
 final class EntityExtractingVisitorTest extends TestCase
 {
@@ -63,11 +63,11 @@ final class EntityExtractingVisitorTest extends TestCase
         $neverMatch = new class implements EntityExtractorInterface {
             public function supports(Node $node): bool
             {
-                return false; 
+                return false;
             }
             public function extract(Node $node): array
             {
-                return []; 
+                return [];
             }
         };
 

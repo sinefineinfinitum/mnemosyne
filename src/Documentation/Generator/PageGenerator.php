@@ -1,19 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Generator;
+namespace SineFine\Mnemosyne\Documentation\Generator;
 
-use SineFine\Ponymator\Analyzer\CallInfo;
-use SineFine\Ponymator\Analyzer\EntityAnalysisResult;
-use SineFine\Ponymator\Analyzer\EntityAnalyzer;
-use SineFine\Ponymator\Analyzer\FileExtractor;
-use SineFine\Ponymator\Analyzer\Linker\CrossReferenceContext;
-use SineFine\Ponymator\Analyzer\Parser;
-use SineFine\Ponymator\Analyzer\CallAnalysisResult;
-use SineFine\Ponymator\Analyzer\CallAnalyzer;
-use SineFine\Ponymator\Documentation\Linker\CrossReference;
-use SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory;
-use SineFine\Ponymator\Documentation\Renderer\EntityRendererInterface;
-use SineFine\Ponymator\Documentation\Renderer\FileRendererInterface;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Analyzer\EntityAnalysisResult;
+use SineFine\Mnemosyne\Analyzer\EntityAnalyzer;
+use SineFine\Mnemosyne\Analyzer\FileExtractor;
+use SineFine\Mnemosyne\Analyzer\Linker\CrossReferenceContext;
+use SineFine\Mnemosyne\Analyzer\Parser;
+use SineFine\Mnemosyne\Analyzer\CallAnalysisResult;
+use SineFine\Mnemosyne\Analyzer\CallAnalyzer;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReferenceFactory;
+use SineFine\Mnemosyne\Documentation\Renderer\EntityRendererInterface;
+use SineFine\Mnemosyne\Documentation\Renderer\FileRendererInterface;
 
 final class PageGenerator
 {

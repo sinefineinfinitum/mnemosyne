@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer\Markdown;
+namespace SineFine\Mnemosyne\Documentation\Renderer\Markdown;
 
-use SineFine\Ponymator\Comparator\HashGenerator;
-use SineFine\Ponymator\Documentation\Renderer\FileRendererInterface;
+use SineFine\Mnemosyne\Comparator\HashGenerator;
+use SineFine\Mnemosyne\Documentation\Renderer\FileRendererInterface;
 
 final class FileRenderer implements FileRendererInterface
 {
@@ -17,7 +17,7 @@ final class FileRenderer implements FileRendererInterface
      * @param  array<int, array<string, mixed>>                           $functions
      * @param  string[]                                                   $globals
      * @param  array<int, array<string, mixed>>                           $constants
-     * @param  array<string, list<\SineFine\Ponymator\Analyzer\CallInfo>> $fileCalls    functionName => list<CallInfo>
+     * @param  array<string, list<\SineFine\Mnemosyne\Analyzer\CallInfo>> $fileCalls    functionName => list<CallInfo>
      * @return string
      */
     public function renderFile(
@@ -57,7 +57,7 @@ final class FileRenderer implements FileRendererInterface
 
     /**
      * @param  array<int, array<string, mixed>>                           $functions
-     * @param  array<string, list<\SineFine\Ponymator\Analyzer\CallInfo>> $fileCalls
+     * @param  array<string, list<\SineFine\Mnemosyne\Analyzer\CallInfo>> $fileCalls
      * @return string
      */
     private function functionsList(array $functions, array $fileCalls = []): string
@@ -75,14 +75,14 @@ final class FileRenderer implements FileRendererInterface
             $methodCalls = array_values(
                 array_filter(
                     $calls,
-                    fn(\SineFine\Ponymator\Analyzer\CallInfo $c) => $c->kind !== \SineFine\Ponymator\Analyzer\CallInfo::KIND_CREATE
+                    fn(\SineFine\Mnemosyne\Analyzer\CallInfo $c) => $c->kind !== \SineFine\Mnemosyne\Analyzer\CallInfo::KIND_CREATE
                 )
             );
 
             if (!empty($methodCalls)) {
                 $result .= $this->builder->listItem('**Calls:**');
                 foreach ($methodCalls as $callInfo) {
-                    $assocLabel = $callInfo->association === \SineFine\Ponymator\Analyzer\CallInfo::STRONG ? 'strong' : 'weak';
+                    $assocLabel = $callInfo->association === \SineFine\Mnemosyne\Analyzer\CallInfo::STRONG ? 'strong' : 'weak';
                     $prefix = $this->builder->inlineCode($assocLabel);
 
                     $resolved = $callInfo->resolvedTargetFqcn;

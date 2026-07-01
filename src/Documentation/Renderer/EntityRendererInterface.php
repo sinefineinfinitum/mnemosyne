@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer;
+namespace SineFine\Mnemosyne\Documentation\Renderer;
 
-use SineFine\Ponymator\Documentation\Linker\CrossReference;
+use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
 
 interface EntityRendererInterface
 {

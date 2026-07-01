@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Renderer\Markdown;
+namespace SineFine\Mnemosyne\Documentation\Renderer\Markdown;
 
-use SineFine\Ponymator\Analyzer\CallInfo;
+use SineFine\Mnemosyne\Analyzer\CallInfo;
 
 final class MarkdownBuilder
 {

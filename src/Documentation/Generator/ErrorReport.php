@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Documentation\Generator;
+namespace SineFine\Mnemosyne\Documentation\Generator;
 
 final class ErrorReport
 {

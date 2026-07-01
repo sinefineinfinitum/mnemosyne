@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Cli\Show;
+namespace SineFine\Mnemosyne\Cli\Show;
 
-use SineFine\Ponymator\Cli\Command;
-use SineFine\Ponymator\Cli\Error\ExitCode;
-use SineFine\Ponymator\Graph\Experimental\GraphQuery;
+use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Cli\Error\ExitCode;
+use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
 
 final class ShowEntityCommand
 {

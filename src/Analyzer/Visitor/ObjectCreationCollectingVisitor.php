@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Analyzer\Visitor;
+namespace SineFine\Mnemosyne\Analyzer\Visitor;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
@@ -17,7 +17,7 @@ final class ObjectCreationCollectingVisitor extends NodeVisitorAbstract
     private ?string $currentMethod = null;
 
     /**
-     * @var array<string, array<string, list<string>>> 
+     * @var array<string, array<string, list<string>>>
      */
     private array $creates = [];
 

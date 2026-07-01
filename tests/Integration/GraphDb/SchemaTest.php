@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Integration\GraphDb;
+namespace SineFine\Mnemosyne\Tests\Integration\GraphDb;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Graph\Experimental\Schema;
+use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 final class SchemaTest extends TestCase
 {

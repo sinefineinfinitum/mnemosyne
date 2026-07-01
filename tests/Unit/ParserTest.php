@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Tests\Unit;
+namespace SineFine\Mnemosyne\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Ponymator\Analyzer\Parser;
+use SineFine\Mnemosyne\Analyzer\Parser;
 
 final class ParserTest extends TestCase
 {
@@ -11,7 +11,7 @@ final class ParserTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tempDir = sys_get_temp_dir() . '/ponymator_parse_' . uniqid();
+        $this->tempDir = sys_get_temp_dir() . '/mnemosyne_parse_' . uniqid();
         mkdir($this->tempDir);
     }
 
