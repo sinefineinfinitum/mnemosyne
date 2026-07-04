@@ -25,8 +25,8 @@ use SineFine\Mnemosyne\Detector\Pattern\Catalog\State;
 use SineFine\Mnemosyne\Detector\Pattern\Catalog\Strategy;
 use SineFine\Mnemosyne\Detector\Pattern\Catalog\TemplateMethod;
 use SineFine\Mnemosyne\Detector\Pattern\Catalog\Visitor;
-use SineFine\Mnemosyne\Detector\Pattern\Engine\Engine;
 use SineFine\Mnemosyne\Detector\Pattern\Engine\PatternRegistry;
+use SineFine\Mnemosyne\Detector\Pattern\Engine\Engine;
 use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
 use Throwable;
 
