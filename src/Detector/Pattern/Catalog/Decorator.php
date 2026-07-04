@@ -17,7 +17,7 @@ final class Decorator implements PatternInterface
         return ['Component', 'Decorator'];
     }
 
-    private const CTE_IMPLEMENTS = <<<'SQL'
+    private const CTE_BASE = <<<'SQL'
             WITH impl_pairs AS (
                 SELECT c.id AS component_id,
                        d.id AS decorator_id
@@ -26,25 +26,33 @@ final class Decorator implements PatternInterface
                 JOIN entities d ON r.source_id = d.id
                 WHERE c.type = 'interface'
                   AND d.type = 'class'
+            ),
+            decorators_with_component_field AS (
+                SELECT ip.component_id, ip.decorator_id
+                FROM impl_pairs ip
+                JOIN members m ON m.entity_id = ip.decorator_id
+                  AND m.member_type = 'property'
+                JOIN types t ON t.owner_id = m.id AND t.owner_type = 'property'
+                  AND t.entity_id = ip.component_id
             )
             SQL;
 
     private const SELECT_COMPONENT = <<<'SQL'
             SELECT DENSE_RANK() OVER (ORDER BY component_id) AS match_id,
                    component_id AS entity_id, 'Component' AS role
-            FROM impl_pairs
+            FROM decorators_with_component_field
             SQL;
 
     private const SELECT_DECORATOR = <<<'SQL'
             SELECT DENSE_RANK() OVER (ORDER BY component_id) AS match_id,
                    decorator_id AS entity_id, 'Decorator' AS role
-            FROM impl_pairs
+            FROM decorators_with_component_field
             SQL;
 
     public function candidateSql(): string
     {
         return
-            self::CTE_IMPLEMENTS . "\n" .
+            self::CTE_BASE . "\n" .
             self::SELECT_COMPONENT . "\n" .
             "UNION ALL\n" .
             self::SELECT_DECORATOR;

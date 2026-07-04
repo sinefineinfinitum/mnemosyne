@@ -34,20 +34,6 @@ final class Strategy implements PatternInterface
             )
             SQL;
 
-    private const SELECT_STRATEGY_FROM_IMPLS = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY ip.strategy_id, ip.concrete_id) AS match_id,
-                   ip.strategy_id AS entity_id, 'Strategy' AS role
-            FROM impl_pairs ip
-            JOIN multi_impls mi ON mi.strategy_id = ip.strategy_id
-            SQL;
-
-    private const SELECT_CONCRETE = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY ip.strategy_id, ip.concrete_id) AS match_id,
-                   ip.concrete_id AS entity_id, 'ConcreteStrategy' AS role
-            FROM impl_pairs ip
-            JOIN multi_impls mi ON mi.strategy_id = ip.strategy_id
-            SQL;
-
     private const CTE_CTX = <<<'SQL'
             ctx_pairs AS (
                 SELECT s.id   AS strategy_id,
@@ -56,20 +42,52 @@ final class Strategy implements PatternInterface
                 JOIN relationships r ON r.type = 'dependency' AND r.target_id = s.id
                 JOIN entities ctx ON ctx.id = r.source_id
                 WHERE s.type = 'interface'
+            ),
+            ctx_uses_strategy AS (
+                SELECT DISTINCT cp.strategy_id, cp.context_id
+                FROM ctx_pairs cp
+                JOIN members m ON m.entity_id = cp.context_id
+                  AND m.member_type = 'property'
+                JOIN types t ON t.owner_id = m.id AND t.owner_type = 'property'
+                  AND t.entity_id = cp.strategy_id
+                UNION
+                SELECT DISTINCT cp.strategy_id, cp.context_id
+                FROM ctx_pairs cp
+                JOIN members m ON m.entity_id = cp.context_id
+                  AND m.member_type = 'method' AND m.name = '__construct'
+                JOIN parameters p ON p.member_id = m.id
+                JOIN types t ON t.owner_id = p.id AND t.owner_type = 'param'
+                  AND t.entity_id = cp.strategy_id
             )
+            SQL;
+
+    private const SELECT_STRATEGY_FROM_IMPLS = <<<'SQL'
+            SELECT DENSE_RANK() OVER (ORDER BY ip.strategy_id) AS match_id,
+                   ip.strategy_id AS entity_id, 'Strategy' AS role
+            FROM impl_pairs ip
+            JOIN multi_impls mi ON mi.strategy_id = ip.strategy_id
+            JOIN ctx_uses_strategy cp ON cp.strategy_id = ip.strategy_id
+            SQL;
+
+    private const SELECT_CONCRETE = <<<'SQL'
+            SELECT DENSE_RANK() OVER (ORDER BY ip.strategy_id) AS match_id,
+                   ip.concrete_id AS entity_id, 'ConcreteStrategy' AS role
+            FROM impl_pairs ip
+            JOIN multi_impls mi ON mi.strategy_id = ip.strategy_id
+            JOIN ctx_uses_strategy cp ON cp.strategy_id = ip.strategy_id
             SQL;
 
     private const SELECT_STRATEGY_FROM_CTX = <<<'SQL'
             SELECT DENSE_RANK() OVER (ORDER BY cp.strategy_id) AS match_id,
                    cp.strategy_id AS entity_id, 'Strategy' AS role
-            FROM ctx_pairs cp
+            FROM ctx_uses_strategy cp
             JOIN multi_impls mi ON mi.strategy_id = cp.strategy_id
             SQL;
 
     private const SELECT_CONTEXT = <<<'SQL'
             SELECT DENSE_RANK() OVER (ORDER BY cp.strategy_id) AS match_id,
                    cp.context_id AS entity_id, 'Context' AS role
-            FROM ctx_pairs cp
+            FROM ctx_uses_strategy cp
             JOIN multi_impls mi ON mi.strategy_id = cp.strategy_id
             SQL;
 
