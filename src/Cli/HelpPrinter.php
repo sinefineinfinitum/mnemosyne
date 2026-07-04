@@ -67,13 +67,13 @@ HELP;
     public static function printDetectHelp(): void
     {
         echo <<<'HELP'
-Usage: ponymator detect [<flags>]
+Usage: mnemosyne detect [<flags>]
 
 Detect design patterns in the imported PHP codebase.
 
 Flags:
   --db-path=<path>              Path to SQLite graph database
-  --config=<path>               Path to config file (default: .ponymator.json)
+  --config=<path>               Path to config file (default: .mnemosyne.json)
   --help                        Display this help message
 
 HELP;

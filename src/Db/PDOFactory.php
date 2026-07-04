@@ -4,6 +4,7 @@ namespace SineFine\Mnemosyne\Db;
 
 use PDO;
 use PDOException;
+use RuntimeException;
 use SineFine\Mnemosyne\Cli\Command;
 use SineFine\Mnemosyne\Cli\Error\ExitCode;
 use SineFine\Mnemosyne\Config;

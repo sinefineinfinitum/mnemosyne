@@ -13,7 +13,7 @@ final class HelpPrinterDetectTest extends TestCase
         HelpPrinter::printDetectHelp();
         $output = ob_get_clean();
 
-        $this->assertStringContainsString('ponymator detect', $output);
+        $this->assertStringContainsString('mnemosyne detect', $output);
         $this->assertStringContainsString('--db-path', $output);
         $this->assertStringContainsString('--config', $output);
         $this->assertStringContainsString('--help', $output);

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Ponymator\Detector\Pattern\Catalog;
+namespace SineFine\Mnemosyne\Detector\Pattern\Catalog;
 
 final class State implements PatternInterface
 {
