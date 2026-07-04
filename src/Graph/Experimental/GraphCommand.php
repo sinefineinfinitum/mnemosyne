@@ -275,6 +275,37 @@ final class GraphCommand
         }
     }
 
+    /**
+     * Resolve types.entity_id references from type names to entity IDs.
+     *
+     * @param array<string, int> $entityIdsByFqn
+     */
+    public function resolvePendingTypeEntityIds(array $entityIdsByFqn): void
+    {
+        $selectStmt = $this->pdo->query(
+            'SELECT id, name FROM types WHERE entity_id IS NULL AND name IS NOT NULL'
+        );
+        if ($selectStmt === false) {
+            return;
+        }
+
+        $updateStmt = $this->pdo->prepare(
+            'UPDATE types SET entity_id = :entity_id WHERE id = :id AND entity_id IS NULL'
+        );
+
+        while ($row = $selectStmt->fetch(PDO::FETCH_ASSOC)) {
+            if (!is_array($row) || !isset($row['id'], $row['name'])) {
+                continue;
+            }
+            $name = (string) $row['name'];
+            $normalized = ltrim($name, '\\');
+            $targetId = $entityIdsByFqn[$normalized] ?? null;
+            if ($targetId !== null) {
+                $updateStmt->execute(['entity_id' => $targetId, 'id' => $row['id']]);
+            }
+        }
+    }
+
     public function clear(): void
     {
         $this->pdo->exec('PRAGMA foreign_keys=OFF');

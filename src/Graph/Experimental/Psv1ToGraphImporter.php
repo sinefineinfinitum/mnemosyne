@@ -42,6 +42,7 @@ final class Psv1ToGraphImporter
             }
 
             $this->command->resolvePendingTargets($this->entityProcessor->getEntityIds());
+            $this->command->resolvePendingTypeEntityIds($this->entityProcessor->getEntityIds());
             $this->command->commit();
         } catch (Throwable $e) {
             $this->command->rollback();
