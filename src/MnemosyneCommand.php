@@ -4,6 +4,7 @@ namespace SineFine\Mnemosyne;
 
 use SineFine\Mnemosyne\Cli\ArgumentParser;
 use SineFine\Mnemosyne\Cli\Command;
+use SineFine\Mnemosyne\Cli\Detect\DetectCommand;
 use SineFine\Mnemosyne\Cli\Error\ConfigException;
 use SineFine\Mnemosyne\Cli\Error\ExitCode;
 use SineFine\Mnemosyne\Cli\ExecutionTimer;
@@ -20,6 +21,9 @@ use Throwable;
 
 class MnemosyneCommand
 {
+    /**
+     * @throws Throwable
+     */
     public function run(): void
     {
         $timer = new ExecutionTimer();
@@ -62,9 +66,9 @@ class MnemosyneCommand
         };
     }
 
-    private function handleShow(Command $cmd): void
+    private function handleShow(Command $cmd, Config $config): void
     {
-        $factory = new PDOFactory($cmd);
+        $factory = new PDOFactory($cmd, $config);
         $pdo = $factory->connect(requireExisting: true);
 
         $query = new GraphQuery($pdo);
