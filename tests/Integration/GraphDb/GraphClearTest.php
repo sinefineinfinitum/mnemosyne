@@ -40,8 +40,8 @@ final class GraphClearTest extends TestCase
         $pdo->exec("INSERT INTO files (path, relative_path) VALUES ('src/Foo.php', 'Foo.php')");
         $pdo->exec("INSERT INTO entities (fqn, short_name, type, namespace_id, file_id) VALUES ('App\\\\Foo', 'Foo', 'class', 1, 1)");
         $pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\\\Bar', 'Bar', 'class')");
-        $pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES (1, 'doSomething', 'method')");
-        $pdo->exec("INSERT INTO relationships (source_id, target_id, type) VALUES (1, 2, 'dependency')");
+        $pdo->exec("INSERT INTO methods (entity_id, name) VALUES (1, 'doSomething')");
+        $pdo->exec("INSERT INTO relationships (source_id, target_id, type) VALUES (1, 2, 'creates')");
 
         return $pdo;
     }
@@ -64,7 +64,8 @@ final class GraphClearTest extends TestCase
 
         $counts = [
             'entities' => (int) $pdo->query('SELECT COUNT(*) FROM entities')->fetchColumn(),
-            'members' => (int) $pdo->query('SELECT COUNT(*) FROM members')->fetchColumn(),
+            'methods' => (int) $pdo->query('SELECT COUNT(*) FROM methods')->fetchColumn(),
+            'properties' => (int) $pdo->query('SELECT COUNT(*) FROM properties')->fetchColumn(),
             'relationships' => (int) $pdo->query('SELECT COUNT(*) FROM relationships')->fetchColumn(),
             'namespaces' => (int) $pdo->query('SELECT COUNT(*) FROM namespaces')->fetchColumn(),
             'files' => (int) $pdo->query('SELECT COUNT(*) FROM files')->fetchColumn(),
@@ -72,7 +73,8 @@ final class GraphClearTest extends TestCase
         ];
 
         $this->assertSame(0, $counts['entities']);
-        $this->assertSame(0, $counts['members']);
+        $this->assertSame(0, $counts['methods']);
+        $this->assertSame(0, $counts['properties']);
         $this->assertSame(0, $counts['relationships']);
         $this->assertSame(0, $counts['namespaces']);
         $this->assertSame(0, $counts['files']);

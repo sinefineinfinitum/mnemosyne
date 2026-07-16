@@ -21,8 +21,7 @@ final class Observer implements PatternInterface
             WITH subject_interfaces AS (
                 SELECT e.id
                 FROM entities e
-                JOIN members m ON m.entity_id = e.id
-                  AND m.member_type = 'method'
+                JOIN methods m ON m.entity_id = e.id
                   AND m.name IN ('attach', 'detach', 'subscribe', 'unsubscribe', 'addListener', 'removeListener', 'notify')
                 WHERE e.type = 'interface'
                 GROUP BY e.id
@@ -31,8 +30,7 @@ final class Observer implements PatternInterface
             observer_interfaces AS (
                 SELECT e.id
                 FROM entities e
-                JOIN members m ON m.entity_id = e.id
-                  AND m.member_type = 'method'
+                JOIN methods m ON m.entity_id = e.id
                   AND m.name IN ('update', 'handle', 'onEvent', 'notify')
                 WHERE e.type = 'interface'
             )
@@ -41,11 +39,12 @@ final class Observer implements PatternInterface
     private const CTE_SUBJECT_OBSERVER = <<<'SQL'
             subject_observer_pairs AS (
                 SELECT si.id AS subject_id,
-                       oi.id AS observer_id
+                       p.declared_type_entity_id AS observer_id
                 FROM subject_interfaces si
-                JOIN relationships r_dep
-                  ON r_dep.source_id = si.id AND r_dep.type = 'dependency'
-                JOIN observer_interfaces oi ON r_dep.target_id = oi.id
+                JOIN methods m ON m.entity_id = si.id
+                  AND m.name IN ('attach', 'detach', 'subscribe', 'unsubscribe', 'addListener', 'removeListener')
+                JOIN parameters p ON p.method_id = m.id
+                  AND p.declared_type_entity_id IN (SELECT id FROM observer_interfaces)
             )
             SQL;
 

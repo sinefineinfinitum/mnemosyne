@@ -26,10 +26,8 @@ final class Composite implements PatternInterface
                 JOIN relationships r_impl
                   ON r_impl.target_id = iface.id AND r_impl.type = 'implements'
                 JOIN entities comp ON r_impl.source_id = comp.id
-                JOIN members m ON m.entity_id = comp.id
-                  AND m.member_type = 'property'
-                JOIN types t ON t.owner_id = m.id AND t.owner_type = 'property'
-                  AND t.name = iface.fqn
+                JOIN properties p ON p.entity_id = comp.id
+                  AND p.declared_type_entity_id = iface.id
                 WHERE iface.type = 'interface'
                   AND comp.type = 'class'
             )

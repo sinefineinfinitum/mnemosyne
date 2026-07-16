@@ -25,9 +25,8 @@ final class Prototype implements PatternInterface
             WHERE e.type = 'class'
               AND e.is_abstract = 0
               AND EXISTS (
-                SELECT 1 FROM members
+                SELECT 1 FROM methods
                 WHERE entity_id = e.id
-                  AND member_type = 'method'
                   AND name = '__clone'
               )
             SQL;

@@ -1,0 +1,21 @@
+@class SineFine\Ponymator\Analyzer\Visitor\DependencyCollectingVisitor final
+>PhpParser\NodeVisitorAbstract
+!-BUILTIN_TYPES=[]
+$-deps:array=[]
+.+enterNode
+    $node:\PhpParser\Node
+    *SineFine\Ponymator\Analyzer\Visitor\DependencyCollectingVisitor->processTypeNode
+    *SineFine\Ponymator\Analyzer\Visitor\DependencyCollectingVisitor->addDep
+    ?PhpParser\Node->toCodeString
+    *PhpParser\Node->getReturnType
+.-processTypeNode
+    $typeNode:\PhpParser\Node
+    :void
+    *PhpParser\Node->toCodeString
+    *SineFine\Ponymator\Analyzer\Visitor\DependencyCollectingVisitor->addDep
+    *SineFine\Ponymator\Analyzer\Visitor\DependencyCollectingVisitor->processTypeNode
+.+dependencies
+    :array
+.-addDep
+    $fqn:string
+    :void

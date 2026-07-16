@@ -27,11 +27,9 @@ final class Memento implements PatternInterface
                   ON r_creates.source_id = orig.id
                   AND r_creates.type IN ('creates', 'creates_strong')
                 JOIN entities memento ON r_creates.target_id = memento.id
-                JOIN members m_save ON m_save.entity_id = orig.id
-                  AND m_save.member_type = 'method'
+                JOIN methods m_save ON m_save.entity_id = orig.id
                   AND m_save.name IN ('save', 'saveState', 'createMemento', 'getState')
-                JOIN members m_restore ON m_restore.entity_id = orig.id
-                  AND m_restore.member_type = 'method'
+                JOIN methods m_restore ON m_restore.entity_id = orig.id
                   AND m_restore.name IN ('restore', 'restoreState', 'setMemento', 'setState')
                 WHERE orig.type = 'class'
                   AND memento.type = 'class'

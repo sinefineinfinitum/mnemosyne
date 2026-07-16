@@ -31,23 +31,21 @@ final class TemplateMethod implements PatternInterface
                   AND child.type = 'class'
                   AND child.is_abstract = 0
                   AND EXISTS (
-                    SELECT 1 FROM members
+                    SELECT 1 FROM methods
                     WHERE entity_id = abs.id
-                      AND member_type = 'method'
                       AND is_abstract = 1
                       AND visibility IN ('protected', 'public')
                   )
                   AND EXISTS (
-                    SELECT 1 FROM members
+                    SELECT 1 FROM methods
                     WHERE entity_id = abs.id
-                      AND member_type = 'method'
                       AND is_abstract = 0
                       AND visibility = 'public'
                   )
                   AND EXISTS (
                     SELECT 1 FROM relationships r2
                     WHERE r2.source_id = abs.id
-                      AND r2.source_member_id IS NOT NULL
+                      AND r2.source_method_id IS NOT NULL
                       AND r2.type LIKE 'call_%'
                   )
             )

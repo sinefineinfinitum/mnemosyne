@@ -25,27 +25,24 @@ final class Singleton implements PatternInterface
             WHERE e.type = 'class'
               AND e.is_abstract = 0
               AND EXISTS (
-                SELECT 1 FROM members
+                SELECT 1 FROM methods
                 WHERE entity_id = e.id
-                  AND member_type = 'method'
                   AND name = '__construct'
                   AND visibility = 'private'
               )
               AND EXISTS (
-                SELECT 1 FROM members m
-                WHERE m.entity_id = e.id
-                  AND m.member_type = 'property'
-                  AND m.visibility = 'private'
-                  AND m.is_static = 1
-                  AND (m.declared_type IN ('self', 'static') OR m.declared_type = e.fqn)
+                SELECT 1 FROM properties p
+                WHERE p.entity_id = e.id
+                  AND p.visibility = 'private'
+                  AND p.is_static = 1
+                  AND (p.declared_type_name IN ('self', 'static') OR p.declared_type_name = e.fqn)
               )
               AND EXISTS (
-                SELECT 1 FROM members m
+                SELECT 1 FROM methods m
                 WHERE m.entity_id = e.id
-                  AND m.member_type = 'method'
                   AND m.visibility = 'public'
                   AND m.is_static = 1
-                  AND (m.return_type IN ('self', 'static') OR m.return_type = e.fqn)
+                  AND (m.return_type_name IN ('self', 'static') OR m.return_type_name = e.fqn)
               )
             SQL;
     }

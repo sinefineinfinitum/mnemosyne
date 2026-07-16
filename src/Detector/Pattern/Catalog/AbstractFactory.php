@@ -21,9 +21,9 @@ final class AbstractFactory implements PatternInterface
             WITH factory_interfaces AS (
                 SELECT e.id
                 FROM entities e
-                JOIN members m ON m.entity_id = e.id AND m.member_type = 'method'
-                JOIN types t ON t.owner_id = m.id AND t.owner_type = 'return'
-                  AND t.name NOT IN ('void','never','null','mixed','int','string','float','bool','array')
+                JOIN methods m ON m.entity_id = e.id
+                  AND m.return_type_name NOT IN ('void','never','null','mixed','int','string','float','bool','array')
+                  AND m.return_type_name IS NOT NULL
                 WHERE e.type = 'interface'
                 GROUP BY e.id
                 HAVING COUNT(DISTINCT m.id) >= 2

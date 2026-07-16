@@ -74,26 +74,26 @@ class GraphCommandTest extends TestCase
         $this->assertSame('string', $entity['scalar_type']);
     }
 
-    public function testInsertMemberReturnsId(): void
+    public function testInsertMethodReturnsId(): void
     {
         $entityId = $this->cmd->insertEntity('App\\Foo', 'Foo', 'class', null, null, null, []);
-        $id = $this->cmd->insertMember($entityId, 'bar', 'method', 'public', false, false, false, false, null, null, 'void');
+        $id = $this->cmd->insertMethod($entityId, 'bar', 'public', false, false, false, null, 'void');
         $this->assertIsInt($id);
         $this->assertGreaterThan(0, $id);
     }
 
-    public function testInsertMemberReturnsExistingIdWhenDuplicate(): void
+    public function testInsertMethodReturnsExistingIdWhenDuplicate(): void
     {
         $entityId = $this->cmd->insertEntity('App\\Foo', 'Foo', 'class', null, null, null, []);
-        $id1 = $this->cmd->insertMember($entityId, 'bar', 'method', 'public', false, false, false, false, null, null, null);
-        $id2 = $this->cmd->insertMember($entityId, 'bar', 'method', 'public', false, false, false, false, null, null, null);
+        $id1 = $this->cmd->insertMethod($entityId, 'bar', 'public', false, false, false, null, null);
+        $id2 = $this->cmd->insertMethod($entityId, 'bar', 'public', false, false, false, null, null);
         $this->assertSame($id1, $id2);
     }
 
-    public function testInsertMemberWithAllFlags(): void
+    public function testInsertMethodWithAllFlags(): void
     {
         $entityId = $this->cmd->insertEntity('App\\Foo', 'Foo', 'class', null, null, null, []);
-        $id = $this->cmd->insertMember($entityId, 'bar', 'method', 'protected', true, true, true, true, 'int', '42', 'string');
+        $id = $this->cmd->insertMethod($entityId, 'bar', 'protected', true, true, true, null, 'string');
         $this->assertIsInt($id);
         $members = $this->query->findMembersByEntity($entityId);
         $this->assertCount(1, $members);
@@ -104,17 +104,14 @@ class GraphCommandTest extends TestCase
         $this->assertSame(1, (int) $m['is_static']);
         $this->assertSame(1, (int) $m['is_abstract']);
         $this->assertSame(1, (int) $m['is_final']);
-        $this->assertSame(1, (int) $m['is_readonly']);
-        $this->assertSame('int', $m['declared_type']);
-        $this->assertSame('42', $m['default_value']);
         $this->assertSame('string', $m['return_type']);
     }
 
     public function testInsertParameterReturnsId(): void
     {
         $entityId = $this->cmd->insertEntity('App\\Foo', 'Foo', 'class', null, null, null, []);
-        $memberId = $this->cmd->insertMember($entityId, 'bar', 'method', 'public', false, false, false, false, null, null, null);
-        $id = $this->cmd->insertParameter($memberId, 'x', 'int', '0', false, false, 0);
+        $memberId = $this->cmd->insertMethod($entityId, 'bar', 'public', false, false, false, null, null);
+        $id = $this->cmd->insertParameter($memberId, 'x', null, 'int', '0', false, false, 0);
         $this->assertIsInt($id);
         $this->assertGreaterThan(0, $id);
     }
@@ -122,27 +119,12 @@ class GraphCommandTest extends TestCase
     public function testInsertParameterWithVariadicAndReference(): void
     {
         $entityId = $this->cmd->insertEntity('App\\Foo', 'Foo', 'class', null, null, null, []);
-        $memberId = $this->cmd->insertMember($entityId, 'bar', 'method', 'public', false, false, false, false, null, null, null);
-        $id = $this->cmd->insertParameter($memberId, 'args', 'string', null, true, true, 0);
+        $memberId = $this->cmd->insertMethod($entityId, 'bar', 'public', false, false, false, null, null);
+        $id = $this->cmd->insertParameter($memberId, 'args', null, 'string', null, true, true, 0);
         $params = $this->query->findParametersByMember($memberId);
         $this->assertCount(1, $params);
         $this->assertSame(1, (int) $params[0]['is_variadic']);
         $this->assertSame(1, (int) $params[0]['is_passed_by_reference']);
-    }
-
-    public function testInsertTypeReturnsId(): void
-    {
-        $id = $this->cmd->insertType('param', 1, 'int', null, false, false, 0);
-        $this->assertIsInt($id);
-        $this->assertGreaterThan(0, $id);
-    }
-
-    public function testInsertTypeWithUnionAndIntersection(): void
-    {
-        $id1 = $this->cmd->insertType('return', 1, 'int', null, true, false, 0);
-        $id2 = $this->cmd->insertType('return', 1, 'string', null, false, true, 1);
-        $this->assertIsInt($id1);
-        $this->assertIsInt($id2);
     }
 
     public function testInsertRelationshipReturnsId(): void
@@ -166,7 +148,7 @@ class GraphCommandTest extends TestCase
     public function testInsertRelationshipWithTargetFqn(): void
     {
         $sourceId = $this->cmd->insertEntity('A', 'A', 'class', null, null, null, []);
-        $id = $this->cmd->insertRelationship($sourceId, null, 'Unknown', 'dependency', null);
+        $id = $this->cmd->insertRelationship($sourceId, null, 'Unknown', 'creates', null);
         $this->assertIsInt($id);
     }
 
@@ -174,7 +156,7 @@ class GraphCommandTest extends TestCase
     {
         $sourceId = $this->cmd->insertEntity('A', 'A', 'class', null, null, null, []);
         $targetId = $this->cmd->insertEntity('B', 'B', 'class', null, null, null, []);
-        $memberId = $this->cmd->insertMember($sourceId, 'foo', 'method', 'public', false, false, false, false, null, null, null);
+        $memberId = $this->cmd->insertMethod($sourceId, 'foo', 'public', false, false, false, null, null);
         $id = $this->cmd->insertRelationship($sourceId, $targetId, null, 'call_static_strong', $memberId);
         $this->assertIsInt($id);
     }
@@ -183,7 +165,7 @@ class GraphCommandTest extends TestCase
     {
         $sourceId = $this->cmd->insertEntity('A', 'A', 'class', null, null, null, []);
         $targetId = $this->cmd->insertEntity('B', 'B', 'class', null, null, null, []);
-        $this->cmd->insertRelationship($sourceId, null, 'B', 'dependency', null);
+        $this->cmd->insertRelationship($sourceId, null, 'B', 'creates', null);
 
         $this->cmd->resolvePendingTargets(['B' => $targetId]);
 

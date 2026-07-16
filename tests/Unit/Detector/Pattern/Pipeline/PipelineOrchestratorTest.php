@@ -44,7 +44,7 @@ final class PipelineOrchestratorTest extends TestCase
             'App\\ConcreteAdapter', 'ConcreteAdapter', 'class', null, null, null, [],
         );
         $this->command->insertRelationship($adapterId, $targetId, null, 'implements', null);
-        $this->command->insertRelationship($adapterId, $adapteeId, null, 'dependency', null);
+        $this->command->insertRelationship($adapterId, $adapteeId, null, 'creates', null);
 
         $registry = new PatternRegistry([new Adapter()]);
         $orchestrator = new Engine($registry, $this->pdo);
@@ -70,13 +70,12 @@ final class PipelineOrchestratorTest extends TestCase
         );
         $this->command->insertRelationship($impl1Id, $strategyId, null, 'implements', null);
         $this->command->insertRelationship($impl2Id, $strategyId, null, 'implements', null);
-        $this->command->insertRelationship($contextId, $strategyId, null, 'dependency', null);
-        $strategyPropertyId = $this->command->insertMember(
+        $this->command->insertRelationship($contextId, $strategyId, null, 'creates', null);
+        $strategyPropertyId = $this->command->insertProperty(
             entityId: $contextId, name: 'strategy', memberType: 'property',
-            visibility: 'private', isStatic: false, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: 'App\\StrategyInterface', defaultValue: null, returnType: null,
+            visibility: 'private', isStatic: false, isReadonly: false,
+            declaredTypeEntityId: $strategyId, declaredTypeName: 'App\\StrategyInterface', defaultValue: null,
         );
-        $this->command->insertType('property', $strategyPropertyId, 'App\\StrategyInterface', $strategyId, false, false, 0);
 
         $registry = new PatternRegistry([new Strategy()]);
         $orchestrator = new Engine($registry, $this->pdo);
@@ -107,7 +106,7 @@ final class PipelineOrchestratorTest extends TestCase
             'App\\ConcreteAdapter', 'ConcreteAdapter', 'class', null, null, null, [],
         );
         $this->command->insertRelationship($adapterId, $targetId, null, 'implements', null);
-        $this->command->insertRelationship($adapterId, $adapteeId, null, 'dependency', null);
+        $this->command->insertRelationship($adapterId, $adapteeId, null, 'creates', null);
 
         $registry = new PatternRegistry([new Adapter()]);
         $orchestrator = new Engine($registry, $this->pdo);
@@ -128,20 +127,16 @@ final class PipelineOrchestratorTest extends TestCase
         $creatorId = $this->command->insertEntity(
             'App\\AbstractFactory', 'AbstractFactory', 'class', null, null, null, ['abstract'],
         );
-        $methodId = $this->command->insertMember(
+        $methodId = $this->command->insertMethod(
             entityId: $creatorId,
             name: 'create',
-            memberType: 'method',
             visibility: 'public',
             isStatic: false,
             isAbstract: true,
             isFinal: false,
-            isReadonly: false,
-            declaredType: null,
-            defaultValue: null,
-            returnType: 'App\\ProductInterface',
+            returnTypeEntityId: null,
+            returnTypeName: 'App\\ProductInterface',
         );
-        $this->command->insertType('return', $methodId, 'App\\ProductInterface', $productId, false, false, 0);
 
         $childId = $this->command->insertEntity(
             'App\\ConcreteFactory', 'ConcreteFactory', 'class', null, null, null, [],
@@ -166,13 +161,12 @@ final class PipelineOrchestratorTest extends TestCase
             'App\\AbstractDecorator', 'AbstractDecorator', 'class', null, null, null, ['abstract'],
         );
         $this->command->insertRelationship($decoratorId, $componentId, null, 'implements', null);
-        $this->command->insertRelationship($decoratorId, $componentId, null, 'dependency', null);
-        $componentPropertyId = $this->command->insertMember(
+        $this->command->insertRelationship($decoratorId, $componentId, null, 'creates', null);
+        $componentPropertyId = $this->command->insertProperty(
             entityId: $decoratorId, name: 'component', memberType: 'property',
-            visibility: 'private', isStatic: false, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: 'App\\ComponentInterface', defaultValue: null, returnType: null,
+            visibility: 'private', isStatic: false, isReadonly: false,
+            declaredTypeEntityId: $componentId, declaredTypeName: 'App\\ComponentInterface', defaultValue: null,
         );
-        $this->command->insertType('property', $componentPropertyId, 'App\\ComponentInterface', $componentId, false, false, 0);
 
         $registry = new PatternRegistry([new Decorator()]);
         $orchestrator = new Engine($registry, $this->pdo);
@@ -194,7 +188,7 @@ final class PipelineOrchestratorTest extends TestCase
             'App\\Director', 'Director', 'class', null, null, null, [],
         );
         $this->command->insertRelationship($concreteId, $builderId, null, 'implements', null);
-        $this->command->insertRelationship($directorId, $builderId, null, 'dependency', null);
+        $this->command->insertRelationship($directorId, $builderId, null, 'creates', null);
 
         $registry = new PatternRegistry([new Builder()]);
         $orchestrator = new Engine($registry, $this->pdo);
@@ -209,20 +203,20 @@ final class PipelineOrchestratorTest extends TestCase
         $entityId = $this->command->insertEntity(
             'App\\MySingleton', 'MySingleton', 'class', null, null, null, [],
         );
-        $this->command->insertMember(
-            entityId: $entityId, name: '__construct', memberType: 'method',
+        $this->command->insertMethod(
+            entityId: $entityId, name: '__construct',
             visibility: 'private', isStatic: false, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: null,
+            returnTypeEntityId: null, returnTypeName: null,
         );
-        $this->command->insertMember(
+        $this->command->insertProperty(
             entityId: $entityId, name: 'instance', memberType: 'property',
-            visibility: 'private', isStatic: true, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: 'self', defaultValue: null, returnType: null,
+            visibility: 'private', isStatic: true, isReadonly: false,
+            declaredTypeEntityId: null, declaredTypeName: 'self', defaultValue: null,
         );
-        $this->command->insertMember(
-            entityId: $entityId, name: 'getInstance', memberType: 'method',
+        $this->command->insertMethod(
+            entityId: $entityId, name: 'getInstance',
             visibility: 'public', isStatic: true, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: 'self',
+            returnTypeEntityId: null, returnTypeName: 'self',
         );
 
         $registry = new PatternRegistry([new Singleton()]);
@@ -238,15 +232,15 @@ final class PipelineOrchestratorTest extends TestCase
         $entityId = $this->command->insertEntity(
             'App\\AbstractProcessor', 'AbstractProcessor', 'class', null, null, null, ['abstract'],
         );
-        $processMethodId = $this->command->insertMember(
-            entityId: $entityId, name: 'process', memberType: 'method',
+        $processMethodId = $this->command->insertMethod(
+            entityId: $entityId, name: 'process',
             visibility: 'public', isStatic: false, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: 'void',
+            returnTypeEntityId: null, returnTypeName: 'void',
         );
-        $this->command->insertMember(
-            entityId: $entityId, name: 'doStep', memberType: 'method',
+        $this->command->insertMethod(
+            entityId: $entityId, name: 'doStep',
             visibility: 'protected', isStatic: false, isAbstract: true, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: 'void',
+            returnTypeEntityId: null, returnTypeName: 'void',
         );
         $this->command->insertRelationship($entityId, null, null, 'call_dynamic_weak', $processMethodId);
         $concreteId = $this->command->insertEntity(
@@ -269,7 +263,7 @@ final class PipelineOrchestratorTest extends TestCase
         $adapteeId = $this->command->insertEntity('App\\LegacyService', 'LegacyService', 'class', null, null, null, []);
         $adapterId = $this->command->insertEntity('App\\DatabaseAdapter', 'DatabaseAdapter', 'class', null, null, null, []);
         $this->command->insertRelationship($adapterId, $targetId, null, 'implements', null);
-        $this->command->insertRelationship($adapterId, $adapteeId, null, 'dependency', null);
+        $this->command->insertRelationship($adapterId, $adapteeId, null, 'creates', null);
 
         // Strategy
         $strategyId = $this->command->insertEntity('App\\StrategyInterface', 'StrategyInterface', 'interface', null, null, null, []);
@@ -278,56 +272,54 @@ final class PipelineOrchestratorTest extends TestCase
         $ctx = $this->command->insertEntity('App\\Client', 'Client', 'class', null, null, null, []);
         $this->command->insertRelationship($impl1, $strategyId, null, 'implements', null);
         $this->command->insertRelationship($impl2, $strategyId, null, 'implements', null);
-        $this->command->insertRelationship($ctx, $strategyId, null, 'dependency', null);
-        $strategyPropId = $this->command->insertMember(
+        $this->command->insertRelationship($ctx, $strategyId, null, 'creates', null);
+        $strategyPropId = $this->command->insertProperty(
             entityId: $ctx, name: 'strategy', memberType: 'property',
-            visibility: 'private', isStatic: false, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: 'App\\StrategyInterface', defaultValue: null, returnType: null,
+            visibility: 'private', isStatic: false, isReadonly: false,
+            declaredTypeEntityId: $strategyId, declaredTypeName: 'App\\StrategyInterface', defaultValue: null,
         );
-        $this->command->insertType('property', $strategyPropId, 'App\\StrategyInterface', $strategyId, false, false, 0);
 
         // Factory Method
         $productId = $this->command->insertEntity('App\\ProductInterface', 'ProductInterface', 'interface', null, null, null, []);
         $creatorId = $this->command->insertEntity('App\\AbstractFactory', 'AbstractFactory', 'class', null, null, null, ['abstract']);
-        $methodId = $this->command->insertMember(
-            entityId: $creatorId, name: 'create', memberType: 'method',
+        $methodId = $this->command->insertMethod(
+            entityId: $creatorId, name: 'create',
             visibility: 'public', isStatic: false, isAbstract: true, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: 'App\\ProductInterface',
+            returnTypeEntityId: null, returnTypeName: 'App\\ProductInterface',
         );
-        $this->command->insertType('return', $methodId, 'App\\ProductInterface', $productId, false, false, 0);
         $childId = $this->command->insertEntity('App\\ConcreteFactory', 'ConcreteFactory', 'class', null, null, null, []);
         $this->command->insertRelationship($childId, $creatorId, null, 'extends', null);
         $this->command->insertRelationship($childId, $productId, null, 'creates', null);
 
         // Singleton
         $singletonId = $this->command->insertEntity('App\\MySingleton', 'MySingleton', 'class', null, null, null, []);
-        $this->command->insertMember(
-            entityId: $singletonId, name: '__construct', memberType: 'method',
+        $this->command->insertMethod(
+            entityId: $singletonId, name: '__construct',
             visibility: 'private', isStatic: false, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: null,
+            returnTypeEntityId: null, returnTypeName: null,
         );
-        $this->command->insertMember(
+        $this->command->insertProperty(
             entityId: $singletonId, name: 'instance', memberType: 'property',
-            visibility: 'private', isStatic: true, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: 'self', defaultValue: null, returnType: null,
+            visibility: 'private', isStatic: true, isReadonly: false,
+            declaredTypeEntityId: null, declaredTypeName: 'self', defaultValue: null,
         );
-        $this->command->insertMember(
-            entityId: $singletonId, name: 'getInstance', memberType: 'method',
+        $this->command->insertMethod(
+            entityId: $singletonId, name: 'getInstance',
             visibility: 'public', isStatic: true, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: 'self',
+            returnTypeEntityId: null, returnTypeName: 'self',
         );
 
         // Template Method
         $tmId = $this->command->insertEntity('App\\AbstractProcessor', 'AbstractProcessor', 'class', null, null, null, ['abstract']);
-        $tmProcessMethodId = $this->command->insertMember(
-            entityId: $tmId, name: 'process', memberType: 'method',
+        $tmProcessMethodId = $this->command->insertMethod(
+            entityId: $tmId, name: 'process',
             visibility: 'public', isStatic: false, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: 'void',
+            returnTypeEntityId: null, returnTypeName: 'void',
         );
-        $this->command->insertMember(
-            entityId: $tmId, name: 'doStep', memberType: 'method',
+        $this->command->insertMethod(
+            entityId: $tmId, name: 'doStep',
             visibility: 'protected', isStatic: false, isAbstract: true, isFinal: false,
-            isReadonly: false, declaredType: null, defaultValue: null, returnType: 'void',
+            returnTypeEntityId: null, returnTypeName: 'void',
         );
         $this->command->insertRelationship($tmId, null, null, 'call_dynamic_weak', $tmProcessMethodId);
         $concreteTm = $this->command->insertEntity(
@@ -340,19 +332,18 @@ final class PipelineOrchestratorTest extends TestCase
         $concreteBuilderId = $this->command->insertEntity('App\\ConcreteBuilder', 'ConcreteBuilder', 'class', null, null, null, []);
         $directorId = $this->command->insertEntity('App\\Director', 'Director', 'class', null, null, null, []);
         $this->command->insertRelationship($concreteBuilderId, $builderId, null, 'implements', null);
-        $this->command->insertRelationship($directorId, $builderId, null, 'dependency', null);
+        $this->command->insertRelationship($directorId, $builderId, null, 'creates', null);
 
         // Decorator
         $componentId = $this->command->insertEntity('App\\ComponentInterface', 'ComponentInterface', 'interface', null, null, null, []);
         $decoratorId = $this->command->insertEntity('App\\AbstractDecorator', 'AbstractDecorator', 'class', null, null, null, ['abstract']);
         $this->command->insertRelationship($decoratorId, $componentId, null, 'implements', null);
-        $this->command->insertRelationship($decoratorId, $componentId, null, 'dependency', null);
-        $decoratorPropId = $this->command->insertMember(
+        $this->command->insertRelationship($decoratorId, $componentId, null, 'creates', null);
+        $decoratorPropId = $this->command->insertProperty(
             entityId: $decoratorId, name: 'component', memberType: 'property',
-            visibility: 'private', isStatic: false, isAbstract: false, isFinal: false,
-            isReadonly: false, declaredType: 'App\\ComponentInterface', defaultValue: null, returnType: null,
+            visibility: 'private', isStatic: false, isReadonly: false,
+            declaredTypeEntityId: $componentId, declaredTypeName: 'App\\ComponentInterface', defaultValue: null,
         );
-        $this->command->insertType('property', $decoratorPropId, 'App\\ComponentInterface', $componentId, false, false, 0);
 
         $registry = new PatternRegistry([
             new Adapter(), new Strategy(), new Singleton(),

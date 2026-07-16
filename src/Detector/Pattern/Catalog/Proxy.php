@@ -29,7 +29,7 @@ final class Proxy implements PatternInterface
                 JOIN entities proxy ON r_subj.source_id = proxy.id
                 JOIN relationships r_dep
                   ON r_dep.source_id = proxy.id
-                  AND r_dep.type IN ('dependency', 'creates', 'creates_strong')
+                  AND r_dep.type IN ('creates', 'creates_strong')
                   AND r_dep.target_id != subj.id
                 JOIN entities real_subject ON r_dep.target_id = real_subject.id
                 JOIN relationships r_subj2
@@ -42,15 +42,14 @@ final class Proxy implements PatternInterface
             proxy_ctor AS (
                 SELECT sp.proxy_id, sp.real_subject_id
                 FROM subject_proxies sp
-                JOIN members m ON m.entity_id = sp.proxy_id
-                  AND m.member_type = 'method'
+                JOIN methods m ON m.entity_id = sp.proxy_id
                   AND m.name = '__construct'
-                JOIN types t ON t.owner_id = m.id AND t.owner_type = 'param'
-                  AND t.entity_id = sp.real_subject_id
+                JOIN parameters p ON p.method_id = m.id
+                  AND p.declared_type_entity_id = sp.real_subject_id
             ),
             delegation_coverage AS (
                 SELECT sp.proxy_id, sp.real_subject_id,
-                       COUNT(DISTINCT r_call.source_member_id) AS call_count
+                       COUNT(DISTINCT r_call.source_method_id) AS call_count
                 FROM subject_proxies sp
                 JOIN relationships r_call
                   ON r_call.source_id = sp.proxy_id

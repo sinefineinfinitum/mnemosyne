@@ -24,9 +24,9 @@ final class Bridge implements PatternInterface
                     impl.id  AS implementor_id,
                     ci.id    AS concrete_id
                 FROM entities abs
-                JOIN relationships r_dep
-                  ON r_dep.source_id = abs.id AND r_dep.type = 'dependency'
-                JOIN entities impl ON r_dep.target_id = impl.id
+                JOIN properties p ON p.entity_id = abs.id
+                  AND p.declared_type_entity_id = impl.id
+                JOIN entities impl ON impl.id = p.declared_type_entity_id
                 JOIN relationships r_impl
                   ON r_impl.target_id = impl.id AND r_impl.type = 'implements'
                 JOIN entities ci ON r_impl.source_id = ci.id
@@ -34,25 +34,33 @@ final class Bridge implements PatternInterface
                   AND impl.type = 'interface'
                   AND ci.type = 'class'
                   AND ci.is_abstract = 0
+            ),
+            pairs AS (
+                SELECT DISTINCT
+                    abstraction_id,
+                    implementor_id,
+                    DENSE_RANK() OVER (ORDER BY abstraction_id, implementor_id) AS match_id
+                FROM base
             )
             SQL;
 
     private const SELECT_ABSTRACTION = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY abstraction_id, implementor_id, concrete_id) AS match_id,
+            SELECT match_id,
                    abstraction_id AS entity_id, 'Abstraction' AS role
-            FROM base
+            FROM pairs
             SQL;
 
     private const SELECT_IMPLEMENTOR = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY abstraction_id, implementor_id, concrete_id) AS match_id,
+            SELECT match_id,
                    implementor_id AS entity_id, 'Implementor' AS role
-            FROM base
+            FROM pairs
             SQL;
 
     private const SELECT_CONCRETE = <<<'SQL'
-            SELECT DENSE_RANK() OVER (ORDER BY abstraction_id, implementor_id, concrete_id) AS match_id,
-                   concrete_id AS entity_id, 'ConcreteImplementor' AS role
-            FROM base
+            SELECT DISTINCT p.match_id,
+                   b.concrete_id AS entity_id, 'ConcreteImplementor' AS role
+            FROM base b
+            JOIN pairs p ON p.abstraction_id = b.abstraction_id AND p.implementor_id = b.implementor_id
             SQL;
 
     public function candidateSql(): string

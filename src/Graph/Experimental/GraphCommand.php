@@ -119,21 +119,52 @@ final class GraphCommand
         $this->query->clearEntityCache($fqn, $id);
 
         return $id;
-    
     }
 
-    public function insertMember(
+    public function insertMethod(
+        int $entityId,
+        string $name,
+        ?string $visibility,
+        bool $isStatic,
+        bool $isAbstract,
+        bool $isFinal,
+        ?int $returnTypeEntityId,
+        ?string $returnTypeName,
+    ): int {
+        $existing = $this->query->findMemberId($entityId, $name, 'method');
+        if ($existing !== null) {
+            return $existing;
+        }
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO methods (entity_id, name, visibility, is_static, is_abstract, is_final, return_type_entity_id, return_type_name)
+             VALUES (:entity_id, :name, :visibility, :is_static, :is_abstract, :is_final, :return_type_entity_id, :return_type_name)'
+        );
+        $stmt->execute(
+            [
+            'entity_id' => $entityId,
+            'name' => $name,
+            'visibility' => $visibility,
+            'is_static' => $isStatic ? 1 : 0,
+            'is_abstract' => $isAbstract ? 1 : 0,
+            'is_final' => $isFinal ? 1 : 0,
+            'return_type_entity_id' => $returnTypeEntityId,
+            'return_type_name' => $returnTypeName,
+            ]
+        );
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    public function insertProperty(
         int $entityId,
         string $name,
         string $memberType,
         ?string $visibility,
         bool $isStatic,
-        bool $isAbstract,
-        bool $isFinal,
         bool $isReadonly,
-        ?string $declaredType,
+        ?int $declaredTypeEntityId,
+        ?string $declaredTypeName,
         ?string $defaultValue,
-        ?string $returnType,
     ): int {
         $existing = $this->query->findMemberId($entityId, $name, $memberType);
         if ($existing !== null) {
@@ -141,8 +172,8 @@ final class GraphCommand
         }
 
         $stmt = $this->pdo->prepare(
-            'INSERT INTO members (entity_id, name, member_type, visibility, is_static, is_abstract, is_final, is_readonly, declared_type, default_value, return_type)
-             VALUES (:entity_id, :name, :member_type, :visibility, :is_static, :is_abstract, :is_final, :is_readonly, :declared_type, :default_value, :return_type)'
+            'INSERT INTO properties (entity_id, name, member_type, visibility, is_static, is_readonly, declared_type_entity_id, declared_type_name, default_value)
+             VALUES (:entity_id, :name, :member_type, :visibility, :is_static, :is_readonly, :declared_type_entity_id, :declared_type_name, :default_value)'
         );
         $stmt->execute(
             [
@@ -151,65 +182,38 @@ final class GraphCommand
             'member_type' => $memberType,
             'visibility' => $visibility,
             'is_static' => $isStatic ? 1 : 0,
-            'is_abstract' => $isAbstract ? 1 : 0,
-            'is_final' => $isFinal ? 1 : 0,
             'is_readonly' => $isReadonly ? 1 : 0,
-            'declared_type' => $declaredType,
+            'declared_type_entity_id' => $declaredTypeEntityId,
+            'declared_type_name' => $declaredTypeName,
             'default_value' => $defaultValue,
-            'return_type' => $returnType,
             ]
         );
         return (int) $this->pdo->lastInsertId();
     }
 
     public function insertParameter(
-        int $memberId,
+        int $methodId,
         string $name,
-        ?string $declaredType,
+        ?int $declaredTypeEntityId,
+        ?string $declaredTypeName,
         ?string $defaultValue,
         bool $isVariadic,
         bool $isPassedByReference,
         int $position
     ): int {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO parameters (member_id, name, declared_type, default_value, is_variadic, is_passed_by_reference, position)
-             VALUES (:member_id, :name, :declared_type, :default_value, :is_variadic, :is_passed_by_reference, :position)'
+            'INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position)
+             VALUES (:method_id, :name, :declared_type_entity_id, :declared_type_name, :default_value, :is_variadic, :is_passed_by_reference, :position)'
         );
         $stmt->execute(
             [
-            'member_id' => $memberId,
+            'method_id' => $methodId,
             'name' => $name,
-            'declared_type' => $declaredType,
+            'declared_type_entity_id' => $declaredTypeEntityId,
+            'declared_type_name' => $declaredTypeName,
             'default_value' => $defaultValue,
             'is_variadic' => $isVariadic ? 1 : 0,
             'is_passed_by_reference' => $isPassedByReference ? 1 : 0,
-            'position' => $position,
-            ]
-        );
-        return (int) $this->pdo->lastInsertId();
-    }
-
-    public function insertType(
-        string $ownerType,
-        int $ownerId,
-        string $name,
-        ?int $entityId,
-        bool $isUnion,
-        bool $isIntersection,
-        int $position
-    ): int {
-        $stmt = $this->pdo->prepare(
-            'INSERT INTO types (owner_type, owner_id, name, entity_id, is_union, is_intersection, position)
-             VALUES (:owner_type, :owner_id, :name, :entity_id, :is_union, :is_intersection, :position)'
-        );
-        $stmt->execute(
-            [
-            'owner_type' => $ownerType,
-            'owner_id' => $ownerId,
-            'name' => $name,
-            'entity_id' => $entityId,
-            'is_union' => $isUnion ? 1 : 0,
-            'is_intersection' => $isIntersection ? 1 : 0,
             'position' => $position,
             ]
         );
@@ -221,16 +225,16 @@ final class GraphCommand
         ?int $targetId,
         ?string $targetFqn,
         string $type,
-        ?int $sourceMemberId
+        ?int $sourceMethodId
     ): int {
-        $existing = $this->query->findRelationshipId($sourceId, $targetId, $targetFqn, $type, $sourceMemberId);
+        $existing = $this->query->findRelationshipId($sourceId, $targetId, $targetFqn, $type, $sourceMethodId);
         if ($existing !== null) {
             return $existing;
         }
 
         $stmt = $this->pdo->prepare(
-            'INSERT INTO relationships (source_id, target_id, target_fqn, type, source_member_id)
-             VALUES (:source_id, :target_id, :target_fqn, :type, :source_member_id)'
+            'INSERT INTO relationships (source_id, target_id, target_fqn, type, source_method_id)
+             VALUES (:source_id, :target_id, :target_fqn, :type, :source_method_id)'
         );
         $stmt->execute(
             [
@@ -238,15 +242,12 @@ final class GraphCommand
             'target_id' => $targetId,
             'target_fqn' => $targetFqn,
             'type' => $type,
-            'source_member_id' => $sourceMemberId,
+            'source_method_id' => $sourceMethodId,
             ]
         );
         return (int) $this->pdo->lastInsertId();
     }
 
-    /**
-     * Resolve relationship target_fqn references to actual entity IDs.
-     */
     /**
      * @param array<string, int> $entityIdsByFqn
      */
@@ -271,37 +272,6 @@ final class GraphCommand
             $targetId = $entityIdsByFqn[$targetFqn] ?? null;
             if ($targetId !== null) {
                 $updateStmt->execute(['target_id' => $targetId, 'id' => $row['id']]);
-            }
-        }
-    }
-
-    /**
-     * Resolve types.entity_id references from type names to entity IDs.
-     *
-     * @param array<string, int> $entityIdsByFqn
-     */
-    public function resolvePendingTypeEntityIds(array $entityIdsByFqn): void
-    {
-        $selectStmt = $this->pdo->query(
-            'SELECT id, name FROM types WHERE entity_id IS NULL AND name IS NOT NULL'
-        );
-        if ($selectStmt === false) {
-            return;
-        }
-
-        $updateStmt = $this->pdo->prepare(
-            'UPDATE types SET entity_id = :entity_id WHERE id = :id AND entity_id IS NULL'
-        );
-
-        while ($row = $selectStmt->fetch(PDO::FETCH_ASSOC)) {
-            if (!is_array($row) || !isset($row['id'], $row['name'])) {
-                continue;
-            }
-            $name = (string) $row['name'];
-            $normalized = ltrim($name, '\\');
-            $targetId = $entityIdsByFqn[$normalized] ?? null;
-            if ($targetId !== null) {
-                $updateStmt->execute(['entity_id' => $targetId, 'id' => $row['id']]);
             }
         }
     }

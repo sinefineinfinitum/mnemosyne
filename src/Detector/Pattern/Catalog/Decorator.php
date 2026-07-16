@@ -30,10 +30,8 @@ final class Decorator implements PatternInterface
             decorators_with_component_field AS (
                 SELECT ip.component_id, ip.decorator_id
                 FROM impl_pairs ip
-                JOIN members m ON m.entity_id = ip.decorator_id
-                  AND m.member_type = 'property'
-                JOIN types t ON t.owner_id = m.id AND t.owner_type = 'property'
-                  AND t.entity_id = ip.component_id
+                JOIN properties p ON p.entity_id = ip.decorator_id
+                  AND p.declared_type_entity_id = ip.component_id
             )
             SQL;
 

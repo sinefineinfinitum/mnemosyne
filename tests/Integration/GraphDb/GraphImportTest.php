@@ -6,7 +6,7 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
 use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
-use SineFine\Mnemosyne\Graph\Experimental\Psv1ToGraphImporter;
+use SineFine\Mnemosyne\Graph\Experimental\Msv1ToGraphImporter;
 use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
 final class GraphImportTest extends TestCase
@@ -39,20 +39,20 @@ final class GraphImportTest extends TestCase
     {
         $docsDir = dirname(__DIR__, 3) . '/docs';
         if (!is_dir($docsDir)) {
-            $docsDir = __DIR__ . '/Fixtures/psv1';
+            $docsDir = __DIR__ . '/Fixtures/msv1';
         }
 
         if (!is_dir($docsDir)) {
             $this->markTestSkipped('Neither docs/ nor fixtures found');
         }
 
-        $files = $this->getAllPsv1Files($docsDir);
+        $files = $this->getAllMsv1Files($docsDir);
 
-        $this->assertNotEmpty($files, 'No .psv1 files found');
+        $this->assertNotEmpty($files, 'No .msv1 files found');
 
         $command = new GraphCommand($this->pdo);
         $query = new GraphQuery($this->pdo);
-        $builder = new Psv1ToGraphImporter($command, $query);
+        $builder = new Msv1ToGraphImporter($command, $query);
         $builder->buildFromFiles($files, $docsDir);
 
         $entityCount = $query->countEntities();
@@ -68,25 +68,25 @@ final class GraphImportTest extends TestCase
     {
         $docsDir = dirname(__DIR__, 3) . '/docs';
         if (!is_dir($docsDir)) {
-            $docsDir = __DIR__ . '/Fixtures/psv1';
+            $docsDir = __DIR__ . '/Fixtures/msv1';
         }
 
         if (!is_dir($docsDir)) {
             $this->markTestSkipped('Neither docs/ nor fixtures found');
         }
 
-        $files = $this->getAllPsv1Files($docsDir);
+        $files = $this->getAllMsv1Files($docsDir);
 
         $command = new GraphCommand($this->pdo);
         $query = new GraphQuery($this->pdo);
-        $builder = new Psv1ToGraphImporter($command, $query);
+        $builder = new Msv1ToGraphImporter($command, $query);
         $builder->buildFromFiles($files, $docsDir);
 
         $firstCount = $query->countEntities();
 
         $command2 = new GraphCommand($this->pdo);
         $query2 = new GraphQuery($this->pdo);
-        $builder2 = new Psv1ToGraphImporter($command2, $query2);
+        $builder2 = new Msv1ToGraphImporter($command2, $query2);
         $builder2->buildFromFiles($files, $docsDir);
 
         $secondCount = $query->countEntities();
@@ -98,18 +98,18 @@ final class GraphImportTest extends TestCase
     {
         $docsDir = dirname(__DIR__, 3) . '/docs';
         if (!is_dir($docsDir)) {
-            $docsDir = __DIR__ . '/Fixtures/psv1';
+            $docsDir = __DIR__ . '/Fixtures/msv1';
         }
 
         if (!is_dir($docsDir)) {
             $this->markTestSkipped('Neither docs/ nor fixtures found');
         }
 
-        $files = $this->getAllPsv1Files($docsDir);
+        $files = $this->getAllMsv1Files($docsDir);
 
         $command = new GraphCommand($this->pdo);
         $query = new GraphQuery($this->pdo);
-        $builder = new Psv1ToGraphImporter($command, $query);
+        $builder = new Msv1ToGraphImporter($command, $query);
         $builder->buildFromFiles($files, $docsDir);
 
         $rels = $query->findAllRelationships();
@@ -127,7 +127,7 @@ final class GraphImportTest extends TestCase
     /**
      * @return list<string>
      */
-    private function getAllPsv1Files(string $dir): array
+    private function getAllMsv1Files(string $dir): array
     {
         $files = [];
 
@@ -140,7 +140,7 @@ final class GraphImportTest extends TestCase
         );
 
         foreach ($iterator as $file) {
-            if ($file->isFile() && $file->getExtension() === 'psv1') {
+            if ($file->isFile() && $file->getExtension() === 'msv1') {
                 $files[] = $file->getPathname();
             }
         }

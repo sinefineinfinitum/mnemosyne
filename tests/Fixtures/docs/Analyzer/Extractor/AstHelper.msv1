@@ -1,0 +1,54 @@
+@class SineFine\Ponymator\Analyzer\Extractor\AstHelper final
+.+resolveFqn
+    $namespace:string
+    $name:string
+    :string
+.+extractConstants
+    $node:\PhpParser\Node\Stmt\ClassLike
+    :array
+    *PhpParser\Node\Stmt\ClassLike->getConstants
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveVisibility
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveDefault
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveType
+.+extractMethods
+    $node:\PhpParser\Node\Stmt\ClassLike
+    :array
+    *PhpParser\Node\Stmt\ClassLike->getMethods
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveVisibility
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveType
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveDefault
+.+extractProperties
+    $node:\PhpParser\Node\Stmt\ClassLike
+    :array
+    *PhpParser\Node\Stmt\ClassLike->getProperties
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveVisibility
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveType
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveDefault
+    *PhpParser\Node\Stmt\ClassLike->getMethods
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveParamVisibility
+.-resolveVisibility
+    $node:\PhpParser\Node\Stmt\ClassConst|\PhpParser\Node\Stmt\ClassMethod|\PhpParser\Node\Stmt\Property
+    :string
+    ?PhpParser\Node\Stmt\ClassConst->isPrivate
+    ?PhpParser\Node\Stmt\ClassMethod->isPrivate
+    ?PhpParser\Node\Stmt\Property->isPrivate
+    ?PhpParser\Node\Stmt\ClassConst->isProtected
+    ?PhpParser\Node\Stmt\ClassMethod->isProtected
+    ?PhpParser\Node\Stmt\Property->isProtected
+.-resolveParamVisibility
+    $param:\PhpParser\Node\Param
+    :string
+    *PhpParser\Node\Param->isPrivate
+    *PhpParser\Node\Param->isProtected
+.+resolveType
+    $typeNode:\PhpParser\Node
+    :string
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveType
+    *PhpParser\Node->toCodeString
+    *PhpParser\Node->toString
+    *PhpParser\Node->getType
+.+resolveDefault
+    $default:\PhpParser\Node\Expr
+    :string
+    *PhpParser\Node\Expr->toCodeString
+    *SineFine\Ponymator\Analyzer\Extractor\AstHelper->resolveDefault

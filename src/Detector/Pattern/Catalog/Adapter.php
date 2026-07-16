@@ -29,7 +29,7 @@ final class Adapter implements PatternInterface
                   ON iface.id = r_impl.target_id AND iface.type = 'interface'
                 JOIN relationships r_dep
                   ON r_dep.source_id = adapter.id
-                 AND r_dep.type IN ('dependency', 'creates', 'creates_strong')
+                 AND r_dep.type IN ('creates', 'creates_strong')
                  AND r_dep.target_id IS NOT NULL
                  AND r_dep.target_id != iface.id
                  AND r_dep.target_id NOT IN (

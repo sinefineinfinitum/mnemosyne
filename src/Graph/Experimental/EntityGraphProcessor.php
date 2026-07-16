@@ -2,10 +2,10 @@
 
 namespace SineFine\Mnemosyne\Graph\Experimental;
 
-use Ponymator\Parser\Ast\CallNode;
-use Ponymator\Parser\Ast\EntityNode;
-use Ponymator\Parser\Ast\MemberNode;
-use Ponymator\Parser\Ast\ParameterNode;
+use SineFine\Mnemosyne\Msv1Parser\Ast\CallNode;
+use SineFine\Mnemosyne\Msv1Parser\Ast\EntityNode;
+use SineFine\Mnemosyne\Msv1Parser\Ast\MemberNode;
+use SineFine\Mnemosyne\Msv1Parser\Ast\ParameterNode;
 
 /**
  * @experimental This API is experimental and may change without notice.\
@@ -18,8 +18,6 @@ final class EntityGraphProcessor
     public const REL_USES_TRAIT = 'uses_trait';
     public const REL_CREATES = 'creates';
 
-    private PhpTypeParser $typeParser;
-
     /**
      * @var array<string, int> fqn => id
      */
@@ -29,7 +27,6 @@ final class EntityGraphProcessor
         private GraphCommand $command,
         private NamespaceResolver $namespaceResolver,
     ) {
-        $this->typeParser = new PhpTypeParser();
     }
 
     public function processEntity(EntityNode $entity, int $fileId): void
@@ -88,91 +85,113 @@ final class EntityGraphProcessor
     {
         $memberType = $this->mapMemberType($member->type);
 
-        $declaredType = self::stripNullablePrefix($member->dataType);
-        $returnType = $member->returnType;
+        if ($memberType === 'method') {
+            $this->processMethodMember($entityId, $member);
+        } else {
+            $this->processPropertyMember($entityId, $member);
+        }
+    }
 
-        $memberId = $this->command->insertMember(
+    private function processMethodMember(int $entityId, MemberNode $member): void
+    {
+        $returnTypeName = $member->returnType;
+
+        $methodId = $this->command->insertMethod(
             entityId: $entityId,
             name: $member->name,
-            memberType: $memberType,
             visibility: $member->visibility,
             isStatic: in_array('static', $member->attributes, true),
             isAbstract: in_array('abstract', $member->attributes, true),
             isFinal: in_array('final', $member->attributes, true),
-            isReadonly: in_array('readonly', $member->attributes, true),
-            declaredType: $declaredType,
-            defaultValue: $member->value,
-            returnType: $returnType,
+            returnTypeEntityId: $this->resolveEntityId($returnTypeName),
+            returnTypeName: $returnTypeName,
         );
 
-        if ($declaredType !== null && $memberType === 'property') {
-            $this->insertTypes('property', $memberId, $declaredType);
-        }
-        if ($returnType !== null && ($memberType === 'method' || $memberType === 'function')) {
-            $this->insertTypes('return', $memberId, $returnType);
-        }
-
         foreach ($member->parameters as $position => $param) {
-            $this->processParameter($memberId, $param, $position);
+            $this->processParameter($methodId, $param, $position);
         }
 
         foreach ($member->creates as $createdClass) {
-            $this->addRelationship($entityId, $memberId, $createdClass, self::REL_CREATES);
+            $this->addRelationship($entityId, $methodId, $createdClass, self::REL_CREATES);
         }
 
         foreach ($member->calls as $call) {
-            $this->processCall($entityId, $memberId, $call);
+            $this->processCall($entityId, $methodId, $call);
         }
     }
 
-    private function processCall(int $entityId, int $memberId, CallNode $call): void
+    private function processPropertyMember(int $entityId, MemberNode $member): void
+    {
+        $declaredType = self::stripNullablePrefix($member->dataType);
+
+        $this->command->insertProperty(
+            entityId: $entityId,
+            name: $member->name,
+            memberType: $this->mapPropertyMemberType($member->type),
+            visibility: $member->visibility,
+            isStatic: in_array('static', $member->attributes, true),
+            isReadonly: in_array('readonly', $member->attributes, true),
+            declaredTypeEntityId: $this->resolveEntityId($declaredType),
+            declaredTypeName: $declaredType,
+            defaultValue: $member->value,
+        );
+    }
+
+    private function processCall(int $entityId, int $methodId, CallNode $call): void
     {
         $relType = $this->callToRelType($call);
         $targetFqn = $call->targetFQCN !== '' ? $call->targetFQCN : null;
 
-        $this->addRelationship($entityId, $memberId, $targetFqn, $relType);
+        $this->addRelationship($entityId, $methodId, $targetFqn, $relType);
     }
 
-    private function processParameter(int $memberId, ParameterNode $param, int $position): void
+    private function processParameter(int $methodId, ParameterNode $param, int $position): void
     {
         $declaredType = self::stripNullablePrefix($param->type);
 
-        $paramId = $this->command->insertParameter(
-            memberId: $memberId,
+        $this->command->insertParameter(
+            methodId: $methodId,
             name: $param->name,
-            declaredType: $declaredType,
+            declaredTypeEntityId: $this->resolveEntityId($declaredType),
+            declaredTypeName: $declaredType,
             defaultValue: $param->value,
-            /**
-             * @phpstan-ignore nullCoalesce.property
-             */
-            isVariadic: (bool) ($param->isVariadic ?? false),
-            /**
-             * @phpstan-ignore nullCoalesce.property
-             */
-            isPassedByReference: (bool) ($param->byRef ?? false),
+            isVariadic: $param->variadic,
+            isPassedByReference: $param->byRef,
             position: $position,
         );
-
-        if ($declaredType !== null) {
-            $this->insertTypes('param', $paramId, $declaredType);
-        }
     }
 
-    private function mapEntityType(string $psv1Type): string
+    private function resolveEntityId(?string $typeName): ?int
     {
-        return match ($psv1Type) {
-            'interface', 'trait', 'enum' => $psv1Type,
+        if ($typeName === null || $typeName === '') {
+            return null;
+        }
+        $normalized = ltrim($typeName, '\\');
+        return $this->entityIds[$normalized] ?? null;
+    }
+
+    private function mapEntityType(string $msv1Type): string
+    {
+        return match ($msv1Type) {
+            'interface', 'trait', 'enum' => $msv1Type,
             default => 'class',
         };
     }
 
-    private function mapMemberType(string $psv1Type): string
+    private function mapMemberType(string $msv1Type): string
     {
-        return match ($psv1Type) {
-            'global_variable' => 'property',
+        return match ($msv1Type) {
             'function' => 'method',
-            'enum_case' => 'case',
-            'property', 'constant', 'method' => $psv1Type,
+            'method' => 'method',
+            default => 'property',
+        };
+    }
+
+    private function mapPropertyMemberType(string $msv1Type): string
+    {
+        return match ($msv1Type) {
+            'constant' => 'constant',
+            'case', 'enum_case' => 'case',
             default => 'property',
         };
     }
@@ -189,14 +208,14 @@ final class EntityGraphProcessor
         return $type . $suffix;
     }
 
-    private function addRelationship(int $sourceId, ?int $memberId, ?string $targetFqn, string $type): void
+    private function addRelationship(int $sourceId, ?int $methodId, ?string $targetFqn, string $type): void
     {
         $this->command->insertRelationship(
             sourceId: $sourceId,
             targetId: null,
             targetFqn: $targetFqn,
             type: $type,
-            sourceMemberId: $memberId,
+            sourceMethodId: $methodId,
         );
     }
 
@@ -207,29 +226,5 @@ final class EntityGraphProcessor
         }
 
         return $type;
-    }
-
-    private function insertTypes(string $ownerType, int $ownerId, string $type): void
-    {
-        $components = $this->typeParser->parseAtomicTypes($type);
-        foreach ($components as $component) {
-            $name = $component['name'];
-            $entityId = null;
-
-            if ($name !== '' && !in_array(strtolower($name), PhpTypeParser::BUILTIN_TYPES, true)) {
-                $normalized = ltrim($name, '\\');
-                $entityId = $this->entityIds[$normalized] ?? null;
-            }
-
-            $this->command->insertType(
-                ownerType: $ownerType,
-                ownerId: $ownerId,
-                name: $name,
-                entityId: $entityId,
-                isUnion: $component['is_union'],
-                isIntersection: $component['is_intersection'],
-                position: $component['position'],
-            );
-        }
     }
 }

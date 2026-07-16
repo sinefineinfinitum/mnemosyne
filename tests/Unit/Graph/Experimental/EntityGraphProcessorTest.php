@@ -4,10 +4,10 @@ namespace SineFine\Mnemosyne\Tests\Unit\Graph\Experimental;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use Ponymator\Parser\Ast\CallNode;
-use Ponymator\Parser\Ast\EntityNode;
-use Ponymator\Parser\Ast\MemberNode;
-use Ponymator\Parser\Ast\ParameterNode;
+use SineFine\Mnemosyne\Msv1Parser\Ast\CallNode;
+use SineFine\Mnemosyne\Msv1Parser\Ast\EntityNode;
+use SineFine\Mnemosyne\Msv1Parser\Ast\MemberNode;
+use SineFine\Mnemosyne\Msv1Parser\Ast\ParameterNode;
 use SineFine\Mnemosyne\Graph\Experimental\EntityGraphProcessor;
 use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
 use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
@@ -185,7 +185,7 @@ class EntityGraphProcessorTest extends TestCase
         $this->assertSame(1, (int) $members[0]['is_static']);
         $this->assertSame(1, (int) $members[0]['is_abstract']);
         $this->assertSame(1, (int) $members[0]['is_final']);
-        $this->assertSame(1, (int) $members[0]['is_readonly']);
+        $this->assertSame(0, (int) $members[0]['is_readonly']);
     }
 
     public function testProcessEntityWithPropertyType(): void
@@ -268,7 +268,7 @@ class EntityGraphProcessorTest extends TestCase
         $param1 = $this->makeParameter('ref');
         $param1->byRef = true;
         $param2 = $this->makeParameter('args');
-        $param2->isVariadic = true;
+        $param2->variadic = true;
         $member->parameters = [$param1, $param2];
         $entity->members = [$member];
 

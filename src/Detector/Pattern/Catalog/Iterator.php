@@ -33,9 +33,8 @@ final class Iterator implements PatternInterface
                     iface.fqn LIKE '%Iterator'
                     OR iface.short_name IN ('Iterator', 'IteratorAggregate')
                     OR EXISTS (
-                        SELECT 1 FROM members m
+                        SELECT 1 FROM methods m
                         WHERE m.entity_id = ci.id
-                          AND m.member_type = 'method'
                           AND m.name IN ('current', 'next', 'rewind', 'valid', 'key')
                     )
                   )

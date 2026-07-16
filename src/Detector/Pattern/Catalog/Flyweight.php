@@ -33,9 +33,8 @@ final class Flyweight implements PatternInterface
                 WHERE fw.type = 'interface'
                   AND factory.type = 'class'
                   AND EXISTS (
-                    SELECT 1 FROM members
+                    SELECT 1 FROM properties
                     WHERE entity_id = factory.id
-                      AND member_type = 'property'
                       AND is_static = 1
                   )
             )

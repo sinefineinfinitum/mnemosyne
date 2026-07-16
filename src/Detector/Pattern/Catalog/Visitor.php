@@ -21,22 +21,20 @@ final class Visitor implements PatternInterface
             WITH visitor_methods AS (
                 SELECT DISTINCT
                     m.entity_id AS visitor_id,
-                    t.entity_id AS element_param_id
-                FROM members m
-                JOIN types t ON t.owner_id = m.id AND t.owner_type = 'param'
-                WHERE m.member_type = 'method'
-                  AND m.name LIKE 'visit%'
-                  AND t.entity_id IS NOT NULL
+                    p.declared_type_entity_id AS element_param_id
+                FROM methods m
+                JOIN parameters p ON p.method_id = m.id
+                WHERE m.name LIKE 'visit%'
+                  AND p.declared_type_entity_id IS NOT NULL
             ),
             element_accepts AS (
                 SELECT DISTINCT
                     m.entity_id AS element_id,
-                    t.entity_id AS visitor_param_id
-                FROM members m
-                JOIN types t ON t.owner_id = m.id AND t.owner_type = 'param'
-                WHERE m.member_type = 'method'
-                  AND m.name = 'accept'
-                  AND t.entity_id IS NOT NULL
+                    p.declared_type_entity_id AS visitor_param_id
+                FROM methods m
+                JOIN parameters p ON p.method_id = m.id
+                WHERE m.name = 'accept'
+                  AND p.declared_type_entity_id IS NOT NULL
             ),
             double_dispatch AS (
                 SELECT

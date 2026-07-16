@@ -1,0 +1,99 @@
+@class SineFine\Ponymator\Analyzer\CallAssociationResolver final
+>PhpParser\NodeVisitorAbstract
+!-BUILTIN_TYPES=[]
+$-calls:array=[]
+$-fileCalls:array=[]
+$-currentClass:string|null=null
+$-currentMethod:string|null=null
+$-currentFunction:string|null=null
+$-currentClassParent:string|null=null
+$-currentClassIsFinal:bool=false
+$-variableTypes:array=[]
+$-projectFunctions:array=[]
+.+__construct
+    $projectFunctions:array=[]
+.+resolve
+    $ast:array
+    $calls:array
+    $fileCalls:array=[]
+    :array
+    ^PhpParser\NodeTraverser
+    ^PhpParser\NodeVisitor\NameResolver
+    *PhpParser\NodeTraverser->addVisitor
+    *PhpParser\NodeTraverser->traverse
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->filterNonProjectGlobalCalls
+.+enterNode
+    $node:\PhpParser\Node
+    :int|null
+    *PhpParser\Node->isAnonymous
+    *PhpParser\Node->toString
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->buildPropertyTypeMap
+    *PhpParser\Node->isFinal
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->buildParameterTypeMap
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->addAssignmentType
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->resolveStaticCall
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->resolveDynamicCall
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->resolveGlobalCall
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->resolveNew
+.+leaveNode
+    $node:\PhpParser\Node
+    :int|null
+    *PhpParser\Node->isAnonymous
+.-buildPropertyTypeMap
+    $node:\PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Trait_|null
+    :array
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->extractTypeNames
+.-buildParameterTypeMap
+    $method:\PhpParser\Node\FunctionLike
+    :array
+    *PhpParser\Node\FunctionLike->getParams
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->extractTypeNames
+.-extractTypeNames
+    $typeNode:\PhpParser\Node
+    :array
+    *PhpParser\Node->toString
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->extractTypeNames
+.-addAssignmentType
+    $assign:\PhpParser\Node\Expr\Assign
+    :void
+.-getBucket
+    :array
+.-setBucket
+    $bucket:array
+    :void
+.-resolveStaticCall
+    $node:\PhpParser\Node\Expr\StaticCall
+    :void
+    *PhpParser\Node\Expr\StaticCall->toString
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->extractCallName
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->getBucket
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->setBucket
+.-resolveDynamicCall
+    $node:\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\NullsafeMethodCall
+    :void
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->extractCallName
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->getBucket
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->setBucket
+.-resolveGlobalCall
+    $node:\PhpParser\Node\Expr\FuncCall
+    :void
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->getBucket
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->extractCallName
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->isProjectFunction
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->setBucket
+.-resolveNew
+    $node:\PhpParser\Node\Expr\New_
+    :void
+    *PhpParser\Node\Expr\New_->toString
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->getBucket
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->setBucket
+.-filterNonProjectGlobalCalls
+    :void
+    *SineFine\Ponymator\Analyzer\CallAssociationResolver->isProjectFunction
+.-isProjectFunction
+    $functionName:string
+    :bool
+.-extractCallName
+    $name:\PhpParser\Node
+    :string|null
+    *PhpParser\Node->toString

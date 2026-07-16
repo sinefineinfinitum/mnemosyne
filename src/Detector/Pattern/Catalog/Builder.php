@@ -31,12 +31,12 @@ final class Builder implements PatternInterface
 
     private const CTE_DIRECTOR = <<<'SQL'
             director_pairs AS (
-                SELECT b.id AS builder_id,
-                       d.id AS director_id
+                SELECT DISTINCT b.id AS builder_id,
+                       p.entity_id AS director_id
                 FROM entities b
-                JOIN relationships r ON r.target_id = b.id AND r.type = 'dependency'
-                JOIN entities d ON r.source_id = d.id
+                JOIN properties p ON p.declared_type_entity_id = b.id
                 WHERE b.type = 'interface'
+                  AND p.entity_id != b.id
             )
             SQL;
 

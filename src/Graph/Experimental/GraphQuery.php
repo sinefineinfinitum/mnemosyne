@@ -116,30 +116,60 @@ final class GraphQuery
     }
 
     /**
+     * Compatibility shim: returns members in the old unified column format.
+     *
      * @return list<array<string, mixed>>
      */
     public function findMembersByEntity(int $entityId): array
     {
+        $members = [];
+
         $stmt = $this->pdo->prepare(
-            'SELECT * FROM members WHERE entity_id = :entity_id ORDER BY member_type, name'
+            "SELECT id, entity_id, name, 'method' AS member_type, visibility,
+                    is_static, is_abstract, is_final, 0 AS is_readonly,
+                    NULL AS declared_type, NULL AS default_value, return_type_name AS return_type
+             FROM methods WHERE entity_id = :entity_id"
         );
         $stmt->execute(['entity_id' => $entityId]);
-        /** @phpstan-ignore return.type */
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $members = array_merge($members, $stmt->fetchAll(PDO::FETCH_ASSOC));
+
+        $stmt = $this->pdo->prepare(
+            "SELECT id, entity_id, name, member_type, visibility,
+                    is_static, 0 AS is_abstract, 0 AS is_final, is_readonly,
+                    declared_type_name AS declared_type, default_value, NULL AS return_type
+             FROM properties WHERE entity_id = :entity_id"
+        );
+        $stmt->execute(['entity_id' => $entityId]);
+        $members = array_merge($members, $stmt->fetchAll(PDO::FETCH_ASSOC));
+
+        usort($members, fn(array $a, array $b): int => [$a['member_type'], $a['name']] <=> [$b['member_type'], $b['name']]);
+
+        return $members;
     }
 
+    /**
+     * Compatibility shim: finds member id from either methods or properties.
+     */
     public function findMemberId(int $entityId, string $name, string $memberType): ?int
     {
-        $stmt = $this->pdo->prepare(
-            'SELECT id FROM members WHERE entity_id = :entity_id AND name = :name AND member_type = :member_type'
-        );
-        $stmt->execute(
-            [
-            'entity_id' => $entityId,
-            'name' => $name,
-            'member_type' => $memberType,
-            ]
-        );
+        if ($memberType === 'method') {
+            $stmt = $this->pdo->prepare('SELECT id FROM methods WHERE entity_id = :entity_id AND name = :name');
+            $stmt->execute(
+                [
+                'entity_id' => $entityId,
+                'name' => $name,
+                ]
+            );
+        } else {
+            $stmt = $this->pdo->prepare('SELECT id FROM properties WHERE entity_id = :entity_id AND name = :name AND member_type = :member_type');
+            $stmt->execute(
+                [
+                'entity_id' => $entityId,
+                'name' => $name,
+                'member_type' => $memberType,
+                ]
+            );
+        }
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row === false || !is_array($row) || !isset($row['id'])) {
             return null;
@@ -148,19 +178,113 @@ final class GraphQuery
     }
 
     /**
-     * @param  int[] $memberIds
+     * Compatibility shim: returns parameters with member_id column.
+     *
+     * @param  int[] $methodIds
      * @return list<array<string, mixed>>
      */
-    public function findParametersByMembers(array $memberIds): array
+    public function findParametersByMembers(array $methodIds): array
     {
-        if (empty($memberIds)) {
+        if (empty($methodIds)) {
             return [];
         }
-        $placeholders = implode(',', array_fill(0, count($memberIds), '?'));
+        $placeholders = implode(',', array_fill(0, count($methodIds), '?'));
         $stmt = $this->pdo->prepare(
-            "SELECT * FROM parameters WHERE member_id IN ($placeholders) ORDER BY member_id, position"
+            "SELECT id, method_id AS member_id, name, declared_type_name AS declared_type, default_value, is_variadic, is_passed_by_reference, position
+             FROM parameters WHERE method_id IN ($placeholders) ORDER BY method_id, position"
         );
-        $stmt->execute(array_map('intval', $memberIds));
+        $stmt->execute(array_map('intval', $methodIds));
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Compatibility shim: returns parameters with member_id column.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function findParametersByMember(int $methodId): array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT id, method_id AS member_id, name, declared_type_name AS declared_type, default_value, is_variadic, is_passed_by_reference, position
+             FROM parameters WHERE method_id = :method_id ORDER BY position"
+        );
+        $stmt->execute(['method_id' => $methodId]);
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Compatibility shim: returns typed records in old types format.
+     *
+     * @return list<array{name: string, entity_fqn?: string|null}>
+     */
+    /**
+     * @return list<array{name: string, entity_fqn?: string|null}>
+     */
+    public function findTypesByOwner(string $ownerType, ?int $ownerId = null): array
+    {
+        if ($ownerType === 'return') {
+            if ($ownerId !== null) {
+                $stmt = $this->pdo->prepare(
+                    "SELECT m.return_type_name AS name, e.fqn AS entity_fqn
+                     FROM methods m
+                     LEFT JOIN entities e ON e.id = m.return_type_entity_id
+                     WHERE m.id = :owner_id AND m.return_type_name IS NOT NULL
+                     ORDER BY m.name"
+                );
+                $stmt->execute(['owner_id' => $ownerId]);
+            } else {
+                $stmt = $this->pdo->query(
+                    "SELECT m.return_type_name AS name, e.fqn AS entity_fqn
+                     FROM methods m
+                     LEFT JOIN entities e ON e.id = m.return_type_entity_id
+                     WHERE m.return_type_name IS NOT NULL
+                     ORDER BY m.name"
+                );
+            }
+        } elseif ($ownerType === 'property') {
+            if ($ownerId !== null) {
+                $stmt = $this->pdo->prepare(
+                    "SELECT p.declared_type_name AS name, e.fqn AS entity_fqn
+                     FROM properties p
+                     LEFT JOIN entities e ON e.id = p.declared_type_entity_id
+                     WHERE p.id = :owner_id AND p.declared_type_name IS NOT NULL
+                     ORDER BY p.name"
+                );
+                $stmt->execute(['owner_id' => $ownerId]);
+            } else {
+                $stmt = $this->pdo->query(
+                    "SELECT p.declared_type_name AS name, e.fqn AS entity_fqn
+                     FROM properties p
+                     LEFT JOIN entities e ON e.id = p.declared_type_entity_id
+                     WHERE p.declared_type_name IS NOT NULL
+                     ORDER BY p.name"
+                );
+            }
+        } else {
+            if ($ownerId !== null) {
+                $stmt = $this->pdo->prepare(
+                    "SELECT p.declared_type_name AS name, e.fqn AS entity_fqn
+                     FROM parameters p
+                     LEFT JOIN entities e ON e.id = p.declared_type_entity_id
+                     WHERE p.id = :owner_id AND p.declared_type_name IS NOT NULL
+                     ORDER BY p.name"
+                );
+                $stmt->execute(['owner_id' => $ownerId]);
+            } else {
+                $stmt = $this->pdo->query(
+                    "SELECT p.declared_type_name AS name, e.fqn AS entity_fqn
+                     FROM parameters p
+                     LEFT JOIN entities e ON e.id = p.declared_type_entity_id
+                     WHERE p.declared_type_name IS NOT NULL
+                     ORDER BY p.name"
+                );
+            }
+        }
+        if ($stmt === false) {
+            return [];
+        }
         /** @phpstan-ignore return.type */
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -168,12 +292,56 @@ final class GraphQuery
     /**
      * @return list<array<string, mixed>>
      */
-    public function findParametersByMember(int $memberId): array
+    public function findMethodsByEntity(int $entityId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT * FROM parameters WHERE member_id = :member_id ORDER BY position'
+            'SELECT * FROM methods WHERE entity_id = :entity_id ORDER BY name'
         );
-        $stmt->execute(['member_id' => $memberId]);
+        $stmt->execute(['entity_id' => $entityId]);
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function findPropertiesByEntity(int $entityId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM properties WHERE entity_id = :entity_id ORDER BY member_type, name'
+        );
+        $stmt->execute(['entity_id' => $entityId]);
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param  int[] $methodIds
+     * @return list<array<string, mixed>>
+     */
+    public function findParametersByMethods(array $methodIds): array
+    {
+        if (empty($methodIds)) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($methodIds), '?'));
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM parameters WHERE method_id IN ($placeholders) ORDER BY method_id, position"
+        );
+        $stmt->execute(array_map('intval', $methodIds));
+        /** @phpstan-ignore return.type */
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function findParametersByMethod(int $methodId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM parameters WHERE method_id = :method_id ORDER BY position'
+        );
+        $stmt->execute(['method_id' => $methodId]);
         /** @phpstan-ignore return.type */
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -185,15 +353,12 @@ final class GraphQuery
     {
         $stmt = $this->pdo->prepare(
             'SELECT r.*,
-                    m.name AS source_member_name,
-                    m.member_type AS source_member_type,
-                    m.visibility AS source_member_visibility,
-                    m.is_static AS source_member_static,
-                    s.fqn AS source_fqn,
-                    t.fqn AS target_fqn_resolved
+                    m.name AS source_method_name,
+                    e.fqn  AS source_fqn,
+                    t.fqn  AS target_fqn_resolved
              FROM relationships r
-             JOIN entities s ON r.source_id = s.id
-             LEFT JOIN members m ON m.id = r.source_member_id
+             JOIN entities e ON r.source_id = e.id
+             LEFT JOIN methods m ON m.id = r.source_method_id
              LEFT JOIN entities t ON r.target_id = t.id
              WHERE r.source_id = :source_id
              ORDER BY r.type, COALESCE(t.fqn, r.target_fqn), r.target_member_name'
@@ -210,20 +375,15 @@ final class GraphQuery
     {
         $stmt = $this->pdo->prepare(
             'SELECT r.*,
-                    m.name AS source_member_name,
-                    m.member_type AS source_member_type,
-                    m.visibility AS source_member_visibility,
-                    m.is_static AS source_member_static,
-                    m.declared_type AS source_member_declared_type,
-                    m.return_type AS source_member_return_type,
-                    s.fqn AS source_fqn,
-                    t.fqn AS target_fqn_resolved
+                    m.name AS source_method_name,
+                    e.fqn  AS source_fqn,
+                    t.fqn  AS target_fqn_resolved
              FROM relationships r
-             JOIN entities s ON r.source_id = s.id
+             JOIN entities e ON r.source_id = e.id
              JOIN entities t ON r.target_id = t.id
-             LEFT JOIN members m ON m.id = r.source_member_id
+             LEFT JOIN methods m ON m.id = r.source_method_id
              WHERE r.target_id = :target_id
-             ORDER BY r.type, s.fqn'
+             ORDER BY r.type, e.fqn'
         );
         $stmt->execute(['target_id' => $targetId]);
         /** @phpstan-ignore return.type */
@@ -231,17 +391,17 @@ final class GraphQuery
     }
 
     /**
-     * @return list<array{name: string, declared_type: string|null, default_value: string|null}>
+     * @return list<array{name: string, declared_type_name: string|null, default_value: string|null}>
      */
-    public function findParameterSignatures(int $memberId): array
+    public function findParameterSignatures(int $methodId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT name, declared_type, default_value
+            'SELECT name, declared_type_name, default_value
              FROM parameters
-             WHERE member_id = :member_id
+             WHERE method_id = :method_id
              ORDER BY position'
         );
-        $stmt->execute(['member_id' => $memberId]);
+        $stmt->execute(['method_id' => $methodId]);
         /** @phpstan-ignore return.type */
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -252,47 +412,19 @@ final class GraphQuery
     public function findRelationshipsByType(string $type): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT r.*, s.fqn AS source_fqn, t.fqn AS target_fqn_resolved
+            'SELECT r.*, e.fqn AS source_fqn, t.fqn AS target_fqn_resolved
              FROM relationships r
-             JOIN entities s ON r.source_id = s.id
+             JOIN entities e ON r.source_id = e.id
              LEFT JOIN entities t ON r.target_id = t.id
              WHERE r.type = :type
-             ORDER BY s.fqn, COALESCE(t.fqn, r.target_fqn)'
+             ORDER BY e.fqn, COALESCE(t.fqn, r.target_fqn)'
         );
         $stmt->execute(['type' => $type]);
         /** @phpstan-ignore return.type */
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
-    public function findTypesByOwner(string $ownerType, ?int $ownerId = null): array
-    {
-        if ($ownerId !== null) {
-            $stmt = $this->pdo->prepare(
-                'SELECT t.*, e.fqn AS entity_fqn
-                 FROM types t
-                 LEFT JOIN entities e ON e.id = t.entity_id
-                 WHERE t.owner_type = :owner_type AND t.owner_id = :owner_id
-                 ORDER BY t.position'
-            );
-            $stmt->execute(['owner_type' => $ownerType, 'owner_id' => $ownerId]);
-        } else {
-            $stmt = $this->pdo->prepare(
-                'SELECT t.*, e.fqn AS entity_fqn
-                 FROM types t
-                 LEFT JOIN entities e ON e.id = t.entity_id
-                 WHERE t.owner_type = :owner_type
-                 ORDER BY t.position'
-            );
-            $stmt->execute(['owner_type' => $ownerType]);
-        }
-        /** @phpstan-ignore return.type */
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function findRelationshipId(int $sourceId, ?int $targetId, ?string $targetFqn, string $type, ?int $sourceMemberId, ?string $targetMemberName = null): ?int
+    public function findRelationshipId(int $sourceId, ?int $targetId, ?string $targetFqn, string $type, ?int $sourceMethodId, ?string $targetMemberName = null): ?int
     {
         $sql = 'SELECT id FROM relationships WHERE source_id = :source_id AND type = :type';
         $params = ['source_id' => $sourceId, 'type' => $type];
@@ -318,11 +450,11 @@ final class GraphQuery
             $sql .= ' AND target_member_name IS NULL';
         }
 
-        if ($sourceMemberId !== null) {
-            $sql .= ' AND source_member_id = :source_member_id';
-            $params['source_member_id'] = $sourceMemberId;
+        if ($sourceMethodId !== null) {
+            $sql .= ' AND source_method_id = :source_method_id';
+            $params['source_method_id'] = $sourceMethodId;
         } else {
-            $sql .= ' AND source_member_id IS NULL';
+            $sql .= ' AND source_method_id IS NULL';
         }
 
         $stmt = $this->pdo->prepare($sql);
@@ -340,11 +472,11 @@ final class GraphQuery
     public function findAllRelationships(): array
     {
         $stmt = $this->pdo->query(
-            'SELECT r.*, s.fqn AS source_fqn, t.fqn AS target_fqn_resolved
+            'SELECT r.*, e.fqn AS source_fqn, t.fqn AS target_fqn_resolved
              FROM relationships r
-             JOIN entities s ON r.source_id = s.id
+             JOIN entities e ON r.source_id = e.id
              LEFT JOIN entities t ON r.target_id = t.id
-             ORDER BY s.fqn, r.type, COALESCE(t.fqn, r.target_fqn)'
+             ORDER BY e.fqn, r.type, COALESCE(t.fqn, r.target_fqn)'
         );
         if ($stmt === false) {
             return [];
@@ -426,7 +558,7 @@ final class GraphQuery
 
     public function countMembers(): int
     {
-        $stmt = $this->pdo->query('SELECT COUNT(*) FROM members');
+        $stmt = $this->pdo->query('SELECT (SELECT COUNT(*) FROM methods) + (SELECT COUNT(*) FROM properties)');
         if ($stmt === false) {
             return 0;
         }
@@ -436,7 +568,31 @@ final class GraphQuery
 
     public function countTypes(): int
     {
-        $stmt = $this->pdo->query('SELECT COUNT(*) FROM types');
+        $stmt = $this->pdo->query(
+            'SELECT (SELECT COUNT(*) FROM methods WHERE return_type_name IS NOT NULL)
+                   + (SELECT COUNT(*) FROM properties WHERE declared_type_name IS NOT NULL)
+                   + (SELECT COUNT(*) FROM parameters WHERE declared_type_name IS NOT NULL)'
+        );
+        if ($stmt === false) {
+            return 0;
+        }
+        $value = $stmt->fetchColumn();
+        return is_numeric($value) ? (int) $value : 0;
+    }
+
+    public function countMethods(): int
+    {
+        $stmt = $this->pdo->query('SELECT COUNT(*) FROM methods');
+        if ($stmt === false) {
+            return 0;
+        }
+        $value = $stmt->fetchColumn();
+        return is_numeric($value) ? (int) $value : 0;
+    }
+
+    public function countProperties(): int
+    {
+        $stmt = $this->pdo->query('SELECT COUNT(*) FROM properties');
         if ($stmt === false) {
             return 0;
         }

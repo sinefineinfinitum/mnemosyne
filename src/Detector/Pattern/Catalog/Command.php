@@ -21,8 +21,7 @@ final class Command implements PatternInterface
             WITH command_interfaces AS (
                 SELECT e.id
                 FROM entities e
-                JOIN members m ON m.entity_id = e.id
-                  AND m.member_type = 'method'
+                JOIN methods m ON m.entity_id = e.id
                   AND m.name IN ('execute', 'run', 'handle')
                 WHERE e.type = 'interface'
             ),
@@ -40,13 +39,11 @@ final class Command implements PatternInterface
 
     private const CTE_INVOKER = <<<'SQL'
             invoker_pairs AS (
-                SELECT ci.id   AS command_id,
-                       inv.id  AS invoker_id
+                SELECT DISTINCT ci.id   AS command_id,
+                       p.entity_id AS invoker_id
                 FROM command_interfaces ci
-                JOIN relationships r_dep
-                  ON r_dep.target_id = ci.id AND r_dep.type = 'dependency'
-                JOIN entities inv ON r_dep.source_id = inv.id
-                WHERE inv.type = 'class'
+                JOIN properties p ON p.declared_type_entity_id = ci.id
+                WHERE p.entity_id != ci.id
             )
             SQL;
 
