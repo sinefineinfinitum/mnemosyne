@@ -6,10 +6,10 @@ use PDO;
 use PHPUnit\Framework\TestCase;
 use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
 use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
-use SineFine\Mnemosyne\Graph\Experimental\Psv1ToGraphImporter;
+use SineFine\Mnemosyne\Graph\Experimental\Msv1ToGraphImporter;
 use SineFine\Mnemosyne\Graph\Experimental\Schema;
 
-final class Psv1GraphDbTest extends TestCase
+final class Msv1GraphDbTest extends TestCase
 {
     private const DB_PATH = __DIR__ . '/mnemosyne-graph-v3.db';
 
@@ -23,7 +23,7 @@ final class Psv1GraphDbTest extends TestCase
     {
         $docsDir = dirname(__DIR__, 3) . '/docs';
         if (!is_dir($docsDir)) {
-            $docsDir = __DIR__ . '/Fixtures/psv1';
+            $docsDir = __DIR__ . '/Fixtures/msv1';
         }
 
         if (!is_dir($docsDir)) {
@@ -41,10 +41,10 @@ final class Psv1GraphDbTest extends TestCase
         $command = new GraphCommand(self::$pdo);
         self::$query = new GraphQuery(self::$pdo);
 
-        $files = self::getAllPsv1Files($docsDir);
+        $files = self::getAllMsv1Files($docsDir);
 
         if (!empty($files)) {
-            $builder = new Psv1ToGraphImporter($command, self::$query);
+            $builder = new Msv1ToGraphImporter($command, self::$query);
             $builder->buildFromFiles($files, $docsDir);
         }
 
@@ -244,7 +244,7 @@ final class Psv1GraphDbTest extends TestCase
     /**
      * @return list<string>
      */
-    private static function getAllPsv1Files(string $dir): array
+    private static function getAllMsv1Files(string $dir): array
     {
         $files = [];
 
@@ -257,7 +257,7 @@ final class Psv1GraphDbTest extends TestCase
         );
 
         foreach ($iterator as $file) {
-            if ($file->isFile() && $file->getExtension() === 'psv1') {
+            if ($file->isFile() && $file->getExtension() === 'msv1') {
                 $files[] = $file->getPathname();
             }
         }

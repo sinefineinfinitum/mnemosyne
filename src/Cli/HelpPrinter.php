@@ -34,14 +34,14 @@ HELP;
     public static function printGenerateHelp(): void
     {
         echo <<<'HELP'
-Usage: mnemosyne generate [--full | --diff] [--config=<path>] [--output=md|psv1]
+Usage: mnemosyne generate [--full | --diff] [--config=<path>] [--output=md|msv1]
 
 Options:
   --full              Regenerate all documentation
   --diff              Regenerate only changed files (default)
   --config=<path>     Path to config file (default: .mnemosyne.json)
   --output=md         Generate Markdown documentation (default)
-  --output=psv1       Generate mnemosyne Syntax v1 documentation
+  --output=msv1       Generate mnemosyne Syntax v1 documentation
   --help              Display this help message
 
 HELP;

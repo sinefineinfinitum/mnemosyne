@@ -30,9 +30,9 @@ class EntityViewTest extends TestCase
         return $this->command->insertEntity($fqn, $shortName, $type, null, null, null, []);
     }
 
-    private function insertMember(int $entityId, string $name): int
+    private function insertMethod(int $entityId, string $name): int
     {
-        return $this->command->insertMember($entityId, $name, 'method', 'public', false, false, false, false, null, null, null);
+        return $this->command->insertMethod($entityId, $name, 'public', false, false, false, null, null);
     }
 
     public function testLoadBasicEntity(): void
@@ -99,7 +99,7 @@ class EntityViewTest extends TestCase
     {
         $aId = $this->insertEntity('App\\A');
         $bId = $this->insertEntity('App\\B');
-        $memberId = $this->insertMember($aId, 'doStuff');
+        $memberId = $this->insertMethod($aId, 'doStuff');
         $this->command->insertRelationship($aId, $bId, null, 'call_static_strong', $memberId);
 
         $view = EntityView::load('App\\A', $this->query);
@@ -118,7 +118,7 @@ class EntityViewTest extends TestCase
     public function testLoadMembers(): void
     {
         $entityId = $this->insertEntity('App\\Foo');
-        $this->insertMember($entityId, 'bar');
+        $this->insertMethod($entityId, 'bar');
 
         $view = EntityView::load('App\\Foo', $this->query);
         $this->assertCount(1, $view->members);

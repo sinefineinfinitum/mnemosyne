@@ -19,7 +19,7 @@ use SineFine\Mnemosyne\Db\PDOFactory;
 use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
 use Throwable;
 
-class MnemosyneCommand
+class Mnemosyne
 {
     /**
      * @throws Throwable

@@ -9,7 +9,7 @@ use SineFine\Mnemosyne\Db\PDOFactory;
 use SineFine\Mnemosyne\Filesystem\FileFinder;
 use SineFine\Mnemosyne\Graph\Experimental\GraphCommand;
 use SineFine\Mnemosyne\Graph\Experimental\GraphQuery;
-use SineFine\Mnemosyne\Graph\Experimental\Psv1ToGraphImporter;
+use SineFine\Mnemosyne\Graph\Experimental\Msv1ToGraphImporter;
 use SineFine\Mnemosyne\Graph\Experimental\Schema;
 use Throwable;
 
@@ -24,19 +24,19 @@ class ImportCommand
 
         $targetDir = $config->getTargetAbsolute();
         $finder = new FileFinder();
-        $psv1Files = $finder->find($targetDir, ['psv1']);
+        $msv1Files = $finder->find($targetDir, ['msv1']);
 
-        if (empty($psv1Files)) {
-            fwrite(STDERR, "Error: No .psv1 files found in target directory: $targetDir\n");
+        if (empty($msv1Files)) {
+            fwrite(STDERR, "Error: No .msv1 files found in target directory: $targetDir\n");
             exit(ExitCode::SOURCE_NOT_FOUND);
         }
 
         $command = new GraphCommand($pdo);
         $query = new GraphQuery($pdo);
-        $builder = new Psv1ToGraphImporter($command, $query);
+        $builder = new Msv1ToGraphImporter($command, $query);
 
         try {
-            $builder->buildFromFiles($psv1Files, $targetDir);
+            $builder->buildFromFiles($msv1Files, $targetDir);
         } catch (Throwable $e) {
             fwrite(STDERR, "Error: Import failed: " . $e->getMessage() . "\n");
             exit(ExitCode::GENERIC_ERROR);

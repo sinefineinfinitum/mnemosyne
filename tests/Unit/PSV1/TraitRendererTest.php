@@ -5,8 +5,8 @@ namespace SineFine\Mnemosyne\Tests\Unit\PSV1;
 use PHPUnit\Framework\TestCase;
 use SineFine\Mnemosyne\Analyzer\CallInfo;
 use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\TraitRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\Msv1Builder;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\TraitRenderer;
 
 final class TraitRendererTest extends TestCase
 {
@@ -14,7 +14,7 @@ final class TraitRendererTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->renderer = new TraitRenderer(new Psv1Builder());
+        $this->renderer = new TraitRenderer(new Msv1Builder());
     }
 
     public function testSupportsTrait(): void

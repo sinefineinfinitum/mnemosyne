@@ -50,8 +50,8 @@ final class ArgumentParserTest extends TestCase
 
     public function testGenerateWithOutput(): void
     {
-        $cmd = ArgumentParser::parse(['mnemosyne', 'generate', '--output=psv1']);
-        $this->assertSame('psv1', $cmd->output);
+        $cmd = ArgumentParser::parse(['mnemosyne', 'generate', '--output=msv1']);
+        $this->assertSame('msv1', $cmd->output);
     }
 
     public function testGenerateHelp(): void

@@ -2,18 +2,20 @@
 
 namespace SineFine\Mnemosyne\Graph\Experimental;
 
-use Ponymator\Parser\Ast\Document;
-use Ponymator\Parser\Parser;
+use SineFine\Mnemosyne\Msv1Parser\Ast\Document;
+use SineFine\Mnemosyne\Msv1Parser\Parser;
 use RuntimeException;
+use SineFine\Mnemosyne\Filesystem\FileLoader;
 use Throwable;
 
 /**
  * @experimental This API is experimental and may change without notice.\
  * @since        4.0.0
  */
-final class Psv1ToGraphImporter
+final class Msv1ToGraphImporter
 {
     private Parser $parser;
+    private FileLoader $loader;
     private NamespaceResolver $namespaceResolver;
     private EntityGraphProcessor $entityProcessor;
 
@@ -22,6 +24,7 @@ final class Psv1ToGraphImporter
         private GraphQuery $query,
     ) {
         $this->parser = new Parser();
+        $this->loader = new FileLoader();
         $this->namespaceResolver = new NamespaceResolver($command, $this->query);
         $this->entityProcessor = new EntityGraphProcessor($command, $this->namespaceResolver);
     }
@@ -37,12 +40,14 @@ final class Psv1ToGraphImporter
         try {
             foreach ($filePaths as $filePath) {
                 $currentFilePath = $filePath;
-                $document = $this->parser->parseFile($filePath);
+                $content = $this->loader->load($filePath);
+                $document = $this->parser->parse($content);
+                $document->sourcePath = $filePath;
+                $document->sourceHash = hash('sha256', $content);
                 $this->processDocument($document, $basePath);
             }
 
             $this->command->resolvePendingTargets($this->entityProcessor->getEntityIds());
-            $this->command->resolvePendingTypeEntityIds($this->entityProcessor->getEntityIds());
             $this->command->commit();
         } catch (Throwable $e) {
             $this->command->rollback();

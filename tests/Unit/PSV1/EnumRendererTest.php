@@ -5,8 +5,8 @@ namespace SineFine\Mnemosyne\Tests\Unit\PSV1;
 use PHPUnit\Framework\TestCase;
 use SineFine\Mnemosyne\Analyzer\CallInfo;
 use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\EnumRenderer;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\EnumRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\Msv1Builder;
 
 final class EnumRendererTest extends TestCase
 {
@@ -14,7 +14,7 @@ final class EnumRendererTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->renderer = new EnumRenderer(new Psv1Builder());
+        $this->renderer = new EnumRenderer(new Msv1Builder());
     }
 
     public function testSupportsEnum(): void

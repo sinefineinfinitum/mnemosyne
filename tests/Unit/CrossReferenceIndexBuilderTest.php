@@ -187,7 +187,7 @@ final class CrossReferenceIndexBuilderTest extends TestCase
     {
         $tempDir = sys_get_temp_dir() . '/mnemosyne-test-' . uniqid();
         mkdir($tempDir, 0755, true);
-        file_put_contents($tempDir . '/bad.psv1', '@class');
+        file_put_contents($tempDir . '/bad.msv1', '@class');
 
         $parser = $this->createMock(Parser::class);
         $pathResolver = $this->createMock(PathResolver::class);
@@ -291,8 +291,8 @@ final class CrossReferenceIndexBuilderTest extends TestCase
     {
         $tempDir = sys_get_temp_dir() . '/mnemosyne-test-' . uniqid();
         mkdir($tempDir, 0755, true);
-        file_put_contents($tempDir . '/Foo.PSV1', '@class App\Foo' . PHP_EOL);
-        file_put_contents($tempDir . '/Bar.Psv1', '@class App\Bar' . PHP_EOL);
+        file_put_contents($tempDir . '/Foo.MSV1', '@class App\Foo' . PHP_EOL);
+        file_put_contents($tempDir . '/Bar.Msv1', '@class App\Bar' . PHP_EOL);
 
         $parser = $this->createMock(Parser::class);
         $pathResolver = $this->createMock(PathResolver::class);
@@ -366,7 +366,7 @@ final class CrossReferenceIndexBuilderTest extends TestCase
     {
         $tempDir = sys_get_temp_dir() . '/mnemosyne-test-' . uniqid();
         mkdir($tempDir, 0755, true);
-        file_put_contents($tempDir . '/Fixture.psv1', $contents);
+        file_put_contents($tempDir . '/Fixture.msv1', $contents);
         return $tempDir;
     }
 

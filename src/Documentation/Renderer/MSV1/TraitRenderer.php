@@ -1,20 +1,20 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Mnemosyne\Documentation\Renderer\PSV1;
+namespace SineFine\Mnemosyne\Documentation\Renderer\MSV1;
 
 use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
 use SineFine\Mnemosyne\Documentation\Renderer\EntityRendererInterface;
 
-final class EnumRenderer implements EntityRendererInterface
+final class TraitRenderer implements EntityRendererInterface
 {
     public function __construct(
-        private Psv1Builder $builder,
+        private Msv1Builder $builder,
     ) {
     }
 
     public function supports(array $entity): bool
     {
-        return $entity['type'] === 'enum';
+        return $entity['type'] === 'trait';
     }
 
     /**
@@ -23,18 +23,14 @@ final class EnumRenderer implements EntityRendererInterface
      */
     public function renderEntity(array $entity, CrossReference $crossRefs): string
     {
-        $psv1 = $this->builder->header($entity['type'], [], $entity['fqn']);
+        $msv1 = $this->builder->header($entity['type'], [], $entity['fqn']);
 
-        foreach ($entity['cases'] as $case) {
-            $psv1 .= $this->builder->enumCase($case, $entity['scalarType']);
-        }
-
-        foreach ($entity['interfaces'] as $interface) {
-            $psv1 .= $this->builder->implements($interface);
+        foreach ($entity['traits'] ?? [] as $trait) {
+            $msv1 .= $this->builder->traitUse($trait);
         }
 
         foreach ($entity['constants'] as $constant) {
-            $psv1 .= $this->builder->constant(
+            $msv1 .= $this->builder->constant(
                 $constant['name'],
                 $constant['visibility'] ?? 'public',
                 $constant['type'] ?? null,
@@ -43,29 +39,29 @@ final class EnumRenderer implements EntityRendererInterface
         }
 
         foreach ($entity['properties'] as $property) {
-            $psv1 .= $this->builder->property($property);
+            $msv1 .= $this->builder->property($property);
         }
 
         foreach ($entity['methods'] as $method) {
-            $psv1 .= $this->builder->method($method);
+            $msv1 .= $this->builder->method($method);
 
             foreach ($method['parameters'] as $parameter) {
-                $psv1 .= $this->builder->parameter($parameter);
+                $msv1 .= $this->builder->parameter($parameter);
             }
 
-            $psv1 .= $this->builder->returnType($method['returnType'] ?? null);
+            $msv1 .= $this->builder->returnType($method['returnType'] ?? null);
 
             $methodCreates = $crossRefs->getCreates()[$method['name']] ?? [];
             foreach ($methodCreates as $createdType) {
-                $psv1 .= $this->builder->creates($createdType);
+                $msv1 .= $this->builder->creates($createdType);
             }
 
             $methodCalls = $crossRefs->getCalls()[$method['name']] ?? [];
             foreach ($methodCalls as $call) {
-                $psv1 .= $this->builder->callGraphEntry($call->toArray());
+                $msv1 .= $this->builder->callGraphEntry($call->toArray());
             }
         }
 
-        return $psv1;
+        return $msv1;
     }
 }

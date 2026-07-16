@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Mnemosyne\Documentation\Renderer\PSV1;
+namespace SineFine\Mnemosyne\Documentation\Renderer\MSV1;
 
-final class Psv1Builder
+final class Msv1Builder
 {
     private const MAX_VALUE_LENGTH = 120;
     /**
@@ -114,7 +114,7 @@ final class Psv1Builder
     /**
      * Parameter line indented 4 spaces under its method/function.
      *
-     * PSV1 rule: one level of indentation (4 spaces) for children of a `.` block.
+     * MSV1 rule: one level of indentation (4 spaces) for children of a `.` block.
      *
      * @param array<string, mixed> $parameter
      */
@@ -164,7 +164,7 @@ final class Psv1Builder
     }
 
     /**
-     * Call Graph entry indented 4 spaces under its method. PSV1 v1.1 format:
+     * Call Graph entry indented 4 spaces under its method. MSV1 v1.1 format:
      * single-line entries with marker + FQCN + separator + method.
      *
      * Format: `MARKER FQCN SEPARATOR TARGET`

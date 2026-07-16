@@ -13,6 +13,13 @@ use SineFine\Mnemosyne\Msv1Parser\Ast\ParameterNode;
 use SineFine\Mnemosyne\Msv1Parser\Parser;
 use SineFine\Mnemosyne\Msv1Parser\SyntaxException;
 
+if (!trait_exists(TestTrait::class)) {
+    return;
+}
+
+/**
+ * @requires PHP >= 8.1
+ */
 class ParserRoundTripTest extends TestCase
 {
     use TestTrait;

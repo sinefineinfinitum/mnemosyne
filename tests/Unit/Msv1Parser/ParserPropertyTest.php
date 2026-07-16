@@ -10,6 +10,13 @@ use SineFine\Mnemosyne\Msv1Parser\Ast\EntityNode;
 use SineFine\Mnemosyne\Msv1Parser\Parser;
 use SineFine\Mnemosyne\Msv1Parser\SyntaxException;
 
+if (!trait_exists(TestTrait::class)) {
+    return;
+}
+
+/**
+ * @requires PHP >= 8.1
+ */
 class ParserPropertyTest extends TestCase
 {
     use TestTrait;

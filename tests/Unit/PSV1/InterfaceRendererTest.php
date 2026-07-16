@@ -4,8 +4,8 @@ namespace SineFine\Mnemosyne\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
 use SineFine\Mnemosyne\Documentation\Linker\CrossReference;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\InterfaceRenderer;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\InterfaceRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\Msv1Builder;
 
 final class InterfaceRendererTest extends TestCase
 {
@@ -13,7 +13,7 @@ final class InterfaceRendererTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->renderer = new InterfaceRenderer(new Psv1Builder());
+        $this->renderer = new InterfaceRenderer(new Msv1Builder());
     }
 
     public function testSupportsInterface(): void

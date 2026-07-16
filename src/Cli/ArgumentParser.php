@@ -7,7 +7,7 @@ use SineFine\Mnemosyne\Cli\Error\ExitCode;
 final class ArgumentParser
 {
     public const OUTPUT_MD = 'md';
-    public const OUTPUT_PSV1 = 'psv1';
+    public const OUTPUT_MSV1 = 'msv1';
     private const COMMANDS = ['generate', 'graph', 'show', 'detect'];
 
     /**
@@ -213,7 +213,7 @@ final class ArgumentParser
 
     private static function parseOutput(string $output): string
     {
-        if ($output === self::OUTPUT_MD || $output === self::OUTPUT_PSV1) {
+        if ($output === self::OUTPUT_MD || $output === self::OUTPUT_MSV1) {
             return $output;
         }
 

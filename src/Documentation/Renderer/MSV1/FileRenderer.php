@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace SineFine\Mnemosyne\Documentation\Renderer\PSV1;
+namespace SineFine\Mnemosyne\Documentation\Renderer\MSV1;
 
 use SineFine\Mnemosyne\Documentation\Renderer\FileRendererInterface;
 
 final class FileRenderer implements FileRendererInterface
 {
     public function __construct(
-        private Psv1Builder $builder,
+        private Msv1Builder $builder,
     ) {
     }
 
@@ -26,25 +26,25 @@ final class FileRenderer implements FileRendererInterface
         array $constants,
         array $fileCalls = []
     ): string {
-        $psv1 = $this->builder->header('file', [], $relativePath);
+        $msv1 = $this->builder->header('file', [], $relativePath);
 
         foreach ($functions as $function) {
-            $psv1 .= $this->builder->function_($function);
+            $msv1 .= $this->builder->function_($function);
 
             foreach ($function['parameters'] as $parameter) {
-                $psv1 .= $this->builder->parameter($parameter);
+                $msv1 .= $this->builder->parameter($parameter);
             }
 
-            $psv1 .= $this->builder->returnType($function['returnType'] ?? null);
+            $msv1 .= $this->builder->returnType($function['returnType'] ?? null);
 
             $functionCalls = $fileCalls[$function['name']] ?? [];
             foreach ($functionCalls as $call) {
-                $psv1 .= $this->builder->callGraphEntry($call->toArray());
+                $msv1 .= $this->builder->callGraphEntry($call->toArray());
             }
         }
 
         foreach ($constants as $constant) {
-            $psv1 .= $this->builder->fileConstant(
+            $msv1 .= $this->builder->fileConstant(
                 $constant['name'],
                 $constant['type'] ?? null,
                 $constant['value'] ?? null
@@ -52,9 +52,9 @@ final class FileRenderer implements FileRendererInterface
         }
 
         foreach ($globals as $global) {
-            $psv1 .= $this->builder->globalVariable($global);
+            $msv1 .= $this->builder->globalVariable($global);
         }
 
-        return $psv1;
+        return $msv1;
     }
 }

@@ -37,7 +37,7 @@ final class DetectCommandTest extends TestCase
             'App\\ConcreteAdapter', 'ConcreteAdapter', 'class', null, null, null, [],
         );
         $this->command->insertRelationship($adapterId, $targetId, null, 'implements', null);
-        $this->command->insertRelationship($adapterId, $adapteeId, null, 'dependency', null);
+        $this->command->insertRelationship($adapterId, $adapteeId, null, 'creates', null);
 
         $cmd = new Command(
             group: 'detect',

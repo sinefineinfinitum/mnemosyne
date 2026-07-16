@@ -4,8 +4,8 @@ namespace SineFine\Mnemosyne\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
 use SineFine\Mnemosyne\Analyzer\CallInfo;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\FileRenderer;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\FileRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\Msv1Builder;
 
 final class FileRendererTest extends TestCase
 {
@@ -13,7 +13,7 @@ final class FileRendererTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->renderer = new FileRenderer(new Psv1Builder());
+        $this->renderer = new FileRenderer(new Msv1Builder());
     }
 
     public function testRenderFileHeader(): void
