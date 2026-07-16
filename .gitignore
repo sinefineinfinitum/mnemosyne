@@ -5,7 +5,7 @@ benchmark
 .opencode
 .specify
 specs
-docs
+/docs
 *.log
 .phpunit.result.cache
 .phpunit.cache
@@ -22,3 +22,5 @@ infection.diff
 infection-report.html
 run.sh
 temp.txt
+deptrac.yaml
+.deptrac.cache

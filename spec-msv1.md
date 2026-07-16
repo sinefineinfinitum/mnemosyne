@@ -223,10 +223,10 @@ $debugMode:bool=false
 
 ## File extension
 
-Generated PS v1.x documentation files use the **`.psv1`** extension.
+Generated PS v1.x documentation files use the **`.msv1`** extension.
 
 Output files mirror the source directory structure. For a source file at `src/Service/SearchService.php`,
-the generated documentation is written to `target/Service/SearchService.psv1`.
+the generated documentation is written to `target/Service/SearchService.msv1`.
 
 This includes:
 - Entity files (classes, interfaces, traits, enums) — output path mirrors the source `.php` location

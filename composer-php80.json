@@ -9,7 +9,6 @@
   "require": {
     "php": "^8.0",
     "nikic/php-parser": "^5.7",
-    "sinefineinfinitum/parser-ps": "0.1.2",
     "ext-pdo": "*"
   },
   "require-dev": {
@@ -22,10 +21,5 @@
       "SineFine\\Mnemosyne\\": "src/",
       "SineFine\\Mnemosyne\\Tests\\": "tests/"
     }
-  },
-  "repositories": [{
-    "name": "parser-ps",
-    "type": "vcs",
-    "url": "https://github.com/sinefineinfinitum/parser-ps"
-  }]
+  }
 }

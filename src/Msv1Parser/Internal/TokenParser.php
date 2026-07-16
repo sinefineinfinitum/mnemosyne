@@ -95,7 +95,7 @@ final class TokenParser
 
         $words = preg_split('/\s+/', $inputString);
 
-        if ($words === false || count($words) === 0) {
+        if ($words === false) {
             throw new SyntaxException('Name cannot be empty');
         }
 
