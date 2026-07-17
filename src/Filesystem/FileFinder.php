@@ -14,7 +14,7 @@ final class FileFinder
      * Find files recursively matching given extensions.
      *
      * @param  string   $dir            Root directory
-     * @param  string[] $extensions     Allowed extensions without dot (e.g. ['php', 'psv1'])
+     * @param  string[] $extensions     Allowed extensions without dot (e.g. ['php', 'msv1'])
      * @param  string[] $ignorePatterns Directory name patterns to skip
      * @return list<string> Absolute paths, sorted
      */

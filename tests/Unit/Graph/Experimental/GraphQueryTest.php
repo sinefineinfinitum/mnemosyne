@@ -123,8 +123,8 @@ class GraphQueryTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'bar', 'property')");
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'foo', 'method')");
+        $this->pdo->exec("INSERT INTO properties (entity_id, name, member_type) VALUES ($entityId, 'bar', 'property')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'foo')");
         $members = $this->query->findMembersByEntity($entityId);
         $this->assertCount(2, $members);
         $this->assertSame('foo', $members[0]['name']);
@@ -140,7 +140,7 @@ class GraphQueryTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'foo', 'method')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'foo')");
         $memberId = $this->query->findMemberId($entityId, 'foo', 'method');
         $this->assertNotNull($memberId);
         $this->assertIsInt($memberId);
@@ -156,10 +156,10 @@ class GraphQueryTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'foo', 'method')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'foo')");
         $memberId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, position) VALUES ($memberId, 'x', 0)");
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, position) VALUES ($memberId, 'y', 1)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'x', NULL, NULL, NULL, 0, 0, 0)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'y', NULL, NULL, NULL, 0, 0, 1)");
 
         $params = $this->query->findParametersByMembers([$memberId]);
         $this->assertCount(2, $params);
@@ -176,10 +176,10 @@ class GraphQueryTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'foo', 'method')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'foo')");
         $memberId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, position) VALUES ($memberId, 'b', 1)");
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, position) VALUES ($memberId, 'a', 0)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'b', NULL, NULL, NULL, 0, 0, 1)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'a', NULL, NULL, NULL, 0, 0, 0)");
 
         $params = $this->query->findParametersByMember($memberId);
         $this->assertCount(2, $params);
@@ -233,14 +233,14 @@ class GraphQueryTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'foo', 'method')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'foo')");
         $memberId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, declared_type, default_value, position) VALUES ($memberId, 'x', 'int', '0', 0)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'x', NULL, 'int', '0', 0, 0, 0)");
 
         $sigs = $this->query->findParameterSignatures($memberId);
         $this->assertCount(1, $sigs);
         $this->assertSame('x', $sigs[0]['name']);
-        $this->assertSame('int', $sigs[0]['declared_type']);
+        $this->assertSame('int', $sigs[0]['declared_type_name']);
         $this->assertSame('0', $sigs[0]['default_value']);
     }
 
@@ -267,9 +267,12 @@ class GraphQueryTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO types (owner_type, owner_id, name, entity_id, position) VALUES ('param', 1, 'int', NULL, 0)");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'foo')");
+        $methodId = (int) $this->pdo->lastInsertId();
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_name, position) VALUES ($methodId, 'x', 'int', 0)");
+        $paramId = (int) $this->pdo->lastInsertId();
 
-        $types = $this->query->findTypesByOwner('param', 1);
+        $types = $this->query->findTypesByOwner('param', $paramId);
         $this->assertCount(1, $types);
         $this->assertSame('int', $types[0]['name']);
     }
@@ -277,8 +280,13 @@ class GraphQueryTest extends TestCase
     public function testFindTypesByOwnerWithoutOwnerId(): void
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\\\Foo', 'Foo', 'class')");
-        $this->pdo->exec("INSERT INTO types (owner_type, owner_id, name, position) VALUES ('param', 1, 'int', 0)");
-        $this->pdo->exec("INSERT INTO types (owner_type, owner_id, name, position) VALUES ('param', 2, 'string', 1)");
+        $entityId = (int) $this->pdo->lastInsertId();
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'foo')");
+        $methodId = (int) $this->pdo->lastInsertId();
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'bar')");
+        $methodId2 = (int) $this->pdo->lastInsertId();
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_name, position) VALUES ($methodId, 'x', 'int', 0)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_name, position) VALUES ($methodId2, 'x', 'string', 0)");
 
         $types = $this->query->findTypesByOwner('param');
         $this->assertCount(2, $types);
@@ -307,9 +315,9 @@ class GraphQueryTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('A', 'A', 'class')");
         $sourceId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO relationships (source_id, target_fqn, type) VALUES ($sourceId, 'Unknown', 'dependency')");
+        $this->pdo->exec("INSERT INTO relationships (source_id, target_fqn, type) VALUES ($sourceId, 'Unknown', 'creates')");
 
-        $id = $this->query->findRelationshipId($sourceId, null, 'Unknown', 'dependency', null);
+        $id = $this->query->findRelationshipId($sourceId, null, 'Unknown', 'creates', null);
         $this->assertNotNull($id);
     }
 
@@ -319,9 +327,9 @@ class GraphQueryTest extends TestCase
         $sourceId = (int) $this->pdo->lastInsertId();
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('B', 'B', 'class')");
         $targetId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($sourceId, 'foo', 'method')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($sourceId, 'foo')");
         $memberId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO relationships (source_id, target_id, type, source_member_id) VALUES ($sourceId, $targetId, 'call_static_strong', $memberId)");
+        $this->pdo->exec("INSERT INTO relationships (source_id, target_id, type, source_method_id) VALUES ($sourceId, $targetId, 'call_static_strong', $memberId)");
 
         $id = $this->query->findRelationshipId($sourceId, $targetId, null, 'call_static_strong', $memberId);
         $this->assertNotNull($id);
@@ -453,7 +461,7 @@ class GraphQueryTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('A', 'A', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'foo', 'method')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'foo')");
         $this->assertSame(1, $this->query->countMembers());
     }
 
@@ -464,7 +472,9 @@ class GraphQueryTest extends TestCase
 
     public function testCountTypesReturnsCorrectCount(): void
     {
-        $this->pdo->exec("INSERT INTO types (owner_type, owner_id, name, position) VALUES ('param', 1, 'int', 0)");
+        $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\\\Foo', 'Foo', 'class')");
+        $entityId = (int) $this->pdo->lastInsertId();
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, return_type_name) VALUES ($entityId, 'foo', 'int')");
         $this->assertSame(1, $this->query->countTypes());
     }
 

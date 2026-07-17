@@ -14,6 +14,7 @@ Commands:
   generate    Generate documentation from PHP source code
   graph       Manage the SQLite graph database
   show        Analyze entity dependencies
+  detect      Detect design patterns in the imported codebase
 
 Run 'mnemosyne <command> --help' for more information on a command.
 
@@ -33,14 +34,14 @@ HELP;
     public static function printGenerateHelp(): void
     {
         echo <<<'HELP'
-Usage: mnemosyne generate [--full | --diff] [--config=<path>] [--output=md|psv1]
+Usage: mnemosyne generate [--full | --diff] [--config=<path>] [--output=md|msv1]
 
 Options:
   --full              Regenerate all documentation
   --diff              Regenerate only changed files (default)
   --config=<path>     Path to config file (default: .mnemosyne.json)
   --output=md         Generate Markdown documentation (default)
-  --output=psv1       Generate mnemosyne Syntax v1 documentation
+  --output=msv1       Generate mnemosyne Syntax v1 documentation
   --help              Display this help message
 
 HELP;
@@ -59,6 +60,21 @@ Options:
   --db-path=<path>    Path to SQLite graph database
   --config=<path>     Path to config file (default: .mnemosyne.json)
   --help              Display this help message
+
+HELP;
+    }
+
+    public static function printDetectHelp(): void
+    {
+        echo <<<'HELP'
+Usage: mnemosyne detect [<flags>]
+
+Detect design patterns in the imported PHP codebase.
+
+Flags:
+  --db-path=<path>              Path to SQLite graph database
+  --config=<path>               Path to config file (default: .mnemosyne.json)
+  --help                        Display this help message
 
 HELP;
     }

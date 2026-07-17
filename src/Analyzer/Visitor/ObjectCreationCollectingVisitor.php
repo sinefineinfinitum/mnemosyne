@@ -4,6 +4,7 @@ namespace SineFine\Mnemosyne\Analyzer\Visitor;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Expr\Throw_ as ExprThrow;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Trait_;
@@ -16,6 +17,8 @@ final class ObjectCreationCollectingVisitor extends NodeVisitorAbstract
 
     private ?string $currentMethod = null;
 
+    private int $throwDepth = 0;
+
     /**
      * @var array<string, array<string, list<string>>>
      */
@@ -23,6 +26,11 @@ final class ObjectCreationCollectingVisitor extends NodeVisitorAbstract
 
     public function enterNode(Node $node): ?int
     {
+        if ($node instanceof ExprThrow) {
+            $this->throwDepth++;
+            return null;
+        }
+
         if ($node instanceof Class_ || $node instanceof Trait_) {
             if ($node instanceof Class_ && $node->isAnonymous()) {
                 return NodeVisitor::DONT_TRAVERSE_CHILDREN;
@@ -43,6 +51,10 @@ final class ObjectCreationCollectingVisitor extends NodeVisitorAbstract
         }
 
         if ($node instanceof New_ && $this->currentClass !== null && $this->currentMethod !== null) {
+            if ($this->throwDepth > 0) {
+                return null;
+            }
+
             if ($node->class instanceof Class_) {
                 return null;
             }
@@ -62,6 +74,11 @@ final class ObjectCreationCollectingVisitor extends NodeVisitorAbstract
 
     public function leaveNode(Node $node): ?int
     {
+        if ($node instanceof ExprThrow) {
+            $this->throwDepth--;
+            return null;
+        }
+
         if ($node instanceof ClassMethod && $this->currentClass !== null) {
             $this->currentMethod = null;
         }

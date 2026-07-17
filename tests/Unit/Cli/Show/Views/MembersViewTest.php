@@ -48,7 +48,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($entityId, 'bar', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($entityId, 'bar', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -64,7 +64,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility, return_type) VALUES ($entityId, 'bar', 'method', 'public', 'string')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility, return_type_name) VALUES ($entityId, 'bar', 'public', 'string')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -79,10 +79,10 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($entityId, 'bar', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($entityId, 'bar', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, declared_type, default_value, position) VALUES ($memberId, 'x', 'int', null, 0)");
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, declared_type, default_value, position) VALUES ($memberId, 'y', 'string', \"'hello'\", 1)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'x', NULL, 'int', NULL, 0, 0, 0)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'y', NULL, 'string', \"'hello'\", 0, 0, 1)");
 
         $members = [
             ['id' => $memberId, 'name' => 'bar', 'member_type' => 'method', 'visibility' => 'public', 'is_static' => 0, 'is_abstract' => 0, 'is_final' => 0, 'return_type' => null],
@@ -97,10 +97,10 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($entityId, 'bar', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($entityId, 'bar', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, declared_type, is_passed_by_reference, is_variadic, position) VALUES ($memberId, 'ref', 'int', 1, 0, 0)");
-        $this->pdo->exec("INSERT INTO parameters (member_id, name, declared_type, is_passed_by_reference, is_variadic, position) VALUES ($memberId, 'args', 'string', 0, 1, 1)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'ref', NULL, 'int', NULL, 0, 1, 0)");
+        $this->pdo->exec("INSERT INTO parameters (method_id, name, declared_type_entity_id, declared_type_name, default_value, is_variadic, is_passed_by_reference, position) VALUES ($memberId, 'args', NULL, 'string', NULL, 1, 0, 1)");
 
         $members = [
             ['id' => $memberId, 'name' => 'bar', 'member_type' => 'method', 'visibility' => 'public', 'is_static' => 0, 'is_abstract' => 0, 'is_final' => 0, 'return_type' => null],
@@ -115,7 +115,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility, is_static) VALUES ($entityId, 'bar', 'method', 'public', 1)");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility, is_static) VALUES ($entityId, 'bar', 'public', 1)");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -130,7 +130,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility, is_abstract) VALUES ($entityId, 'bar', 'method', 'public', 1)");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility, is_abstract) VALUES ($entityId, 'bar', 'public', 1)");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -145,7 +145,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility, is_final) VALUES ($entityId, 'bar', 'method', 'public', 1)");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility, is_final) VALUES ($entityId, 'bar', 'public', 1)");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -160,7 +160,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility, declared_type) VALUES ($entityId, 'name', 'property', 'public', 'string')");
+        $this->pdo->exec("INSERT INTO properties (entity_id, name, member_type, visibility, declared_type_entity_id, declared_type_name) VALUES ($entityId, 'name', 'property', 'public', NULL, 'string')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -176,7 +176,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility, declared_type, is_static) VALUES ($entityId, 'count', 'property', 'private', 'int', 1)");
+        $this->pdo->exec("INSERT INTO properties (entity_id, name, member_type, visibility, declared_type_entity_id, declared_type_name, is_static) VALUES ($entityId, 'count', 'property', 'private', NULL, 'int', 1)");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -191,7 +191,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($entityId, 'VERSION', 'constant', 'public')");
+        $this->pdo->exec("INSERT INTO properties (entity_id, name, member_type, visibility) VALUES ($entityId, 'VERSION', 'constant', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -207,7 +207,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Color', 'Color', 'enum')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'Red', 'case')");
+        $this->pdo->exec("INSERT INTO properties (entity_id, name, member_type) VALUES ($entityId, 'Red', 'case')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -225,7 +225,7 @@ class MembersViewTest extends TestCase
         $fooId = (int) $this->pdo->lastInsertId();
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Bar', 'Bar', 'class')");
         $barId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($fooId, 'doStuff', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($fooId, 'doStuff', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -243,7 +243,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $fooId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($fooId, 'doStuff', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($fooId, 'doStuff', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -261,7 +261,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $fooId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($fooId, 'doStuff', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($fooId, 'doStuff', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -279,7 +279,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $fooId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($fooId, 'doStuff', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($fooId, 'doStuff', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -297,7 +297,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $fooId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($fooId, 'doStuff', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($fooId, 'doStuff', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -315,11 +315,11 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($entityId, 'doStuff', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($entityId, 'doStuff', 'public')");
         $methodId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($entityId, 'name', 'property', 'public')");
+        $this->pdo->exec("INSERT INTO properties (entity_id, name, member_type, visibility) VALUES ($entityId, 'name', 'property', 'public')");
         $propId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($entityId, 'VERSION', 'constant', 'public')");
+        $this->pdo->exec("INSERT INTO properties (entity_id, name, member_type, visibility) VALUES ($entityId, 'VERSION', 'constant', 'public')");
         $constId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -345,7 +345,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $fooId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($fooId, 'doStuff', 'method', 'public')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name, visibility) VALUES ($fooId, 'doStuff', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -363,7 +363,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type, visibility) VALUES ($entityId, 'data', 'property', 'public')");
+        $this->pdo->exec("INSERT INTO properties (entity_id, name, member_type, visibility) VALUES ($entityId, 'data', 'property', 'public')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [
@@ -378,7 +378,7 @@ class MembersViewTest extends TestCase
     {
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('App\\Foo', 'Foo', 'class')");
         $entityId = (int) $this->pdo->lastInsertId();
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES ($entityId, 'bar', 'method')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES ($entityId, 'bar')");
         $memberId = (int) $this->pdo->lastInsertId();
 
         $members = [

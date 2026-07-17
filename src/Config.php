@@ -11,10 +11,15 @@ class Config
         'target' => 'docs',
         'ignore' => ['vendor', 'tests'],
         'dbPath' => null,
+        'pragmas' => [
+            'cache_size' => -64000,
+            'temp_store' => 'MEMORY',
+            'mmap_size' => 268435456,
+        ],
     ];
 
     /**
-     * @var array{source: string, target: string, ignore: string[], dbPath: string|null}
+     * @var array{source: string, target: string, ignore: string[], dbPath: string|null, pragmas: array<string, mixed>}
      */
     private array $config;
 
@@ -53,6 +58,13 @@ class Config
         if (isset($parsed['dbPath']) && is_string($parsed['dbPath'])) {
             $this->config['dbPath'] = $parsed['dbPath'];
         }
+        if (isset($parsed['pragmas']) && is_array($parsed['pragmas'])) {
+            foreach ($parsed['pragmas'] as $key => $value) {
+                if (isset($this->config['pragmas'][$key])) {
+                    $this->config['pragmas'][$key] = $value;
+                }
+            }
+        }
     }
 
     public function getSource(): string
@@ -76,6 +88,14 @@ class Config
     public function getDbPath(): ?string
     {
         return $this->config['dbPath'];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getPragmas(): array
+    {
+        return $this->config['pragmas'];
     }
 
     public function getSourceAbsolute(): string

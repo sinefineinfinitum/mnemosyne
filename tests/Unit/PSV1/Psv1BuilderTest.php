@@ -3,15 +3,15 @@
 namespace SineFine\Mnemosyne\Tests\Unit\PSV1;
 
 use PHPUnit\Framework\TestCase;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\Msv1Builder;
 
 final class Psv1BuilderTest extends TestCase
 {
-    private Psv1Builder $builder;
+    private Msv1Builder $builder;
 
     protected function setUp(): void
     {
-        $this->builder = new Psv1Builder();
+        $this->builder = new Msv1Builder();
     }
 
     public function testHeaderNoKeywords(): void

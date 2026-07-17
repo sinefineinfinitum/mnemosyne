@@ -4,9 +4,6 @@ namespace SineFine\Mnemosyne\Analyzer\Linker;
 
 use FilesystemIterator;
 use PhpParser\NodeTraverser;
-use Ponymator\Parser\Ast\MemberNode;
-use Ponymator\Parser\Parser as PsParser;
-use Ponymator\Parser\SyntaxException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SineFine\Mnemosyne\Analyzer\Parser;
@@ -14,7 +11,11 @@ use SineFine\Mnemosyne\Analyzer\ParserException;
 use SineFine\Mnemosyne\Analyzer\Visitor\CrossReferenceScannerVisitor;
 use SineFine\Mnemosyne\Documentation\Generator\ErrorDiagnostic;
 use SineFine\Mnemosyne\Documentation\Generator\GenerationResult;
+use SineFine\Mnemosyne\Filesystem\FileLoader;
 use SineFine\Mnemosyne\Filesystem\PathResolver;
+use SineFine\Mnemosyne\Msv1Parser\Ast\MemberNode;
+use SineFine\Mnemosyne\Msv1Parser\Parser as PsParser;
+use SineFine\Mnemosyne\Msv1Parser\SyntaxException;
 use Throwable;
 
 final class CrossReferenceIndexBuilder
@@ -89,6 +90,7 @@ final class CrossReferenceIndexBuilder
     private function buildTypeIndex(?GenerationResult $result): array
     {
         $psParser = new PsParser();
+        $loader = new FileLoader();
         $typeIndex = [];
         $targetDir = $this->pathResolver->targetDir();
 
@@ -96,17 +98,20 @@ final class CrossReferenceIndexBuilder
             return $typeIndex;
         }
 
-        $files = $this->discoverPsv1Files($targetDir);
+        $files = $this->discoverMsv1Files($targetDir);
 
-        foreach ($files as $psv1Path) {
+        foreach ($files as $msv1Path) {
             try {
-                $document = $psParser->parseFile($psv1Path);
+                $content = $loader->load($msv1Path);
+                $document = $psParser->parse($content);
+                $document->sourcePath = $msv1Path;
+                $document->sourceHash = hash('sha256', $content);
             } catch (SyntaxException $e) {
                 $result?->addError(
                     new ErrorDiagnostic(
                         severity: ErrorDiagnostic::WARNING,
-                        message: 'PSV1 index build failed for ' . $psv1Path . ' — ' . $e->getMessage(),
-                        filePath: $psv1Path,
+                        message: 'MSV1 index build failed for ' . $msv1Path . ' — ' . $e->getMessage(),
+                        filePath: $msv1Path,
                         exception: $e,
                     )
                 );
@@ -115,8 +120,8 @@ final class CrossReferenceIndexBuilder
                 $result?->addError(
                     new ErrorDiagnostic(
                         severity: ErrorDiagnostic::WARNING,
-                        message: 'PSV1 index build failed for ' . $psv1Path . ' — ' . $e->getMessage(),
-                        filePath: $psv1Path,
+                        message: 'MSV1 index build failed for ' . $msv1Path . ' — ' . $e->getMessage(),
+                        filePath: $msv1Path,
                         exception: $e,
                     )
                 );
@@ -184,7 +189,7 @@ final class CrossReferenceIndexBuilder
     /**
      * @return string[]
      */
-    private function discoverPsv1Files(string $directory): array
+    private function discoverMsv1Files(string $directory): array
     {
         $files = [];
         $iterator = new RecursiveIteratorIterator(
@@ -195,7 +200,7 @@ final class CrossReferenceIndexBuilder
             if (!$file->isFile()) {
                 continue;
             }
-            if (strtolower($file->getExtension()) !== 'psv1') {
+            if (strtolower($file->getExtension()) !== 'msv1') {
                 continue;
             }
             $files[] = $file->getPathname();

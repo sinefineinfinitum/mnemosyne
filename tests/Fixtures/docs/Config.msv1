@@ -1,0 +1,16 @@
+@class SineFine\Ponymator\Config
+!-DEFAULTS=[]
+$-config:array
+.+__construct
+    $configPath:string|null=null
+    ^SineFine\Ponymator\Cli\Error\ConfigException
+.+getSource
+    :string
+.+getTarget
+    :string
+.+getIgnore
+    :array
+.+getSourceAbsolute
+    :string
+.+getTargetAbsolute
+    :string

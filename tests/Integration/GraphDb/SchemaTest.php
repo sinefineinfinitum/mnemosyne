@@ -25,10 +25,13 @@ final class SchemaTest extends TestCase
         $this->assertContains('namespaces', $tables);
         $this->assertContains('files', $tables);
         $this->assertContains('entities', $tables);
-        $this->assertContains('members', $tables);
+        $this->assertContains('methods', $tables);
+        $this->assertContains('properties', $tables);
         $this->assertContains('parameters', $tables);
         $this->assertContains('relationships', $tables);
-        $this->assertContains('types', $tables);
+
+        $this->assertContains('pattern_matches', $tables);
+        $this->assertContains('pattern_participants', $tables);
     }
 
     public function testDropRemovesAllTables(): void
@@ -41,10 +44,13 @@ final class SchemaTest extends TestCase
         $this->assertNotContains('namespaces', $tables);
         $this->assertNotContains('files', $tables);
         $this->assertNotContains('entities', $tables);
-        $this->assertNotContains('members', $tables);
+        $this->assertNotContains('methods', $tables);
+        $this->assertNotContains('properties', $tables);
         $this->assertNotContains('parameters', $tables);
         $this->assertNotContains('relationships', $tables);
         $this->assertNotContains('types', $tables);
+        $this->assertNotContains('pattern_matches', $tables);
+        $this->assertNotContains('pattern_participants', $tables);
     }
 
     public function testCreateIsIdempotent(): void
@@ -53,7 +59,7 @@ final class SchemaTest extends TestCase
         Schema::create($this->pdo);
 
         $tables = $this->getTableNames();
-        $this->assertCount(7, $tables);
+        $this->assertCount(9, $tables);
     }
 
     public function testRelationshipTypeConstraint(): void
@@ -69,7 +75,6 @@ final class SchemaTest extends TestCase
             'call_static_weak', 'call_static_strong',
             'call_dynamic_weak', 'call_dynamic_strong',
             'call_global_weak', 'call_global_strong',
-            'dependency',
         ];
 
         foreach ($validTypes as $type) {
@@ -120,38 +125,33 @@ final class SchemaTest extends TestCase
         );
     }
 
-    public function testMemberTypeConstraint(): void
+    public function testPropertyTypeConstraint(): void
     {
         Schema::create($this->pdo);
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('A', 'A', 'class')");
 
-        $validTypes = ['method', 'property', 'constant', 'case'];
+        $validTypes = ['property', 'constant', 'case'];
         foreach ($validTypes as $i => $type) {
             $this->pdo->exec(
-                "INSERT INTO members (entity_id, name, member_type) VALUES (1, 'm$i', '$type')"
+                "INSERT INTO properties (entity_id, name, member_type) VALUES (1, 'm$i', '$type')"
             );
         }
 
-        $count = (int) $this->pdo->query('SELECT COUNT(*) FROM members')->fetchColumn();
-        $this->assertSame(4, $count);
+        $count = (int) $this->pdo->query('SELECT COUNT(*) FROM properties')->fetchColumn();
+        $this->assertSame(3, $count);
     }
 
-    public function testCascadeDeleteEntityRemovesMembersAndRelationships(): void
+    public function testDeleteEntityFailsWhenDependenciesExist(): void
     {
         Schema::create($this->pdo);
 
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('A', 'A', 'class')");
         $this->pdo->exec("INSERT INTO entities (fqn, short_name, type) VALUES ('B', 'B', 'class')");
-        $this->pdo->exec("INSERT INTO members (entity_id, name, member_type) VALUES (1, 'foo', 'method')");
+        $this->pdo->exec("INSERT INTO methods (entity_id, name) VALUES (1, 'foo')");
         $this->pdo->exec("INSERT INTO relationships (source_id, target_id, type) VALUES (1, 2, 'extends')");
 
+        $this->expectException(\PDOException::class);
         $this->pdo->exec("DELETE FROM entities WHERE id = 1");
-
-        $members = (int) $this->pdo->query('SELECT COUNT(*) FROM members')->fetchColumn();
-        $rels = (int) $this->pdo->query('SELECT COUNT(*) FROM relationships')->fetchColumn();
-
-        $this->assertSame(0, $members);
-        $this->assertSame(0, $rels);
     }
 
     /**

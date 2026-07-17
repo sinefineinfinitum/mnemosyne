@@ -14,10 +14,12 @@ final class Schema
         'namespaces',
         'files',
         'entities',
-        'members',
+        'methods',
+        'properties',
         'parameters',
-        'types',
         'relationships',
+        'pattern_matches',
+        'pattern_participants',
     ];
 
     public static function create(PDO $pdo): void
@@ -43,6 +45,17 @@ final class Schema
      * @return list<string>
      */
     private static function ddl(): array
+    {
+        return array_merge(
+            self::tableDdl(),
+            self::indexDdl()
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function tableDdl(): array
     {
         return [
             <<<'SQL'
@@ -81,56 +94,54 @@ final class Schema
             SQL,
 
             <<<'SQL'
-            CREATE TABLE IF NOT EXISTS members (
-                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-                entity_id           INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
-                name                TEXT    NOT NULL,
-                member_type         TEXT    NOT NULL CHECK(member_type IN ('method','property','constant','case')),
-                visibility          TEXT    CHECK(visibility IN ('public','protected','private')),
-                is_static           INTEGER NOT NULL DEFAULT 0,
-                is_abstract         INTEGER NOT NULL DEFAULT 0,
-                is_final            INTEGER NOT NULL DEFAULT 0,
-                is_readonly         INTEGER NOT NULL DEFAULT 0,
-                declared_type       TEXT,
-                default_value       TEXT,
-                return_type         TEXT,
+            CREATE TABLE IF NOT EXISTS methods (
+                id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+                entity_id             INTEGER NOT NULL REFERENCES entities(id),
+                name                  TEXT    NOT NULL,
+                visibility            TEXT    CHECK(visibility IN ('public','protected','private')),
+                is_static             INTEGER NOT NULL DEFAULT 0,
+                is_abstract           INTEGER NOT NULL DEFAULT 0,
+                is_final              INTEGER NOT NULL DEFAULT 0,
+                return_type_entity_id INTEGER REFERENCES entities(id) ON DELETE SET NULL,
+                return_type_name      TEXT,
+                UNIQUE(entity_id, name)
+            )
+            SQL,
+
+            <<<'SQL'
+            CREATE TABLE IF NOT EXISTS properties (
+                id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+                entity_id               INTEGER NOT NULL REFERENCES entities(id),
+                name                    TEXT    NOT NULL,
+                member_type             TEXT    NOT NULL CHECK(member_type IN ('property','constant','case')),
+                visibility              TEXT    CHECK(visibility IN ('public','protected','private')),
+                is_static               INTEGER NOT NULL DEFAULT 0,
+                is_readonly             INTEGER NOT NULL DEFAULT 0,
+                declared_type_entity_id INTEGER REFERENCES entities(id) ON DELETE SET NULL,
+                declared_type_name      TEXT,
+                default_value           TEXT,
                 UNIQUE(entity_id, name, member_type)
             )
             SQL,
 
             <<<'SQL'
             CREATE TABLE IF NOT EXISTS parameters (
-                id                   INTEGER PRIMARY KEY AUTOINCREMENT,
-                member_id            INTEGER NOT NULL REFERENCES members(id) ON DELETE CASCADE,
-                name                 TEXT    NOT NULL,
-                declared_type        TEXT,
-                default_value        TEXT,
-                is_variadic          INTEGER NOT NULL DEFAULT 0,
-                is_passed_by_reference INTEGER NOT NULL DEFAULT 0,
-                position             INTEGER NOT NULL
+                id                        INTEGER PRIMARY KEY AUTOINCREMENT,
+                method_id                 INTEGER NOT NULL REFERENCES methods(id),
+                name                      TEXT    NOT NULL,
+                declared_type_entity_id   INTEGER REFERENCES entities(id) ON DELETE SET NULL,
+                declared_type_name        TEXT,
+                default_value             TEXT,
+                is_variadic               INTEGER NOT NULL DEFAULT 0,
+                is_passed_by_reference    INTEGER NOT NULL DEFAULT 0,
+                position                  INTEGER NOT NULL
             )
             SQL,
-
-            <<<'SQL'
-            CREATE TABLE IF NOT EXISTS types (
-                id                INTEGER PRIMARY KEY AUTOINCREMENT,
-                owner_type        TEXT    NOT NULL CHECK(owner_type IN ('param','return','property')),
-                owner_id          INTEGER NOT NULL,
-                name              TEXT    NOT NULL,
-                entity_id         INTEGER REFERENCES entities(id) ON DELETE SET NULL,
-                is_union          INTEGER NOT NULL DEFAULT 0,
-                is_intersection   INTEGER NOT NULL DEFAULT 0,
-                position          INTEGER NOT NULL DEFAULT 0
-            )
-            SQL,
-
-            'CREATE INDEX IF NOT EXISTS idx_types_owner ON types(owner_type, owner_id)',
-            'CREATE INDEX IF NOT EXISTS idx_types_entity ON types(entity_id)',
 
             <<<'SQL'
             CREATE TABLE IF NOT EXISTS relationships (
                 id               INTEGER PRIMARY KEY AUTOINCREMENT,
-                source_id        INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+                source_id        INTEGER NOT NULL REFERENCES entities(id),
                 target_id        INTEGER          REFERENCES entities(id) ON DELETE SET NULL,
                 target_fqn       TEXT,
                 target_member_name TEXT,
@@ -139,24 +150,52 @@ final class Schema
                     'creates','creates_strong',
                     'call_static_weak','call_static_strong',
                     'call_dynamic_weak','call_dynamic_strong',
-                    'call_global_weak','call_global_strong',
-                    'dependency'
+                    'call_global_weak','call_global_strong'
                 )),
-                source_member_id INTEGER          REFERENCES members(id) ON DELETE SET NULL
+                source_method_id INTEGER REFERENCES methods(id) ON DELETE SET NULL
             )
             SQL,
 
+            <<<'SQL'
+            CREATE TABLE IF NOT EXISTS pattern_matches (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                pattern_name    TEXT    NOT NULL
+            )
+            SQL,
+
+            <<<'SQL'
+            CREATE TABLE IF NOT EXISTS pattern_participants (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                match_id        INTEGER NOT NULL REFERENCES pattern_matches(id),
+                entity_id       INTEGER NOT NULL REFERENCES entities(id),
+                role            TEXT    NOT NULL,
+                UNIQUE(match_id, entity_id, role)
+            )
+            SQL,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function indexDdl(): array
+    {
+        return [
             'CREATE INDEX IF NOT EXISTS idx_entities_namespace  ON entities(namespace_id)',
             'CREATE INDEX IF NOT EXISTS idx_entities_file       ON entities(file_id)',
             'CREATE INDEX IF NOT EXISTS idx_entities_type       ON entities(type)',
-            'CREATE INDEX IF NOT EXISTS idx_members_entity      ON members(entity_id)',
-            'CREATE INDEX IF NOT EXISTS idx_parameters_member   ON parameters(member_id)',
-            'CREATE INDEX IF NOT EXISTS idx_rel_source          ON relationships(source_id)',
-            'CREATE INDEX IF NOT EXISTS idx_rel_target          ON relationships(target_id)',
+            'CREATE INDEX IF NOT EXISTS idx_methods_entity      ON methods(entity_id)',
+            'CREATE INDEX IF NOT EXISTS idx_methods_lookup      ON methods(entity_id, is_abstract, visibility)',
+            'CREATE INDEX IF NOT EXISTS idx_properties_entity   ON properties(entity_id)',
+            'CREATE INDEX IF NOT EXISTS idx_parameters_method   ON parameters(method_id)',
             'CREATE INDEX IF NOT EXISTS idx_rel_type            ON relationships(type)',
-            'CREATE INDEX IF NOT EXISTS idx_rel_source_member   ON relationships(source_member_id)',
+            'CREATE INDEX IF NOT EXISTS idx_rel_source_method   ON relationships(source_method_id)',
+            'CREATE INDEX IF NOT EXISTS idx_rel_target_type     ON relationships(target_id, type, source_id)',
+            'CREATE INDEX IF NOT EXISTS idx_rel_source_type     ON relationships(source_id, type, target_id)',
             'CREATE INDEX IF NOT EXISTS idx_namespaces_parent   ON namespaces(parent_id)',
             'CREATE INDEX IF NOT EXISTS idx_namespaces_depth    ON namespaces(depth)',
+            'CREATE INDEX IF NOT EXISTS idx_participants_match   ON pattern_participants(match_id)',
+            'CREATE INDEX IF NOT EXISTS idx_participants_entity  ON pattern_participants(entity_id)',
         ];
     }
 }

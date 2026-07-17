@@ -1,0 +1,70 @@
+@class SineFine\Ponymator\Ponymator
+.+run
+    :void
+    ^SineFine\Ponymator\Config
+    ^SineFine\Ponymator\Analyzer\Parser
+    ^SineFine\Ponymator\Analyzer\EntityAnalyzer
+    ^SineFine\Ponymator\Analyzer\FileExtractor
+    ^SineFine\Ponymator\Comparator\HashComparator
+    ^SineFine\Ponymator\Filesystem\PathResolver
+    ^SineFine\Ponymator\Documentation\Linker\CrossReferenceFactory
+    ^SineFine\Ponymator\Documentation\Processor\PageGenerator
+    ^SineFine\Ponymator\Analyzer\CallAnalyzer
+    ^SineFine\Ponymator\Documentation\Cleaner\OutdatedDocumentationRemover
+    ^SineFine\Ponymator\Analyzer\Linker\CrossReferenceIndexBuilder
+    ^SineFine\Ponymator\Documentation\Processor\DocumentationProcessor
+    ^SineFine\Ponymator\Filesystem\Scanner
+    *SineFine\Ponymator\Cli\ArgumentParser::parse
+    *SineFine\Ponymator\Cli\ArgumentParser::printHelp
+    *SineFine\Ponymator\Ponymator->createRenderers
+    *SineFine\Ponymator\Ponymator->docExtension
+    *SineFine\Ponymator\Config->getSource
+    *SineFine\Ponymator\Config->getIgnore
+    *SineFine\Ponymator\Filesystem\Scanner->scan
+    *SineFine\Ponymator\Ponymator->runDiff
+    *SineFine\Ponymator\Ponymator->runFull
+.-createRenderers
+    $output:string
+    :array
+    ^SineFine\Ponymator\Documentation\Renderer\PSV1\Psv1Builder
+    ^SineFine\Ponymator\Documentation\Renderer\PSV1\ClassRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\PSV1\InterfaceRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\PSV1\TraitRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\PSV1\EnumRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\PSV1\FileRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\Markdown\MarkdownBuilder
+    ^SineFine\Ponymator\Documentation\Renderer\Markdown\ClassRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\Markdown\InterfaceRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\Markdown\TraitRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\Markdown\EnumRenderer
+    ^SineFine\Ponymator\Documentation\Renderer\Markdown\FileRenderer
+.-runFull
+    $generator:\SineFine\Ponymator\Documentation\Processor\DocumentationProcessor
+    $sourceFiles:array
+    :void
+    *SineFine\Ponymator\Documentation\Processor\DocumentationProcessor->generateFull
+    *SineFine\Ponymator\Ponymator->renderErrors
+    *SineFine\Ponymator\Ponymator->reportSummary
+.-runDiff
+    $generator:\SineFine\Ponymator\Documentation\Processor\DocumentationProcessor
+    $sourceFiles:array
+    :void
+    *SineFine\Ponymator\Documentation\Processor\DocumentationProcessor->generateDiff
+    *SineFine\Ponymator\Ponymator->renderErrors
+    *SineFine\Ponymator\Ponymator->reportSummary
+.-renderErrors
+    $report:\SineFine\Ponymator\Documentation\Processor\ErrorReport
+    :void
+    ^SineFine\Ponymator\Cli\Error\ErrorOutputFormatter
+    *SineFine\Ponymator\Cli\Error\ErrorOutputFormatter->format
+.-reportSummary
+    $result:\SineFine\Ponymator\Documentation\Processor\GenerationResult
+    :void
+    *SineFine\Ponymator\Documentation\Processor\GenerationResult->getGenerated
+    *SineFine\Ponymator\Documentation\Processor\GenerationResult->getUnchanged
+    *SineFine\Ponymator\Documentation\Processor\GenerationResult->getSkipped
+    *SineFine\Ponymator\Documentation\Processor\GenerationResult->getRemoved
+    *SineFine\Ponymator\Documentation\Processor\GenerationResult->getExecutionTimeSec
+.-docExtension
+    $output:string
+    :string

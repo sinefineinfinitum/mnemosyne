@@ -22,12 +22,12 @@ use SineFine\Mnemosyne\Documentation\Renderer\Markdown\FileRenderer as MarkdownF
 use SineFine\Mnemosyne\Documentation\Renderer\Markdown\InterfaceRenderer as MarkdownInterfaceRenderer;
 use SineFine\Mnemosyne\Documentation\Renderer\Markdown\MarkdownBuilder;
 use SineFine\Mnemosyne\Documentation\Renderer\Markdown\TraitRenderer as MarkdownTraitRenderer;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\ClassRenderer as Psv1ClassRenderer;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\EnumRenderer as Psv1EnumRenderer;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\FileRenderer as Psv1FileRenderer;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\InterfaceRenderer as Psv1InterfaceRenderer;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\Psv1Builder;
-use SineFine\Mnemosyne\Documentation\Renderer\PSV1\TraitRenderer as Psv1TraitRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\ClassRenderer as Msv1ClassRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\EnumRenderer as Msv1EnumRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\FileRenderer as Msv1FileRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\InterfaceRenderer as Msv1InterfaceRenderer;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\Msv1Builder;
+use SineFine\Mnemosyne\Documentation\Renderer\MSV1\TraitRenderer as Msv1TraitRenderer;
 use SineFine\Mnemosyne\Filesystem\PathResolver;
 
 class GeneratorFactory
@@ -71,17 +71,17 @@ class GeneratorFactory
      */
     private function createRenderers(string $output): array
     {
-        if ($output === ArgumentParser::OUTPUT_PSV1) {
-            $builder = new Psv1Builder();
+        if ($output === ArgumentParser::OUTPUT_MSV1) {
+            $builder = new Msv1Builder();
 
             return [
                 [
-                    new Psv1ClassRenderer($builder),
-                    new Psv1InterfaceRenderer($builder),
-                    new Psv1TraitRenderer($builder),
-                    new Psv1EnumRenderer($builder),
+                    new Msv1ClassRenderer($builder),
+                    new Msv1InterfaceRenderer($builder),
+                    new Msv1TraitRenderer($builder),
+                    new Msv1EnumRenderer($builder),
                 ],
-                new Psv1FileRenderer($builder),
+                new Msv1FileRenderer($builder),
             ];
         }
 
@@ -100,8 +100,8 @@ class GeneratorFactory
 
     private function docExtension(string $output): string
     {
-        if ($output === ArgumentParser::OUTPUT_PSV1) {
-            return 'psv1';
+        if ($output === ArgumentParser::OUTPUT_MSV1) {
+            return 'msv1';
         }
 
         return 'md';
