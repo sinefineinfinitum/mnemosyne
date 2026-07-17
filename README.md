@@ -1,4 +1,4 @@
-# Ponymator
+# Mnemosyne
 
 [![Packagist Version](https://img.shields.io/packagist/v/sinefineinfinitum/mnemosyne)](https://packagist.org/packages/sinefineinfinitum/mnemosyne)
 [![PHP Version](https://img.shields.io/badge/PHP-8.0+-purple)](https://packagist.org/packages/sinefineinfinitum/mnemosyne)
@@ -7,13 +7,12 @@
 [![PHPStan level](https://img.shields.io/badge/PHPStan-8-brightgreen)](https://github.com/phpstan/phpstan)
 [![Mutation Score](https://img.shields.io/badge/MSI-71%25-yellow)](https://github.com/sinefineinfinitum/mnemosyne/actions)
 
-A CLI-first PHP documentation generator that produces deterministic documentation for a project's API surface.
-
+A CLI-first PHP analysis toolkit. It parses PHP source code via AST to generate deterministic Markdown documentation, imports the parsed structure into an SQLite graph database, enables dependency impact analysis and shortest-path queries, and detects 21 GoF design patterns from the graph.
 ## Principles
 
 ### AST-First Correctness
 
-Ponymator uses PHP Abstract Syntax Tree analysis (via [`nikic/php-parser`](https://github.com/nikic/PHP-Parser)) as the single source of truth. API extraction — classes, interfaces, traits, enums, constants, properties, methods, signatures, inheritance, implemented interfaces, modifiers, and dependencies — is derived from parsed PHP source code, never from regex or string matching. If source code cannot be parsed, the tool fails with actionable diagnostics.
+Mnemosyne uses PHP Abstract Syntax Tree analysis (via [`nikic/php-parser`](https://github.com/nikic/PHP-Parser)) as the single source of truth. API extraction — classes, interfaces, traits, enums, constants, properties, methods, signatures, inheritance, implemented interfaces, modifiers, and dependencies — is derived from parsed PHP source code, never from regex or string matching. If source code cannot be parsed, the tool fails with actionable diagnostics.
 
 ### Deterministic Output
 
@@ -56,22 +55,22 @@ composer require sinefineinfinitum/mnemosyne
 
 ```bash
 # Main help
-vendor/bin/ponymator --help
+vendor/bin/mnemosyne --help
 
 # Generate documentation
-vendor/bin/ponymator generate [--full | --diff] [--config=<path>] [--output=md|msv1]
+vendor/bin/mnemosyne generate [--full | --diff] [--config=<path>] [--output=md|msv1]
 
 # Manage graph database
-vendor/bin/ponymator graph import [--db-path=<path>]
-vendor/bin/ponymator graph clear
+vendor/bin/mnemosyne graph import [--db-path=<path>]
+vendor/bin/mnemosyne graph clear
 
 # Analyze entities
-vendor/bin/ponymator show entity <name> [--depth=N]
-vendor/bin/ponymator show impact <name> [--depth=N]
-vendor/bin/ponymator show path <from> <to>
+vendor/bin/mnemosyne show entity <name> [--depth=N]
+vendor/bin/mnemosyne show impact <name> [--depth=N]
+vendor/bin/mnemosyne show path <from> <to>
 
 # Detect patterns
-vendor/bin/ponymator detect [--config=<path>]
+vendor/bin/mnemosyne detect [--config=<path>]
 ```
 
 ### Commands
